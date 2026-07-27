@@ -91,8 +91,29 @@ ios() {
 android() {
   command -v cargo-ndk >/dev/null 2>&1 || die \
     "cargo-ndk not found. Install it with: cargo install cargo-ndk"
-  [ -n "${ANDROID_NDK_HOME:-}${ANDROID_HOME:-}" ] || die \
-    "Android SDK/NDK not found. Install Android Studio and set ANDROID_HOME."
+
+  # Homebrew's android-commandlinetools does not live where the Android Studio
+  # installer puts things, so fall back to it before giving up.
+  if [ -z "${ANDROID_HOME:-}" ] && [ -d /opt/homebrew/share/android-commandlinetools ]; then
+    export ANDROID_HOME=/opt/homebrew/share/android-commandlinetools
+  fi
+  [ -n "${ANDROID_HOME:-}" ] || die \
+    "Android SDK not found. Install it with: brew install --cask android-commandlinetools
+     (or install Android Studio), then export ANDROID_HOME."
+  export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
+
+  # cargo-ndk resolves the toolchain through ANDROID_NDK_HOME; pick the
+  # highest installed NDK when the caller has not pinned one.
+  if [ -z "${ANDROID_NDK_HOME:-}" ]; then
+    local ndk
+    ndk=$(ls -1d "$ANDROID_HOME"/ndk/*/ 2>/dev/null | sort -V | tail -1)
+    [ -n "$ndk" ] || die \
+      "No NDK found under $ANDROID_HOME/ndk. Install one with:
+       sdkmanager --install 'ndk;29.0.14206865'"
+    export ANDROID_NDK_HOME="${ndk%/}"
+  fi
+  echo "    using NDK $ANDROID_NDK_HOME"
+
   need_targets "${ANDROID_TARGETS[@]}"
 
   echo "==> building Android shared libs"
