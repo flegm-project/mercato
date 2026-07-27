@@ -2,7 +2,6 @@ package com.mercato.app
 
 import android.app.Activity
 import android.content.Context
-import android.os.Bundle
 import android.view.View
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -13,12 +12,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import com.google.ads.mediation.admob.AdMobAdapter
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.LoadAdError
+import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.mercato.design.DesignTokens
@@ -35,14 +35,26 @@ class AdsController(private val context: Context, private val game: Game) {
 
     private var interstitial: InterstitialAd? = null
 
-    /** Non-personalised requests carry the npa flag, per the consent flow. */
+    /**
+     * Sync the SDK's personalisation state from the core before building a
+     * request. The publisher privacy state is the modern npa equivalent;
+     * where UMP wrote a TCF string the SDK also reads it on its own, and
+     * Google applies whichever signal is the most restrictive.
+     */
     fun request(): AdRequest {
-        val builder = AdRequest.Builder()
-        if (!game.adPersonalizationAllowed()) {
-            val extras = Bundle().apply { putString("npa", "1") }
-            builder.addNetworkExtrasBundle(AdMobAdapter::class.java, extras)
-        }
-        return builder.build()
+        val state =
+            if (game.adPersonalizationAllowed()) {
+                RequestConfiguration.PublisherPrivacyPersonalizationState.DEFAULT
+            } else {
+                RequestConfiguration.PublisherPrivacyPersonalizationState.DISABLED
+            }
+        MobileAds.setRequestConfiguration(
+            MobileAds.getRequestConfiguration()
+                .toBuilder()
+                .setPublisherPrivacyPersonalizationState(state)
+                .build()
+        )
+        return AdRequest.Builder().build()
     }
 
     fun shouldShow(placement: AdPlacement): Boolean = game.shouldShowAd(placement)

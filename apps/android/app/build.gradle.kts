@@ -31,12 +31,12 @@ val stageAssets = tasks.register<Copy>("stageAssets") {
 
 android {
     namespace = "com.mercato.app"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.nicogaray.mercato"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
     }
@@ -104,6 +104,10 @@ dependencies {
     // Required by the generated UniFFI bindings.
     implementation("net.java.dev.jna:jna:5.14.0@aar")
 
-    // Google Mobile Ads (AdMob).
-    implementation("com.google.android.gms:play-services-ads:23.3.0")
+    // Google Mobile Ads (AdMob) + the UMP consent SDK it pins.
+    implementation("com.google.android.gms:play-services-ads:25.4.0")
+    implementation("com.google.android.ump:user-messaging-platform:4.0.0")
+
+    // Play Billing: the single remove-ads non-consumable.
+    implementation("com.android.billingclient:billing-ktx:9.1.0")
 }

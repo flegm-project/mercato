@@ -44,9 +44,12 @@ Two mechanisms, both native:
 
 ## Compliance checklist (pre-launch)
 
-- [ ] AdMob consent (UMP) + iOS App Tracking Transparency prompt.
+- [x] AdMob consent (UMP) on Android (form at first launch, TCF-derived
+      personalisation, privacy options from Settings). iOS App Tracking
+      Transparency prompt still pending.
 - [ ] Privacy policy covering ads/analytics data.
 - [ ] App Store / Play data-safety & privacy nutrition labels.
-- [ ] Restore-purchases flow.
+- [x] Restore-purchases flow on Android (launch, resume, Settings row).
+      iOS restore pending.
 - [ ] No ads shown to users who bought remove-ads (verified on fresh install +
       restore).

@@ -27,6 +27,7 @@ import com.mercato.app.ui.SettingsScreen
 import com.mercato.app.ui.SplashScreen
 import com.mercato.app.ui.appBackground
 import com.mercato.app.ui.rememberFonts
+import kotlinx.coroutines.launch
 import uniffi.mercato_ffi.GameMode
 
 object Routes {
@@ -46,6 +47,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val graph = (application as MercatoApplication).graph
+        // GDPR consent surface: shows the UMP form when required, silent
+        // no-op elsewhere. The outcome lands in the core via setAdConsent.
+        graph.consent.gather(this)
         setContent {
             CompositionLocalProvider(LocalFonts provides rememberFonts()) {
                 Box(Modifier.fillMaxSize().appBackground()) {
@@ -53,6 +57,12 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Purchases made outside the app (family, web) surface here.
+        (application as MercatoApplication).graph.billing.restore()
     }
 }
 
@@ -77,7 +87,21 @@ fun MercatoNav(graph: AppGraph) {
             }
         }
         composable(Routes.ONBOARDING) {
-            OnboardingScreen(onDone = { nav.navigate(Routes.CONSENT) })
+            val scope = androidx.compose.runtime.rememberCoroutineScope()
+            OnboardingScreen(onDone = {
+                // Where UMP already collected GDPR consent, the app's own
+                // consent screen would double-ask; skip straight home.
+                if (graph.consent.handledByUmp.value) {
+                    scope.launch {
+                        graph.prefs.setOnboarded()
+                        nav.navigate(Routes.HOME) {
+                            popUpTo(Routes.ONBOARDING) { inclusive = true }
+                        }
+                    }
+                } else {
+                    nav.navigate(Routes.CONSENT)
+                }
+            })
         }
         composable(Routes.CONSENT) {
             ConsentScreen(graph, fromSettings = false) {
@@ -121,9 +145,18 @@ fun MercatoNav(graph: AppGraph) {
                 onSettings = { nav.navigate(Routes.SETTINGS) })
         }
         composable(Routes.SETTINGS) {
+            val activity = androidx.compose.ui.platform.LocalContext.current as? android.app.Activity
             SettingsScreen(graph,
                 onBack = { nav.popBackStack() },
-                onConsent = { nav.navigate("${Routes.CONSENT}/settings") },
+                onConsent = {
+                    // GDPR scope: the UMP privacy options form is the legal
+                    // surface; elsewhere the app's own screen handles it.
+                    if (activity != null && graph.consent.privacyOptionsRequired(activity)) {
+                        graph.consent.showPrivacyOptions(activity)
+                    } else {
+                        nav.navigate("${Routes.CONSENT}/settings")
+                    }
+                },
                 onReplayIntro = {
                     nav.navigate(Routes.ONBOARDING) { popUpTo(Routes.HOME) }
                 })

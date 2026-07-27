@@ -33,7 +33,18 @@ steps (see `.github/workflows/ci.yml`, job `android`).
 
 Every slot asks the shared gate first (`Game.shouldShowAd`, backed by
 `mercato_core::ads`): banner on menu screens, sponsor board in game,
-interstitial at the round break, rectangle on the recap. Consent from the
-in-app flow maps to personalised/non-personalised requests (npa). Remove-ads
-is not purchasable on Android yet: Play Billing arrives with the store
-listing, and `Game.setAdsRemoved` is already wired for it.
+interstitial at the round break, rectangle on the recap.
+
+Consent: the Google UMP form shows at first launch where GDPR applies
+(`ConsentManager`), derives personalised/non-personalised from the TCF
+purpose bits, and feeds `Game.setAdConsent`; the app's own consent screen
+stays the choice surface everywhere else, and Settings opens whichever is
+authoritative. The core's `adPersonalizationAllowed` drives the SDK's
+publisher privacy personalisation state (the modern npa equivalent) on every
+request, the conservative overlay on top of the SDK's own TCF reading.
+
+Remove-ads: `BillingManager` (Play Billing, one-time product
+`mercato_remove_ads`) mirrors the store entitlement into
+`Game.setAdsRemoved` at launch, on resume, on purchase and on restore, and
+acknowledges new purchases. The purchase and restore rows live in Settings;
+there is no shop screen.
