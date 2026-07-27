@@ -92,10 +92,14 @@ struct SolidRaised<S: InsettableShape>: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .clipShape(shape)
-            .padding(border)
-            // Fills the padded bounds, so the ring left around the inset
-            // content is the border.
+            // The content is clipped to the shape pulled in by the border
+            // width, and a solid fill of the full shape sits behind it: the
+            // ring left over IS the border. Nothing clipped ever reaches the
+            // outer edge, so the outermost pixel is always opaque outline.
+            // Stroking on top of a full-size clip instead leaves that edge
+            // pixel partly fill and partly stroke, and neither hides the
+            // other: a pale seam traced the corners.
+            .clipShape(shape.inset(by: border))
             .background(shape.fill(outline))
             .background(
                 // Pressing sinks the surface onto its shadow, which is what
@@ -146,8 +150,7 @@ extension View {
 
     /// Outlined but not raised (the close button, the sponsor board).
     func inkOutlined<S: InsettableShape>(_ shape: S, border: CGFloat = 4) -> some View {
-        clipShape(shape)
-            .padding(border)
+        clipShape(shape.inset(by: border))
             .background(shape.fill(DesignTokens.Color.ink))
     }
 }
@@ -161,7 +164,7 @@ struct CloseButton: View {
             Text("\u{2715}")
                 .font(.system(size: 16, weight: .black))
                 .foregroundStyle(.white)
-                .frame(width: 30, height: 30)
+                .frame(width: 38, height: 38)
                 .background(DesignTokens.Color.ink.opacity(0.45))
                 .inkOutlined(RoundedRectangle(cornerRadius: 12, style: .continuous))
         }
