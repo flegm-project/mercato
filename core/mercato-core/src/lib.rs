@@ -4,6 +4,7 @@
 //! The matching + decoy logic is ported verbatim from the web prototype
 //! (`core/reference/engine.reference.js`) and locked by parity tests.
 
+pub mod ads;
 pub mod decoy;
 pub mod distance;
 pub mod matching;
@@ -13,6 +14,7 @@ pub mod rng;
 pub mod round;
 pub mod scoring;
 
+pub use ads::{AdsConfig, AdsGate, Consent, Placement};
 pub use matching::{MatchResult, Matcher, Route};
 pub use model::{Club, Kind, Lang, Player, Position, Transfer};
 pub use rng::Mulberry32;

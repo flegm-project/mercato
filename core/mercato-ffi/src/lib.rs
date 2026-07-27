@@ -13,7 +13,7 @@ use std::sync::Mutex;
 use mercato_core::decoy::distractors_for;
 use mercato_core::round::{pick_index, pool};
 use mercato_core::scoring::Score;
-use mercato_core::{Kind, Lang, Mode, Mulberry32};
+use mercato_core::{AdsConfig, AdsGate, Consent, Kind, Lang, Mode, Mulberry32, Placement};
 
 uniffi::setup_scaffolding!();
 
@@ -45,6 +45,42 @@ impl From<FfiMode> for Mode {
         match m {
             FfiMode::Easy => Mode::Easy,
             FfiMode::Hardcore => Mode::Hardcore,
+        }
+    }
+}
+
+#[derive(uniffi::Enum, Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FfiPlacement {
+    Banner,
+    SponsorBoard,
+    Interstitial,
+    Rectangle,
+}
+
+impl From<FfiPlacement> for Placement {
+    fn from(p: FfiPlacement) -> Self {
+        match p {
+            FfiPlacement::Banner => Placement::Banner,
+            FfiPlacement::SponsorBoard => Placement::SponsorBoard,
+            FfiPlacement::Interstitial => Placement::Interstitial,
+            FfiPlacement::Rectangle => Placement::Rectangle,
+        }
+    }
+}
+
+#[derive(uniffi::Enum, Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FfiConsent {
+    Unknown,
+    Personalized,
+    NonPersonalized,
+}
+
+impl From<FfiConsent> for Consent {
+    fn from(c: FfiConsent) -> Self {
+        match c {
+            FfiConsent::Unknown => Consent::Unknown,
+            FfiConsent::Personalized => Consent::Personalized,
+            FfiConsent::NonPersonalized => Consent::NonPersonalized,
         }
     }
 }
@@ -132,6 +168,7 @@ struct GameState {
     score: Score,
     next_round_id: u64,
     current: Option<CurrentRound>,
+    ads: AdsGate,
 }
 
 /// Fisher-Yates shuffle driven by the game's seeded RNG, so option order is
@@ -155,8 +192,10 @@ impl Game {
     /// by `mercato_data::generate_db`) and start a fresh session. `seed`
     /// drives round selection, decoys, and option order; pass a
     /// time-derived value from the native side for a real session.
+    /// `ads_removed` is the store entitlement known at launch (StoreKit 2 /
+    /// Play Billing); it can be flipped later with `set_ads_removed`.
     #[uniffi::constructor]
-    pub fn new(db_path: String, seed: u64) -> Result<Self, GameError> {
+    pub fn new(db_path: String, seed: u64, ads_removed: bool) -> Result<Self, GameError> {
         let corpus =
             mercato_data::load_from_db(Path::new(&db_path)).map_err(|e| GameError::Load {
                 message: e.to_string(),
@@ -168,6 +207,7 @@ impl Game {
                 score: Score::new(),
                 next_round_id: 1,
                 current: None,
+                ads: AdsGate::new(AdsConfig::default(), ads_removed),
             }),
         })
     }
@@ -258,6 +298,7 @@ impl Game {
         let correct = guessed_idx == target_player_idx;
         let points_gained = st.score.answer(correct);
         st.current = None;
+        st.ads.record_round_completed();
 
         Ok(AnswerResult {
             correct,
@@ -277,6 +318,45 @@ impl Game {
             streak: st.score.streak,
             best_streak: st.score.best_streak,
         }
+    }
+
+    // Ads gating (see mercato_core::ads). The AdMob/StoreKit/Billing SDK
+    // calls stay native; the decision rule lives here, shared by both apps.
+
+    /// Ask right before rendering a slot or presenting an interstitial.
+    pub fn should_show_ad(&self, placement: FfiPlacement) -> bool {
+        let st = self.state.lock().expect("game state mutex poisoned");
+        st.ads.should_show(placement.into())
+    }
+
+    /// Call once an interstitial was actually presented, so the frequency
+    /// cap starts counting from this round.
+    pub fn record_interstitial_shown(&self) {
+        let mut st = self.state.lock().expect("game state mutex poisoned");
+        st.ads.record_interstitial_shown();
+    }
+
+    /// Flip the remove-ads entitlement after a purchase or restore.
+    pub fn set_ads_removed(&self, removed: bool) {
+        let mut st = self.state.lock().expect("game state mutex poisoned");
+        st.ads.set_ads_removed(removed);
+    }
+
+    pub fn ads_removed(&self) -> bool {
+        let st = self.state.lock().expect("game state mutex poisoned");
+        st.ads.ads_removed()
+    }
+
+    /// Report the UMP consent outcome so ad requests carry the right flag.
+    pub fn set_ad_consent(&self, consent: FfiConsent) {
+        let mut st = self.state.lock().expect("game state mutex poisoned");
+        st.ads.set_consent(consent.into());
+    }
+
+    /// False means send non-personalised requests (npa=1) to AdMob.
+    pub fn ad_personalization_allowed(&self) -> bool {
+        let st = self.state.lock().expect("game state mutex poisoned");
+        st.ads.personalization_allowed()
     }
 }
 
@@ -346,7 +426,7 @@ mod tests {
     #[test]
     fn plays_a_full_round() {
         let (_dir, db_path) = seed_db();
-        let game = Game::new(db_path, 42).expect("game loads");
+        let game = Game::new(db_path, 42, false).expect("game loads");
 
         let round = game
             .start_round(FfiMode::Easy, FfiLang::En)
@@ -396,10 +476,55 @@ mod tests {
     #[test]
     fn hardcore_is_not_supported_yet() {
         let (_dir, db_path) = seed_db();
-        let game = Game::new(db_path, 1).unwrap();
+        let game = Game::new(db_path, 1, false).unwrap();
         assert!(matches!(
             game.start_round(FfiMode::Hardcore, FfiLang::En),
             Err(GameError::NotSupported { .. })
         ));
+    }
+
+    fn answer_one_round(game: &Game) {
+        let round = game.start_round(FfiMode::Easy, FfiLang::En).unwrap();
+        game.submit_guess(round.round_id, "p0".into()).unwrap();
+    }
+
+    #[test]
+    fn ads_gate_follows_rounds_and_purchase() {
+        let (_dir, db_path) = seed_db();
+        let game = Game::new(db_path, 7, false).unwrap();
+
+        // Free user, fresh session: static slots yes, interstitial in warmup.
+        assert!(game.should_show_ad(FfiPlacement::Banner));
+        assert!(game.should_show_ad(FfiPlacement::SponsorBoard));
+        assert!(!game.should_show_ad(FfiPlacement::Interstitial));
+
+        // Answering rounds is what advances the ads gate; no separate call.
+        answer_one_round(&game);
+        answer_one_round(&game);
+        assert!(game.should_show_ad(FfiPlacement::Interstitial));
+        game.record_interstitial_shown();
+        assert!(!game.should_show_ad(FfiPlacement::Interstitial));
+
+        // Consent flips personalisation, never slot visibility.
+        assert!(!game.ad_personalization_allowed());
+        game.set_ad_consent(FfiConsent::Personalized);
+        assert!(game.ad_personalization_allowed());
+        assert!(game.should_show_ad(FfiPlacement::Banner));
+
+        // Remove-ads purchase mid-session: everything goes dark.
+        game.set_ads_removed(true);
+        assert!(game.ads_removed());
+        assert!(!game.should_show_ad(FfiPlacement::Banner));
+        assert!(!game.should_show_ad(FfiPlacement::SponsorBoard));
+        assert!(!game.should_show_ad(FfiPlacement::Rectangle));
+        assert!(!game.should_show_ad(FfiPlacement::Interstitial));
+    }
+
+    #[test]
+    fn purchased_at_launch_never_shows_ads() {
+        let (_dir, db_path) = seed_db();
+        let game = Game::new(db_path, 7, true).unwrap();
+        assert!(game.ads_removed());
+        assert!(!game.should_show_ad(FfiPlacement::Banner));
     }
 }

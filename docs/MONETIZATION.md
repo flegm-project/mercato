@@ -36,11 +36,44 @@ Two mechanisms, both native:
 
 ## Where the logic lives
 
-- The **decision** "should ads be shown right now?" is a small, testable rule
-  (ads not removed AND placement allowed AND frequency cap satisfied). Keep the
-  rule parameters in one place; the SDK calls stay native.
-- The `ads_removed` entitlement is owned natively (from the store) and passed to
-  the core if any core logic needs to branch on it.
+- The **decision** "should ads be shown right now?" is implemented in
+  `mercato_core::ads` (`AdsGate`) and exposed on the FFI `Game`:
+  `should_show_ad(placement)`, `record_interstitial_shown()`,
+  `set_ads_removed(bool)`, `set_ad_consent(...)`,
+  `ad_personalization_allowed()`. Answered rounds advance the gate
+  automatically inside `submit_guess`; frequency parameters (`AdsConfig`:
+  warmup rounds, min rounds between interstitials) live in one place so both
+  platforms stay consistent.
+- The `ads_removed` entitlement is owned natively (from the store): pass the
+  launch-time value to the `Game` constructor, then call `set_ads_removed`
+  on purchase or restore.
+
+## Store and AdMob setup (operational)
+
+Product identifiers (same product on both stores):
+
+- iOS (App Store Connect): non-consumable `mercato_remove_ads`, 3.99 EUR.
+  Localized display name/description in EN/FR/ES.
+- Android (Play Console): one-time product `mercato_remove_ads`, 3.99 EUR.
+
+AdMob console (one app entry per platform, same AdMob account), four ad units
+per platform:
+
+| Ad unit | Format | Used on |
+| --- | --- | --- |
+| `mercato_banner` | Banner 320x50 | Home, Profile |
+| `mercato_sponsor` | Banner (full width, fixed) | In game, below the card |
+| `mercato_interstitial` | Interstitial | Before the recap |
+| `mercato_rectangle` | Medium rectangle 300x250 | Recap |
+
+During development always use Google's published test ad unit IDs, never the
+production ones (invalid-traffic risk). Real IDs are injected per build
+configuration (xcconfig on iOS, gradle property on Android), not hardcoded.
+
+Consent: Google UMP SDK on both platforms; on iOS also App Tracking
+Transparency (UMP can chain the ATT prompt). Feed the outcome to the core via
+`set_ad_consent`; when `ad_personalization_allowed()` is false, send
+non-personalised requests (npa).
 
 ## Compliance checklist (pre-launch)
 
