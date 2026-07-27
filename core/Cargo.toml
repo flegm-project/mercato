@@ -3,6 +3,7 @@ resolver = "2"
 members = [
     "mercato-core",
     "mercato-data",
+    "mercato-ffi",
 ]
 
 [workspace.package]
