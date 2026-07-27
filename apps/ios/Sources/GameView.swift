@@ -29,6 +29,7 @@ struct GameView: View {
     @State private var guess = ""
     @State private var hints: [HintView] = []
     @State private var ambiguous = false
+    @State private var quitOpen = false
 
     private var roundLength: Int { Int(DesignTokens.Game.roundLength) }
 
@@ -73,6 +74,11 @@ struct GameView: View {
             .frame(maxWidth: DesignTokens.Layout.columnMax)
             .frame(maxWidth: .infinity)
         }
+        .overlay {
+            if quitOpen {
+                QuitDialog(onStay: { quitOpen = false }, onQuit: onQuit)
+            }
+        }
         .onAppear(perform: startRound)
     }
 
@@ -80,7 +86,7 @@ struct GameView: View {
 
     private var topBar: some View {
         HStack(spacing: 12) {
-            CloseButton(action: onQuit)
+            CloseButton { quitOpen = true }
             ProgressPips(states: pipStates)
             if mode == .hardcore {
                 Hearts(remaining: Int(question?.attemptsLeft ?? 3), total: 3)

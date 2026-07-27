@@ -239,3 +239,251 @@ struct RecapView: View {
     }
 
 }
+
+// MARK: - Onboarding
+
+/// Three panes explaining the game, skippable. Shown once on first launch.
+struct OnboardingView: View {
+    let onDone: () -> Void
+    @State private var step = 0
+
+    private let steps = 3
+
+    var body: some View {
+        ZStack {
+            DS.appBackground
+            VStack(spacing: 0) {
+                HStack {
+                    Spacer()
+                    Button(L("obSkip").uppercased(), action: onDone)
+                        .font(DS.figtree(13, weight: 900))
+                        .tracking(0.06 * 13)
+                        .foregroundStyle(Color.white.opacity(0.68))
+                        .padding(8)
+                }
+                .frame(height: 38)
+
+                Spacer(minLength: 0)
+
+                VStack(alignment: .leading, spacing: 26) {
+                    illustration
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text(L("ob.\(step).t"))
+                            .font(DS.unbounded(30, weight: 900))
+                            .tracking(-0.05 * 30)
+                            .foregroundStyle(DesignTokens.Color.ivory)
+                        Text(L("ob.\(step).b"))
+                            .font(DS.figtree(16, weight: 700))
+                            .foregroundStyle(Color.white.opacity(0.68))
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+
+                Spacer(minLength: 0)
+
+                HStack(spacing: 8) {
+                    ForEach(0..<steps, id: \.self) { index in
+                        Capsule()
+                            .fill(index == step ? DesignTokens.Color.yellow : Color.white.opacity(0.25))
+                            .frame(width: index == step ? 26 : 10, height: 10)
+                    }
+                }
+                .padding(.bottom, 18)
+
+                Button {
+                    if step + 1 < steps { step += 1 } else { onDone() }
+                } label: {
+                    Text(step + 1 < steps ? L("obNext") : L("obStart"))
+                        .font(DS.unbounded(22, weight: 900))
+                        .tracking(-0.03 * 22)
+                        .foregroundStyle(DesignTokens.Color.ink)
+                        .frame(maxWidth: .infinity)
+                        .padding(20)
+                        .background(DesignTokens.Color.yellow)
+                        .solidRaised(radius: 22, depth: 9)
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, DesignTokens.Space.gutter)
+            .padding(.top, DesignTokens.Space.gutter)
+            .padding(.bottom, 20)
+            .frame(maxWidth: DesignTokens.Layout.columnMax)
+            .frame(maxWidth: .infinity)
+        }
+    }
+
+    /// Placeholder art, hatched so it reads as a deliberate slot rather than a
+    /// failed image.
+    private var illustration: some View {
+        ZStack {
+            Canvas { context, size in
+                context.fill(Path(CGRect(origin: .zero, size: size)), with: .color(DesignTokens.Color.ivory))
+                var x = -size.height
+                while x < size.width + size.height {
+                    var stripe = Path()
+                    stripe.move(to: CGPoint(x: x, y: size.height))
+                    stripe.addLine(to: CGPoint(x: x + size.height, y: 0))
+                    stripe.addLine(to: CGPoint(x: x + size.height + 14, y: 0))
+                    stripe.addLine(to: CGPoint(x: x + 14, y: size.height))
+                    stripe.closeSubpath()
+                    context.fill(stripe, with: .color(Color(red: 0.937, green: 0.929, blue: 0.890)))
+                    x += 28
+                }
+            }
+            Text(L("ob.\(step).a"))
+                .font(DS.mono(11))
+                .tracking(0.18 * 11)
+                .foregroundStyle(DesignTokens.Color.clubGrey)
+                .multilineTextAlignment(.center)
+                .padding(20)
+        }
+        .frame(height: 200)
+        .solidRaised(radius: DesignTokens.Radius.card, depth: 10)
+    }
+}
+
+// MARK: - Ad consent
+
+/// Asked before the first round and reachable again from Settings. Refusing
+/// gives non-personalised ads, not fewer of them (docs/specs/ads.md).
+struct ConsentView: View {
+    let onChoice: (Bool) -> Void
+
+    var body: some View {
+        ZStack {
+            DS.appBackground
+            VStack(spacing: 0) {
+                Spacer(minLength: 0)
+
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(L("cnTitle"))
+                        .font(DS.unbounded(24, weight: 900))
+                        .tracking(-0.05 * 24)
+                    Text(L("cnBody"))
+                        .font(DS.figtree(14.5, weight: 600))
+                        .foregroundStyle(DesignTokens.Color.muted)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.top, 12)
+
+                    VStack(alignment: .leading, spacing: 9) {
+                        ForEach(0..<3, id: \.self) { index in
+                            HStack(alignment: .top, spacing: 10) {
+                                Text("\u{00B7}")
+                                    .font(DS.unbounded(14, weight: 900))
+                                    .foregroundStyle(DesignTokens.Color.blue)
+                                Text(L("cnPoints.\(index)"))
+                                    .font(DS.figtree(13.5, weight: 700))
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
+                    }
+                    .padding(.top, 16)
+                }
+                .foregroundStyle(DesignTokens.Color.ink)
+                .padding(22)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(DesignTokens.Color.ivory)
+                .solidRaised(radius: DesignTokens.Radius.card, depth: 10)
+
+                Spacer(minLength: 0)
+
+                VStack(spacing: 11) {
+                    Button { onChoice(true) } label: {
+                        Text(L("cnAccept"))
+                            .font(DS.unbounded(18, weight: 900))
+                            .tracking(-0.03 * 18)
+                            .foregroundStyle(DesignTokens.Color.ink)
+                            .frame(maxWidth: .infinity)
+                            .padding(19)
+                            .background(DesignTokens.Color.yellow)
+                            .solidRaised(radius: 22, depth: 9)
+                    }
+                    .buttonStyle(.plain)
+
+                    Button { onChoice(false) } label: {
+                        Text(L("cnRefuse"))
+                            .font(DS.unbounded(15, weight: 800))
+                            .tracking(-0.03 * 15)
+                            .foregroundStyle(DesignTokens.Color.ink)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.7)
+                            .frame(maxWidth: .infinity)
+                            .padding(17)
+                            .background(DesignTokens.Color.ivory)
+                            .solidRaised(radius: 22, depth: 9)
+                    }
+                    .buttonStyle(.plain)
+
+                    Text(L("cnFoot"))
+                        .font(DS.figtree(11.5, weight: 700))
+                        .foregroundStyle(Color.white.opacity(0.56))
+                        .padding(.top, 4)
+                }
+            }
+            .padding(.horizontal, DesignTokens.Space.gutter)
+            .padding(.vertical, 20)
+            .frame(maxWidth: DesignTokens.Layout.columnMax)
+            .frame(maxWidth: .infinity)
+        }
+    }
+}
+
+// MARK: - Quit dialog
+
+/// Confirms leaving a round in progress, since the score is not persisted.
+struct QuitDialog: View {
+    let onStay: () -> Void
+    let onQuit: () -> Void
+
+    var body: some View {
+        ZStack {
+            Color(red: 0.024, green: 0.035, blue: 0.118).opacity(0.78)
+                .ignoresSafeArea()
+                .onTapGesture(perform: onStay)
+
+            VStack(alignment: .leading, spacing: 0) {
+                Text(L("quitT"))
+                    .font(DS.unbounded(22, weight: 900))
+                    .tracking(-0.05 * 22)
+                Text(L("quitB"))
+                    .font(DS.figtree(14, weight: 700))
+                    .foregroundStyle(DesignTokens.Color.muted)
+                    .padding(.top, 10)
+                    .padding(.bottom, 18)
+
+                VStack(spacing: 10) {
+                    Button(action: onStay) {
+                        Text(L("quitStay"))
+                            .font(DS.unbounded(17, weight: 900))
+                            .tracking(-0.03 * 17)
+                            .foregroundStyle(DesignTokens.Color.ink)
+                            .frame(maxWidth: .infinity)
+                            .padding(16)
+                            .background(DesignTokens.Color.yellow)
+                            .solidRaised(radius: 20, depth: 8)
+                    }
+                    .buttonStyle(.plain)
+
+                    Button(action: onQuit) {
+                        Text(L("quitGo"))
+                            .font(DS.unbounded(15, weight: 800))
+                            .tracking(-0.03 * 15)
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(15)
+                            .background(DesignTokens.Color.coral)
+                            .solidRaised(radius: 20, depth: 8)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .foregroundStyle(DesignTokens.Color.ink)
+            .padding(22)
+            .frame(maxWidth: 360)
+            .background(DesignTokens.Color.ivory)
+            .solidRaised(radius: DesignTokens.Radius.card, depth: 12)
+            .padding(24)
+        }
+    }
+}

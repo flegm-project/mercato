@@ -13,6 +13,8 @@ struct MercatoApp: App {
 /// Settings and the rest follow in phase 5 (docs/specs/screens.md).
 enum Route: Equatable {
     case splash
+    case onboarding
+    case consent
     case home
     case game(GameMode)
     case recap
@@ -24,6 +26,11 @@ enum Route: Equatable {
 struct RootView: View {
     @State private var loadResult: Result<Game, Error>?
     @State private var route: Route = .splash
+    /// First launch shows the intro and the ad-consent choice once. Only these
+    /// two flags persist; the score and streak deliberately do not
+    /// (docs/GAME_DESIGN.md).
+    @AppStorage("seenOnboarding") private var seenOnboarding = false
+    @AppStorage("consentAnswered") private var consentAnswered = false
     /// Carried out of the last round so the recap can render it.
     @State private var summary: RoundSummary?
 
@@ -62,7 +69,24 @@ struct RootView: View {
     private func content(_ game: Game) -> some View {
         switch route {
         case .splash:
-            SplashView { route = .home }
+            SplashView {
+                route = seenOnboarding ? (consentAnswered ? .home : .consent) : .onboarding
+            }
+
+        case .onboarding:
+            OnboardingView {
+                seenOnboarding = true
+                route = consentAnswered ? .home : .consent
+            }
+
+        case .consent:
+            ConsentView { personalised in
+                // Stored for the ad SDK to read in phase 6. Refusing means
+                // non-personalised ads, not fewer of them.
+                UserDefaults.standard.set(personalised, forKey: "adsPersonalised")
+                consentAnswered = true
+                route = .home
+            }
 
         case .home:
             HomeView { mode in route = .game(mode) }
