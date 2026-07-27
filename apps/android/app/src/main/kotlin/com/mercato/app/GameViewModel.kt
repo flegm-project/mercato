@@ -1,0 +1,191 @@
+package com.mercato.app
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import com.mercato.design.DesignTokens
+import uniffi.mercato_ffi.GameMode
+import uniffi.mercato_ffi.HintView
+import uniffi.mercato_ffi.QuestionView
+import uniffi.mercato_ffi.RejectionReason
+import uniffi.mercato_ffi.ScoreView
+import uniffi.mercato_ffi.languageForLocale
+
+/** Everything one question needs on screen, plus its resolution. */
+data class QuestionUi(
+    val question: QuestionView,
+    /** Index of the option the player tapped (Easy), if any. */
+    val picked: Int? = null,
+    /** Index of the correct option, revealed with the verdict (Easy). */
+    val correctOption: Int? = null,
+    val verdict: Boolean? = null,
+    val revealedName: String? = null,
+    val attemptsLeft: Int,
+    val hints: List<HintView> = emptyList(),
+    /** Transient rejection feedback (wrong guess / ambiguous surname). */
+    val rejection: RejectionReason? = null,
+)
+
+data class RecapUi(
+    val won: Boolean,
+    val points: Long,
+    val correct: Int,
+    val total: Int,
+    val bestStreak: Int,
+    val stars: Int,
+    val missed: List<uniffi.mercato_ffi.MissedView>,
+)
+
+/**
+ * Drives one round through the FFI facade. The Rust session owns every rule;
+ * this class only sequences questions, the 1.9s auto-advance, and the recap.
+ */
+class GameViewModel(private val graph: AppGraph) : ViewModel() {
+
+    private val game get() = graph.game
+
+    val mode = MutableStateFlow(GameMode.EASY)
+    private val _question = MutableStateFlow<QuestionUi?>(null)
+    val question: StateFlow<QuestionUi?> = _question.asStateFlow()
+    private val _score = MutableStateFlow<ScoreView?>(null)
+    val score: StateFlow<ScoreView?> = _score.asStateFlow()
+    private val _pips = MutableStateFlow<List<Boolean?>>(emptyList())
+    val pips: StateFlow<List<Boolean?>> = _pips.asStateFlow()
+    private val _recap = MutableStateFlow<RecapUi?>(null)
+    val recap: StateFlow<RecapUi?> = _recap.asStateFlow()
+
+    private var advanceJob: Job? = null
+    private var correctCount = 0
+
+    fun startRound(gameMode: GameMode, localeTag: String) {
+        mode.value = gameMode
+        _recap.value = null
+        correctCount = 0
+        game.startRound(
+            languageForLocale(localeTag),
+            gameMode,
+            (System.currentTimeMillis() and 0xFFFF_FFFFL).toUInt(),
+        )
+        _pips.value = List(game.questionsPerRound().toInt()) { null }
+        _score.value = game.score()
+        nextQuestion()
+    }
+
+    private fun nextQuestion() {
+        advanceJob?.cancel()
+        val q = game.nextQuestion()
+        if (q == null) {
+            finishRound()
+        } else {
+            _question.value = QuestionUi(question = q, attemptsLeft = q.attemptsLeft.toInt())
+        }
+    }
+
+    /** Easy mode: the tap resolves the question in one go. */
+    fun submitChoice(index: Int) {
+        val ui = _question.value ?: return
+        if (ui.verdict != null) return
+        val answer = runCatching { game.submitChoice(index.toUInt()) }.getOrNull() ?: return
+        val correctIdx = ui.question.options.indexOfFirst { it == answer.revealedName }
+        applyVerdict(
+            ui.copy(
+                picked = index,
+                correctOption = if (correctIdx >= 0) correctIdx else null,
+                verdict = answer.correct,
+                revealedName = answer.revealedName,
+            ),
+            answer.correct,
+        )
+    }
+
+    /** Hardcore mode: typed guesses; the question ends when `finished`. */
+    fun submitGuess(text: String) {
+        val ui = _question.value ?: return
+        if (ui.verdict != null || text.isBlank()) return
+        val answer = runCatching { game.submitGuess(text) }.getOrNull() ?: return
+        if (answer.finished) {
+            applyVerdict(
+                ui.copy(
+                    verdict = answer.correct,
+                    revealedName = answer.revealedName,
+                    attemptsLeft = answer.attemptsLeft.toInt(),
+                    rejection = null,
+                ),
+                answer.correct,
+            )
+        } else {
+            // A wrong guess auto-unlocks nothing; hints stay player-driven
+            // (the HINT button), per the free hint ladder.
+            _question.value = ui.copy(
+                attemptsLeft = answer.attemptsLeft.toInt(),
+                rejection = answer.rejection,
+            )
+        }
+    }
+
+    fun requestHint() {
+        val ui = _question.value ?: return
+        if (ui.verdict != null || ui.hints.size >= 3) return
+        val hint = game.nextHint() ?: return
+        _question.value = ui.copy(hints = ui.hints + hint)
+    }
+
+    private fun applyVerdict(resolved: QuestionUi, correct: Boolean) {
+        if (correct) correctCount++
+        val index = resolved.question.index.toInt() - 1
+        _pips.value = _pips.value.toMutableList().also { if (index in it.indices) it[index] = correct }
+        _score.value = game.score()
+        _question.value = resolved
+        advanceJob = viewModelScope.launch {
+            delay(DesignTokens.Motion.autoAdvance.toLong())
+            advance()
+        }
+    }
+
+    /** Called by the auto-advance timer, or earlier by a tap on the card. */
+    fun advance() {
+        advanceJob?.cancel()
+        if (_question.value?.verdict == null) return
+        nextQuestion()
+    }
+
+    private fun finishRound() {
+        val s = game.score()
+        val total = game.questionsPerRound().toInt()
+        val ratio = if (total == 0) 0f else correctCount.toFloat() / total
+        _recap.value = RecapUi(
+            won = correctCount > 0,
+            points = s.points,
+            correct = correctCount,
+            total = total,
+            bestStreak = s.bestStreak.toInt(),
+            stars = when {
+                ratio >= 0.9f -> 3
+                ratio >= 0.6f -> 2
+                ratio > 0f -> 1
+                else -> 0
+            },
+            missed = game.missed(),
+        )
+        _question.value = null
+        viewModelScope.launch {
+            graph.prefs.recordRound(
+                score = s.points.toInt(),
+                bestStreak = s.bestStreak.toInt(),
+                correct = correctCount,
+                answered = total,
+            )
+        }
+    }
+
+    fun quitRound() {
+        advanceJob?.cancel()
+        _question.value = null
+        _recap.value = null
+    }
+}

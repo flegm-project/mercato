@@ -1,0 +1,328 @@
+package com.mercato.app.ui
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
+import androidx.compose.ui.unit.sp
+import com.mercato.design.DesignTokens
+
+/** Resolve a generated [DesignTokens.TypeStyle] into a Compose [TextStyle]. */
+@Composable
+fun typeStyle(ts: DesignTokens.TypeStyle, color: Color): TextStyle {
+    val fonts = LocalFonts.current
+    val family = when (ts.font) {
+        "display" -> fonts.display
+        "mono" -> fonts.mono
+        else -> fonts.body
+    }
+    val tracking = ts.tracking?.removeSuffix("em")?.toFloatOrNull()
+    return TextStyle(
+        color = color,
+        fontFamily = family,
+        fontWeight = FontWeight(ts.weight),
+        fontSize = ts.size,
+        letterSpacing = tracking?.em ?: androidx.compose.ui.unit.TextUnit.Unspecified,
+    )
+}
+
+/** The blue app background, approximating the CSS radial gradient. */
+fun Modifier.appBackground(): Modifier = background(
+    Brush.verticalGradient(
+        listOf(
+            DesignTokens.Color.blueTop,
+            DesignTokens.Color.blue,
+            DesignTokens.Color.blueDeep,
+        )
+    )
+)
+
+/** Diagonal ink hatch used behind every ad slot, per the ads spec. */
+fun Modifier.adHatch(): Modifier = drawBehind {
+    drawRect(Color(0xFF0F1A66))
+    val step = 24.dp.toPx()
+    val stripe = 12.dp.toPx()
+    var x = -size.height
+    while (x < size.width) {
+        drawLine(
+            color = Color(0xFF12207A),
+            start = Offset(x, size.height),
+            end = Offset(x + size.height, 0f),
+            strokeWidth = stripe,
+        )
+        x += step
+    }
+}
+
+enum class ButtonStyle { Primary, Secondary, Destructive, Ghost }
+
+/**
+ * Design-system button: 5px ink border, solid ink shadow, and the whole
+ * face sinking by the shadow height while pressed.
+ */
+@Composable
+fun InkButton(
+    text: String,
+    style: ButtonStyle,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    onClick: () -> Unit,
+) {
+    val interaction = remember { MutableInteractionSource() }
+    val pressed by interaction.collectIsPressedAsState()
+    val drop = 8.dp
+    val shape = RoundedCornerShape(DesignTokens.Radius.large)
+    val (fill, textColor) = when (style) {
+        ButtonStyle.Primary -> DesignTokens.Color.yellow to DesignTokens.Color.ink
+        ButtonStyle.Secondary -> DesignTokens.Color.ivory to DesignTokens.Color.ink
+        ButtonStyle.Destructive -> DesignTokens.Color.coral to Color.White
+        ButtonStyle.Ghost -> Color.Transparent to Color.White
+    }
+    val borderColor =
+        if (style == ButtonStyle.Ghost) Color.White.copy(alpha = 0.24f) else DesignTokens.Color.ink
+    val borderWidth = if (style == ButtonStyle.Ghost) 3.dp else DesignTokens.Border.heavy
+
+    Box(modifier.padding(bottom = drop)) {
+        if (style != ButtonStyle.Ghost) {
+            Box(
+                Modifier
+                    .matchParentSize()
+                    .offset(y = drop)
+                    .background(DesignTokens.Color.ink, shape)
+            )
+        }
+        Box(
+            Modifier
+                .offset(y = if (pressed && enabled) 5.dp else 0.dp)
+                .fillMaxWidth()
+                .height(56.dp)
+                .background(fill, shape)
+                .border(borderWidth, borderColor, shape)
+                .clickable(
+                    interactionSource = interaction,
+                    indication = null,
+                    enabled = enabled,
+                    onClick = onClick,
+                ),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(text, style = typeStyle(DesignTokens.Type.answer, textColor))
+        }
+    }
+}
+
+enum class AnswerState { Idle, Correct, Wrong, Dimmed }
+
+/** One of the four Easy options. Ink blue at rest, verdict-coloured after. */
+@Composable
+fun AnswerButton(
+    text: String,
+    state: AnswerState,
+    enabled: Boolean,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    val shape = RoundedCornerShape(DesignTokens.Radius.medium)
+    val (fill, textColor) = when (state) {
+        AnswerState.Idle -> DesignTokens.Color.blueNight to Color.White
+        AnswerState.Correct -> DesignTokens.Color.green to DesignTokens.Color.ink
+        AnswerState.Wrong -> DesignTokens.Color.coral to Color.White
+        AnswerState.Dimmed -> DesignTokens.Color.blueNight.copy(alpha = 0.4f) to
+            Color.White.copy(alpha = 0.4f)
+    }
+    Box(
+        modifier
+            .fillMaxWidth()
+            .height(52.dp)
+            .background(fill, shape)
+            .border(DesignTokens.Border.hairline, DesignTokens.Color.ink, shape)
+            .clip(shape)
+            .clickable(enabled = enabled, onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text,
+            style = typeStyle(DesignTokens.Type.answer, textColor),
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(horizontal = DesignTokens.Space.sm),
+        )
+    }
+}
+
+/** One pip per question: green/coral for played, yellow live, dim pending. */
+@Composable
+fun ProgressPips(results: List<Boolean?>, liveIndex: Int, modifier: Modifier = Modifier) {
+    Row(modifier, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+        results.forEachIndexed { i, r ->
+            val fill = when {
+                r == true -> DesignTokens.Color.green
+                r == false -> DesignTokens.Color.coral
+                i == liveIndex -> DesignTokens.Color.yellow
+                else -> DesignTokens.Color.ink.copy(alpha = 0.45f)
+            }
+            Box(
+                Modifier
+                    .weight(1f)
+                    .height(9.dp)
+                    .background(fill, RoundedCornerShape(4.dp))
+                    .border(1.5.dp, DesignTokens.Color.ink, RoundedCornerShape(4.dp))
+            )
+        }
+    }
+}
+
+/** Three dots, coral while available, dimmed once spent. Hardcore only. */
+@Composable
+fun LivesRow(livesLeft: Int, modifier: Modifier = Modifier, total: Int = 3) {
+    Row(modifier, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+        repeat(total) { i ->
+            Box(
+                Modifier
+                    .size(13.dp)
+                    .background(
+                        if (i < livesLeft) DesignTokens.Color.coral
+                        else DesignTokens.Color.ink.copy(alpha = 0.45f),
+                        CircleShape,
+                    )
+            )
+        }
+    }
+}
+
+/** Score readout, tinted by the last verdict. */
+@Composable
+fun ScorePill(points: Long, lastCorrect: Boolean?, modifier: Modifier = Modifier) {
+    val color = when (lastCorrect) {
+        true -> DesignTokens.Color.green
+        false -> DesignTokens.Color.coral
+        null -> DesignTokens.Color.ivory
+    }
+    Text(
+        "$points",
+        style = typeStyle(DesignTokens.Type.year, color).copy(fontSize = 22.sp),
+        modifier = modifier,
+    )
+}
+
+/** 52x30 track, ink border, green when on. */
+@Composable
+fun MercatoToggle(checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+    val track = if (checked) DesignTokens.Color.green else DesignTokens.Color.blueNight
+    Box(
+        Modifier
+            .size(width = 52.dp, height = 30.dp)
+            .background(track, RoundedCornerShape(15.dp))
+            .border(DesignTokens.Border.hairline, DesignTokens.Color.ink, RoundedCornerShape(15.dp))
+            .clickable { onCheckedChange(!checked) },
+        contentAlignment = if (checked) Alignment.CenterEnd else Alignment.CenterStart,
+    ) {
+        Box(
+            Modifier
+                .padding(3.dp)
+                .size(22.dp)
+                .background(DesignTokens.Color.ivory, CircleShape)
+        )
+    }
+}
+
+/** Ink tab bar; the active tab sits on a yellow rounded block. */
+@Composable
+fun MercatoTabBar(
+    tabs: List<String>,
+    selected: Int,
+    modifier: Modifier = Modifier,
+    onSelect: (Int) -> Unit,
+) {
+    Row(
+        modifier
+            .fillMaxWidth()
+            .height(58.dp)
+            .background(DesignTokens.Color.ink, RoundedCornerShape(DesignTokens.Radius.large))
+            .padding(6.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        tabs.forEachIndexed { i, label ->
+            TabCell(label, i == selected) { onSelect(i) }
+        }
+    }
+}
+
+@Composable
+private fun RowScope.TabCell(label: String, active: Boolean, onClick: () -> Unit) {
+    val shape = RoundedCornerShape(DesignTokens.Radius.medium)
+    Box(
+        Modifier
+            .weight(1f)
+            .fillMaxSize()
+            .background(if (active) DesignTokens.Color.yellow else Color.Transparent, shape)
+            .clip(shape)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            label,
+            style = typeStyle(
+                DesignTokens.Type.label,
+                if (active) DesignTokens.Color.ink else DesignTokens.Color.ivory,
+            ),
+        )
+    }
+}
+
+/** Content column shared by every screen: 440dp max, 16dp gutters. */
+@Composable
+fun ScreenColumn(
+    modifier: Modifier = Modifier,
+    content: @Composable androidx.compose.foundation.layout.ColumnScope.() -> Unit,
+) {
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
+        androidx.compose.foundation.layout.Column(
+            modifier
+                .widthIn(max = DesignTokens.Layout.columnMax)
+                .fillMaxSize()
+                .padding(horizontal = DesignTokens.Space.gutter),
+            content = content,
+        )
+    }
+}
+
+/** Small all-caps label (ADVERTISEMENT, section titles...). */
+@Composable
+fun CapsLabel(text: String, modifier: Modifier = Modifier, color: Color = Color.White.copy(alpha = 0.6f)) {
+    Text(text.uppercase(), style = typeStyle(DesignTokens.Type.label, color), modifier = modifier)
+}
+
+/** Vertical spacer shorthand. */
+@Composable
+fun Gap(height: Dp) = androidx.compose.foundation.layout.Spacer(Modifier.height(height))
