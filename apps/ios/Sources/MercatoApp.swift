@@ -16,6 +16,7 @@ enum Route: Equatable {
     case onboarding
     case consent
     case home
+    case profile
     case game(GameMode)
     case recap
     case settings
@@ -38,6 +39,8 @@ struct RootView: View {
     @StateObject private var store = Store()
     /// Starts the ad SDK and owns the interstitial shown at game -> recap.
     @StateObject private var ads = AdsManager()
+    /// Lifetime stats shown on Profile; updated at the end of every round.
+    @StateObject private var stats = AppStats()
 
     var body: some View {
         Group {
@@ -112,13 +115,21 @@ struct RootView: View {
         case .home:
             HomeView(
                 onPlay: { mode in route = .game(mode) },
-                onSettings: { route = .settings },
+                onProfile: { route = .profile },
                 game: game
+            )
+
+        case .profile:
+            ProfileView(
+                stats: stats,
+                game: game,
+                onPlayTab: { route = .home },
+                onSettings: { route = .settings }
             )
 
         case .settings:
             SettingsView(
-                onBack: { route = .home },
+                onBack: { route = .profile },
                 onConsent: { route = .consent },
                 onReplayIntro: { route = .onboarding },
                 store: store
@@ -127,6 +138,14 @@ struct RootView: View {
         case .game(let mode):
             GameView(game: game, mode: mode) { finished in
                 summary = finished
+                // Fold the round into the lifetime stats before anything else,
+                // so a shown interstitial cannot swallow the update.
+                stats.recordRound(
+                    score: Int(finished.score.points),
+                    bestStreak: Int(finished.score.bestStreak),
+                    correct: finished.correct,
+                    answered: finished.total
+                )
                 // One interstitial may play between the last question and the
                 // recap, if the core gate allows it (docs/specs/ads.md).
                 ads.onRoundFinished { route = .recap }

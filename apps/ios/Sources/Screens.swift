@@ -62,7 +62,9 @@ struct SplashView: View {
 /// currency in this product (docs/MONETIZATION.md), so it is left out.
 struct HomeView: View {
     let onPlay: (GameMode) -> Void
-    let onSettings: () -> Void
+    /// Play/Profile is the top-level navigation, matching Android; Settings is
+    /// reached from Profile, not from here.
+    let onProfile: () -> Void
     /// The core gate decides whether the banner shows.
     let game: Game
 
@@ -70,23 +72,6 @@ struct HomeView: View {
         ZStack {
             DS.appBackground
             VStack(alignment: .leading, spacing: 0) {
-                // The design puts a balls counter in this slot. There is no
-                // soft currency here, so it carries the settings entry.
-                HStack {
-                    Spacer()
-                    Button(action: onSettings) {
-                        Image(systemName: "gearshape.fill")
-                            .font(.system(size: 17, weight: .bold))
-                            .foregroundStyle(.white)
-                            .frame(width: 38, height: 38)
-                            .background(DesignTokens.Color.ink.opacity(0.45))
-                            .inkOutlined(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(L("settings"))
-                }
-                .frame(height: 38)
-
                 // The wordmark sits near the top and the modes are anchored to
                 // the bottom, as in the source design, rather than the whole
                 // block floating in the middle.
@@ -106,6 +91,11 @@ struct HomeView: View {
                 BannerSlot(game: game)
                     .frame(maxWidth: .infinity)
                     .padding(.top, 14)
+                    .padding(.bottom, 8)
+
+                MercatoTabBar(tabs: [L("tPlay"), L("tProfile")], selected: 0) { index in
+                    if index == 1 { onProfile() }
+                }
             }
             .padding(.horizontal, DesignTokens.Space.gutter)
             .padding(.vertical, DesignTokens.Space.gutter)
