@@ -517,6 +517,7 @@ struct SettingsView: View {
     let onConsent: () -> Void
     let onReplayIntro: () -> Void
     let onOffline: () -> Void
+    let onLab: () -> Void
     @ObservedObject var store: Store
 
     @AppStorage("soundOn") private var soundOn = true
@@ -565,6 +566,9 @@ struct SettingsView: View {
                     )
                     linkRow(L("rowIntro"), value: "\u{203A}", action: onReplayIntro)
                     linkRow(L("rowOffline"), value: "\u{203A}", action: onOffline)
+                    #if DEBUG
+                    linkRow(L("rowLab"), value: "\u{203A}", action: onLab)
+                    #endif
                 }
                 .padding(.top, 16)
 

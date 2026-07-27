@@ -21,6 +21,7 @@ enum Route: Equatable {
     case recap
     case settings
     case offline
+    case lab
 }
 
 /// Loads the core once and routes between screens. Loading parses the bundled
@@ -134,11 +135,21 @@ struct RootView: View {
                 onConsent: { route = .consent },
                 onReplayIntro: { route = .onboarding },
                 onOffline: { route = .offline },
+                onLab: { route = .lab },
                 store: store
             )
 
         case .offline:
             OfflineView(onRetry: { route = .settings })
+
+        case .lab:
+            // Dev-only matching lab; compiled out of release, where the row
+            // that reaches it does not exist either.
+            #if DEBUG
+            LabView(game: game, onBack: { route = .settings })
+            #else
+            Color.clear.onAppear { route = .settings }
+            #endif
 
         case .game(let mode):
             GameView(game: game, mode: mode) { finished in
