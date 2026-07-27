@@ -1,0 +1,14 @@
+[package]
+name = "mercato-core"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+description = "Mercato game logic: matching engine, decoys, RNG, rounds, scoring. Pure, deterministic, no I/O."
+
+[dependencies]
+serde = { workspace = true }
+unicode-normalization = "0.1"
+
+[dev-dependencies]
+serde_json = { workspace = true }

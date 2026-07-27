@@ -156,7 +156,6 @@ function distractorsFor(pid,rng){
 }
 function shuffle(a,rng){const x=a.slice();for(let i=x.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));const t=x[i];x[i]=x[j];x[j]=t;}return x;}
 
-/* ---------- selection des dossiers ---------- */
-/* La difficulte tient au mode de reponse, pas seulement a la rarete du transfert.
-   Facile : QCM sur les dossiers grand public. Hardcore : saisie libre sur toute la base. */
-function poolFor(m){
+// NOTE: pool selection (poolFor) and the game-loop glue are NOT included here;
+// they are re-implemented in mercato-core/round.rs. This file is the matching +
+// decoy + RNG oracle only.
