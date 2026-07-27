@@ -16,7 +16,7 @@ pub mod scoring;
 
 pub use ads::{AdsConfig, AdsGate, Consent, Placement};
 pub use matching::{MatchResult, Matcher, Route};
-pub use model::{Club, Kind, Lang, Player, Position, Transfer};
+pub use model::{Club, Kind, Lang, Nationality, Player, Position, Transfer};
 pub use rng::Mulberry32;
 pub use round::Mode;
 
@@ -26,6 +26,9 @@ pub struct Corpus {
     pub players: Vec<Player>,
     pub clubs: Vec<Club>,
     pub transfers: Vec<Transfer>,
+    /// Display-name table keyed by the exact `players.csv` nationality
+    /// string. May be empty in tests; lookups fall back to the raw key.
+    pub nationalities: Vec<Nationality>,
 }
 
 impl Corpus {
@@ -34,7 +37,18 @@ impl Corpus {
             players,
             clubs,
             transfers,
+            nationalities: Vec::new(),
         }
+    }
+
+    /// User-facing name for a nationality key, falling back to the key
+    /// itself when no translation row exists.
+    pub fn nationality_label<'a>(&'a self, key: &'a str, lang: Lang) -> &'a str {
+        self.nationalities
+            .iter()
+            .find(|n| n.key == key)
+            .map(|n| n.name(lang))
+            .unwrap_or(key)
     }
 
     /// Build a [`Matcher`] over this corpus's players.

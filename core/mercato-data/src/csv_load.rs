@@ -3,18 +3,21 @@
 use std::collections::HashMap;
 use std::path::Path;
 
-use mercato_core::{Club, Corpus, Kind, Player, Position, Transfer};
+use mercato_core::{Club, Corpus, Kind, Nationality, Player, Position, Transfer};
 use serde::Deserialize;
 
 use crate::{validate, DataError};
 
-// Row shapes mirror the CSV headers exactly (English-only names today; the
-// per-language fields of the core model are filled from `name`, see lib.rs).
+// Row shapes mirror the CSV headers exactly. Clubs carry per-language names
+// (Phase 4); player names are still identical across languages, so the
+// per-language fields of the core model are filled from `name`.
 
 #[derive(Deserialize)]
 struct ClubRow {
     id: String,
-    name: String,
+    name_en: String,
+    name_fr: String,
+    name_es: String,
     notoriety: i64,
 }
 
@@ -60,7 +63,7 @@ fn read_rows<T: serde::de::DeserializeOwned>(dir: &Path, file: &str) -> Result<V
         })
 }
 
-/// Parse the four CSVs under `dir`, join aliases onto players, and validate
+/// Parse the five CSVs under `dir`, join aliases onto players, and validate
 /// referential integrity. CSV order is preserved (the engine relies on stable
 /// ordering for deterministic rounds).
 pub fn load_corpus(dir: &Path) -> Result<Corpus, DataError> {
@@ -68,6 +71,7 @@ pub fn load_corpus(dir: &Path) -> Result<Corpus, DataError> {
     let players: Vec<PlayerRow> = read_rows(dir, "players.csv")?;
     let aliases: Vec<AliasRow> = read_rows(dir, "player_aliases.csv")?;
     let transfers: Vec<TransferRow> = read_rows(dir, "transfers.csv")?;
+    let nationalities: Vec<Nationality> = read_rows(dir, "nationalities.csv")?;
 
     // Join aliases per player, preserving file order.
     let mut alias_map: HashMap<&str, Vec<String>> = HashMap::new();
@@ -91,7 +95,7 @@ pub fn load_corpus(dir: &Path) -> Result<Corpus, DataError> {
         return Err(DataError::Integrity(orphan_aliases));
     }
 
-    let corpus = Corpus::new(
+    let mut corpus = Corpus::new(
         players
             .into_iter()
             .map(|r| {
@@ -113,9 +117,9 @@ pub fn load_corpus(dir: &Path) -> Result<Corpus, DataError> {
             .into_iter()
             .map(|r| Club {
                 id: r.id,
-                name_en: r.name.clone(),
-                name_fr: r.name.clone(),
-                name_es: r.name,
+                name_en: r.name_en,
+                name_fr: r.name_fr,
+                name_es: r.name_es,
                 notoriety: r.notoriety,
             })
             .collect(),
@@ -132,6 +136,7 @@ pub fn load_corpus(dir: &Path) -> Result<Corpus, DataError> {
             })
             .collect(),
     );
+    corpus.nationalities = nationalities;
 
     let errors = validate(&corpus);
     if errors.is_empty() {

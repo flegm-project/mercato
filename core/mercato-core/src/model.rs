@@ -21,6 +21,49 @@ pub enum Position {
     Fw,
 }
 
+impl Position {
+    /// Display label per language (used by the Hardcore hint ladder). Only
+    /// four values, so the table lives here rather than in the dataset.
+    pub fn label(self, lang: Lang) -> &'static str {
+        match (self, lang) {
+            (Position::Gk, Lang::En) => "Goalkeeper",
+            (Position::Gk, Lang::Fr) => "Gardien",
+            (Position::Gk, Lang::Es) => "Portero",
+            (Position::Def, Lang::En) => "Defender",
+            (Position::Def, Lang::Fr) => "Défenseur",
+            (Position::Def, Lang::Es) => "Defensa",
+            (Position::Mid, Lang::En) => "Midfielder",
+            (Position::Mid, Lang::Fr) => "Milieu",
+            (Position::Mid, Lang::Es) => "Centrocampista",
+            (Position::Fw, Lang::En) => "Forward",
+            (Position::Fw, Lang::Fr) => "Attaquant",
+            (Position::Fw, Lang::Es) => "Delantero",
+        }
+    }
+}
+
+/// Display names for a nationality. `key` is the exact string used in
+/// `players.csv` (e.g. "Kingdom of Denmark"); the per-language names are the
+/// user-facing forms ("Denmark" / "Danemark" / "Dinamarca").
+#[derive(Debug, Clone, Deserialize)]
+pub struct Nationality {
+    #[serde(rename = "nationality")]
+    pub key: String,
+    pub name_en: String,
+    pub name_fr: String,
+    pub name_es: String,
+}
+
+impl Nationality {
+    pub fn name(&self, lang: Lang) -> &str {
+        match lang {
+            Lang::En => &self.name_en,
+            Lang::Fr => &self.name_fr,
+            Lang::Es => &self.name_es,
+        }
+    }
+}
+
 /// Move type. Matches the `kind` CSV column.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
 #[serde(rename_all = "lowercase")]

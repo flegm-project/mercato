@@ -24,7 +24,8 @@ entities, keeping it clear of image/likeness IP.
 ## Schema (target bundled DB, generated from the CSVs)
 
 ```sql
-club        (id, name, notoriety)
+club        (id, name_en, name_fr, name_es, notoriety)
+nationality (key, name_en, name_fr, name_es)
 player      (id, name, position, nationality, birth_year, notoriety)
 player_alias(player_id, alias)
 transfer    (id, player_id, from_club, to_club, year, kind, tier)

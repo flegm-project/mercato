@@ -33,6 +33,27 @@ pub fn validate(corpus: &Corpus) -> Vec<String> {
         }
     }
 
+    let mut nationality_keys: HashSet<&str> = HashSet::new();
+    for n in &corpus.nationalities {
+        if !nationality_keys.insert(&n.key) {
+            errors.push(format!("nationalities: duplicate key '{}'", n.key));
+        }
+        if n.name_en.trim().is_empty() || n.name_fr.trim().is_empty() || n.name_es.trim().is_empty()
+        {
+            errors.push(format!("nationalities: '{}' has an empty name", n.key));
+        }
+    }
+    for p in &corpus.players {
+        if let Some(nat) = &p.nationality {
+            if !nationality_keys.contains(nat.as_str()) {
+                errors.push(format!(
+                    "players: '{}' nationality '{}' has no row in nationalities.csv",
+                    p.id, nat
+                ));
+            }
+        }
+    }
+
     let mut transfer_ids: HashSet<i64> = HashSet::new();
     for t in &corpus.transfers {
         let ctx = format!("transfers: id {}", t.id);

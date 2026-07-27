@@ -1,12 +1,14 @@
 //! Bundled-DB generation: [`Corpus`] -> read-only SQLite artifact.
 //!
-//! Schema follows docs/DATA.md (single English name per entity until Phase 4
-//! adds per-language columns). The DB is a build artifact, never committed.
+//! Schema follows docs/DATA.md: clubs carry per-language names and the
+//! nationality display-name table is bundled (Phase 4); player names are a
+//! single column until FR/ES player data diverges. The DB is a build
+//! artifact, never committed.
 
 use std::collections::HashMap;
 use std::path::Path;
 
-use mercato_core::{Club, Corpus, Kind, Player, Position, Transfer};
+use mercato_core::{Club, Corpus, Kind, Nationality, Player, Position, Transfer};
 use rusqlite::{params, Connection};
 
 use crate::DataError;
@@ -14,8 +16,17 @@ use crate::DataError;
 const SCHEMA: &str = "
 CREATE TABLE club (
     id        TEXT PRIMARY KEY,
-    name      TEXT NOT NULL,
+    name_en   TEXT NOT NULL,
+    name_fr   TEXT NOT NULL,
+    name_es   TEXT NOT NULL,
     notoriety INTEGER NOT NULL
+) STRICT;
+
+CREATE TABLE nationality (
+    key     TEXT PRIMARY KEY,
+    name_en TEXT NOT NULL,
+    name_fr TEXT NOT NULL,
+    name_es TEXT NOT NULL
 ) STRICT;
 
 CREATE TABLE player (
@@ -97,9 +108,20 @@ pub fn generate_db(corpus: &Corpus, out: &Path) -> Result<(), DataError> {
 
     let tx = conn.transaction()?;
     {
-        let mut ins = tx.prepare("INSERT INTO club (id, name, notoriety) VALUES (?1, ?2, ?3)")?;
+        let mut ins = tx.prepare(
+            "INSERT INTO club (id, name_en, name_fr, name_es, notoriety)
+             VALUES (?1, ?2, ?3, ?4, ?5)",
+        )?;
         for c in &corpus.clubs {
-            ins.execute(params![c.id, c.name_en, c.notoriety])?;
+            ins.execute(params![c.id, c.name_en, c.name_fr, c.name_es, c.notoriety])?;
+        }
+
+        let mut ins = tx.prepare(
+            "INSERT INTO nationality (key, name_en, name_fr, name_es)
+             VALUES (?1, ?2, ?3, ?4)",
+        )?;
+        for n in &corpus.nationalities {
+            ins.execute(params![n.key, n.name_en, n.name_fr, n.name_es])?;
         }
 
         let mut ins = tx.prepare(
@@ -148,25 +170,36 @@ pub fn generate_db(corpus: &Corpus, out: &Path) -> Result<(), DataError> {
 }
 
 /// Read the bundled SQLite DB at `path` back into a [`Corpus`]. The inverse
-/// of [`generate_db`]. Per-language name fields are all filled with the
-/// single `name` column stored in the DB (see module docs).
+/// of [`generate_db`]. Player per-language name fields are all filled with
+/// the single `name` column stored in the DB (see module docs).
 pub fn load_from_db(path: &Path) -> Result<Corpus, DataError> {
     let conn = Connection::open(path)?;
 
     let mut clubs = Vec::new();
     {
-        let mut stmt = conn.prepare("SELECT id, name, notoriety FROM club")?;
+        let mut stmt = conn.prepare("SELECT id, name_en, name_fr, name_es, notoriety FROM club")?;
         let mut rows = stmt.query([])?;
         while let Some(row) = rows.next()? {
-            let id: String = row.get(0)?;
-            let name: String = row.get(1)?;
-            let notoriety: i64 = row.get(2)?;
             clubs.push(Club {
-                id,
-                name_en: name.clone(),
-                name_fr: name.clone(),
-                name_es: name,
-                notoriety,
+                id: row.get(0)?,
+                name_en: row.get(1)?,
+                name_fr: row.get(2)?,
+                name_es: row.get(3)?,
+                notoriety: row.get(4)?,
+            });
+        }
+    }
+
+    let mut nationalities = Vec::new();
+    {
+        let mut stmt = conn.prepare("SELECT key, name_en, name_fr, name_es FROM nationality")?;
+        let mut rows = stmt.query([])?;
+        while let Some(row) = rows.next()? {
+            nationalities.push(Nationality {
+                key: row.get(0)?,
+                name_en: row.get(1)?,
+                name_fr: row.get(2)?,
+                name_es: row.get(3)?,
             });
         }
     }
@@ -237,7 +270,9 @@ pub fn load_from_db(path: &Path) -> Result<Corpus, DataError> {
         }
     }
 
-    Ok(Corpus::new(players, clubs, transfers))
+    let mut corpus = Corpus::new(players, clubs, transfers);
+    corpus.nationalities = nationalities;
+    Ok(corpus)
 }
 
 #[cfg(test)]
@@ -266,8 +301,8 @@ mod tests {
             Club {
                 id: "fcb".into(),
                 name_en: "FC Barcelona".into(),
-                name_fr: "FC Barcelona".into(),
-                name_es: "FC Barcelona".into(),
+                name_fr: "FC Barcelone".into(),
+                name_es: "Fútbol Club Barcelona".into(),
                 notoriety: 95,
             },
             Club {
@@ -336,7 +371,14 @@ mod tests {
             },
         ];
 
-        Corpus::new(players, clubs, transfers)
+        let mut corpus = Corpus::new(players, clubs, transfers);
+        corpus.nationalities = vec![Nationality {
+            key: "FR".into(),
+            name_en: "France".into(),
+            name_fr: "France".into(),
+            name_es: "Francia".into(),
+        }];
+        corpus
     }
 
     #[test]
@@ -352,6 +394,19 @@ mod tests {
         assert_eq!(loaded.clubs.len(), corpus.clubs.len());
         assert_eq!(loaded.players.len(), corpus.players.len());
         assert_eq!(loaded.transfers.len(), corpus.transfers.len());
+
+        let fcb = loaded
+            .clubs
+            .iter()
+            .find(|c| c.id == "fcb")
+            .expect("fcb should be present");
+        assert_eq!(fcb.name_en, "FC Barcelona");
+        assert_eq!(fcb.name_fr, "FC Barcelone");
+        assert_eq!(fcb.name_es, "Fútbol Club Barcelona");
+
+        use mercato_core::Lang;
+        assert_eq!(loaded.nationality_label("FR", Lang::Es), "Francia");
+        assert_eq!(loaded.nationality_label("XX", Lang::Es), "XX");
 
         let mbappe = loaded
             .players

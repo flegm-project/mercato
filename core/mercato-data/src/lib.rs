@@ -1,8 +1,9 @@
 //! Data loading for Mercato: CSV (source of truth) -> `mercato_core` types.
 //!
-//! Phase 2. The CSVs in `data/` are English-only today; FR/ES club and
-//! nationality names are extracted in Phase 4 (see docs/DATA.md), so the
-//! per-language name fields are all filled with the English name for now.
+//! Phases 2 and 4. Clubs carry per-language names (EN/FR/ES, extracted from
+//! Wikidata labels, see scripts/fetch-club-names.mjs) and nationalities have
+//! a display-name table (data/nationalities.csv). Player names are still a
+//! single value copied into the per-language fields (see docs/DATA.md).
 
 mod csv_load;
 mod sqlite;

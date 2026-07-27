@@ -23,6 +23,40 @@ fn real_dataset_has_no_integrity_violations() {
 }
 
 #[test]
+fn real_dataset_is_trilingual() {
+    // Exit criterion of Phase 4: EN/FR/ES club, position and nationality
+    // names render correctly, with English fallback semantics intact.
+    use mercato_core::{Lang, Position};
+    use mercato_data::Corpus;
+
+    let corpus: Corpus = mercato_data::load_corpus(&data_dir()).expect("dataset must load");
+
+    let zaragoza = corpus
+        .clubs
+        .iter()
+        .find(|c| c.id == "Q10308")
+        .expect("Real Zaragoza present");
+    assert_eq!(zaragoza.name(Lang::En), "Real Zaragoza");
+    assert_eq!(zaragoza.name(Lang::Fr), "Real Saragosse");
+    assert_eq!(zaragoza.name(Lang::Es), "Real Zaragoza");
+
+    assert_eq!(corpus.nationalities.len(), 53);
+    assert_eq!(
+        corpus.nationality_label("Kingdom of Denmark", Lang::Fr),
+        "Danemark"
+    );
+    assert_eq!(
+        corpus.nationality_label("Kingdom of the Netherlands", Lang::En),
+        "Netherlands"
+    );
+    // Unknown keys fall back to the raw key rather than failing.
+    assert_eq!(corpus.nationality_label("Atlantis", Lang::Es), "Atlantis");
+
+    assert_eq!(Position::Gk.label(Lang::Fr), "Gardien");
+    assert_eq!(Position::Fw.label(Lang::Es), "Delantero");
+}
+
+#[test]
 fn corpus_feeds_the_matcher() {
     // Exit criterion of Phase 2: the core can work over the real dataset.
     let corpus = mercato_data::load_corpus(&data_dir()).expect("dataset must load");
