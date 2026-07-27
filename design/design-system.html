@@ -1,0 +1,250 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MERCATO · Design System 1.0.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;800;900&family=Figtree:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--field:#1B2FE0;--deep:#0F1A66;--surface:#FBFAF4;--ink:#0B1030;
+--accent:#FFE24A;--accentDeep:#C9A800;--success:#2FE0A0;--successDeep:#159C6B;
+--danger:#FF5C63;--dangerDeep:#C22E36;--muted:#8288A4;
+--disp:"Unbounded",sans-serif;--ui:"Figtree",system-ui,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:var(--field);background-image:radial-gradient(130% 80% at 50% 0,#2E48FF,var(--field) 45%,#1223A6);
+font-family:var(--ui);font-weight:600;color:#fff;padding:0 20px 80px}
+.wrap{max-width:860px;margin:0 auto}
+h1{font-family:var(--disp);font-weight:900;font-size:clamp(40px,9vw,68px);letter-spacing:-.055em;
+line-height:.86;margin:44px 0 8px;text-shadow:5px 5px 0 var(--ink)}
+h1 em{font-style:normal;color:var(--accent)}
+.lede{font-size:19px;color:rgba(255,255,255,.72);max-width:34em;margin:0 0 10px}
+.ver{font-family:var(--disp);font-weight:800;font-size:13px;letter-spacing:.16em;color:rgba(255,255,255,.5)}
+h2{font-family:var(--disp);font-weight:900;font-size:26px;letter-spacing:-.03em;margin:52px 0 6px}
+h2 span{color:var(--accent)}
+.hint{font-size:15px;color:rgba(255,255,255,.6);margin:0 0 18px}
+.panel{background:var(--surface);color:var(--ink);border:4px solid var(--ink);border-radius:26px;
+padding:22px;box-shadow:0 10px 0 var(--ink)}
+.sws{display:grid;grid-template-columns:repeat(auto-fill,minmax(184px,1fr));gap:12px}
+.sw{display:flex;flex-direction:column;gap:3px}
+.sw-chip{height:64px;border:3px solid var(--ink);border-radius:14px;display:flex;align-items:flex-end;
+padding:7px 9px;font-family:var(--disp);font-weight:800;font-size:12px}
+.sw b{font-family:var(--disp);font-weight:800;font-size:14px;margin-top:4px}
+.sw span{font-size:12.5px;color:#4C5372;line-height:1.35}
+.ty{padding:14px 0;border-bottom:2px solid rgba(11,16,48,.1)}
+.ty:last-child{border-bottom:0}
+.ty-demo{color:var(--ink);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.ty-meta{font-size:12.5px;color:#4C5372;margin-top:5px}
+.ty-meta b{font-family:var(--disp);font-weight:800;color:var(--ink)}
+.scale{display:flex;gap:9px;align-items:flex-end;flex-wrap:wrap}
+.scale div{background:var(--ink);border-radius:5px}
+.scale i{display:block;font-style:normal;font-family:var(--disp);font-weight:800;font-size:11px;
+color:#4C5372;text-align:center;margin-top:5px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.demo{background:var(--field);border-radius:20px;padding:18px;display:grid;gap:11px}
+.tap{font-family:var(--disp);font-weight:800;border:3px solid var(--ink);border-radius:20px;
+padding:17px;font-size:19px;background:var(--accent);color:var(--ink);box-shadow:0 7px 0 var(--ink);width:100%}
+.tap.pale{background:var(--surface)}
+.tap.ghost{background:transparent;border-color:rgba(255,255,255,.34);color:#fff;box-shadow:none;font-family:var(--ui);font-size:16px;padding:13px}
+.opt{font-family:var(--disp);font-weight:800;font-size:18px;text-align:left;background:var(--deep);
+color:#fff;border:3px solid var(--ink);border-radius:18px;padding:15px;box-shadow:0 6px 0 var(--ink)}
+.opt.ok{background:var(--success);color:var(--ink)}
+.opt.no{background:var(--danger);color:#fff}
+.inp{font-family:var(--disp);font-weight:800;font-size:19px;padding:16px;border-radius:18px;
+border:3px solid var(--ink);background:var(--surface);color:var(--ink);box-shadow:0 6px 0 var(--ink)}
+.inp.ok{background:var(--success);box-shadow:0 6px 0 var(--successDeep)}
+.inp.no{background:var(--danger);color:#fff;box-shadow:0 6px 0 var(--dangerDeep)}
+.chip{display:inline-block;background:var(--surface);color:var(--ink);border:3px solid var(--ink);
+border-radius:999px;padding:6px 13px;font-family:var(--disp);font-weight:800;font-size:14px;margin-right:7px}
+.score{display:inline-block;font-family:var(--disp);font-weight:900;font-size:23px;background:var(--surface);
+color:var(--ink);border:3px solid var(--ink);border-radius:999px;padding:5px 15px;box-shadow:0 4px 0 var(--ink);margin-right:8px}
+.score.up{background:var(--success)} .score.down{background:var(--danger);color:#fff}
+.card{background:var(--surface);color:var(--ink);border:4px solid var(--ink);border-radius:26px;
+overflow:hidden;box-shadow:0 10px 0 var(--ink);max-width:330px}
+.yb{background:var(--ink);color:var(--accent);font-family:var(--disp);font-weight:900;font-size:40px;
+text-align:center;padding:9px 8px 12px;letter-spacing:.05em}
+.yb span{display:block;font-size:12px;letter-spacing:.2em;color:rgba(255,255,255,.58);margin-bottom:3px}
+.cin{padding:20px 16px;text-align:center}
+.cclub{font-family:var(--disp);font-weight:800;font-size:27px;letter-spacing:-.035em}
+.cclub.origin{color:var(--muted)}
+.trk{height:58px;position:relative;display:flex;align-items:center;justify-content:center;margin:6px 0}
+.trk:before{content:"";position:absolute;top:2px;bottom:12px;width:6px;border-radius:9px;
+background:repeating-linear-gradient(180deg,var(--ink) 0 9px,transparent 9px 18px);opacity:.28}
+.trk:after{content:"";position:absolute;bottom:-3px;left:50%;transform:translateX(-50%);
+border-left:10px solid transparent;border-right:10px solid transparent;border-top:12px solid var(--ink);opacity:.28}
+.tok{width:44px;height:44px;border-radius:99px;background:var(--ink);color:var(--accent);border:3px solid var(--ink);
+display:grid;place-items:center;font-family:var(--disp);font-weight:900;font-size:20px;position:relative;z-index:1}
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th{text-align:left;font-family:var(--disp);font-weight:800;font-size:12px;letter-spacing:.09em;
+text-transform:uppercase;color:#4C5372;padding:0 10px 9px 0}
+td{padding:9px 10px 9px 0;border-top:2px solid rgba(11,16,48,.1);vertical-align:top}
+.mono{font-variant-numeric:tabular-nums;font-weight:800}
+.sm{font-size:12px;color:#4C5372}
+.verdict{font-family:var(--disp);font-weight:800;font-size:11px;padding:3px 10px;border-radius:999px;color:#fff}
+.verdict.ok{background:var(--successDeep)} .verdict.ko{background:var(--dangerDeep)}
+.files{display:grid;gap:9px}
+.file{display:flex;gap:12px;align-items:baseline;border-top:2px solid rgba(11,16,48,.1);padding-top:9px}
+.file b{font-family:var(--disp);font-weight:800;font-size:14px;white-space:nowrap}
+.file span{font-size:13.5px;color:#4C5372}
+</style></head><body><div class="wrap">
+
+<h1>MER<em>CATO</em></h1>
+<p class="ver">DESIGN SYSTEM 1.0.0</p>
+<p class="lede">Blocs epais, contours pleins, ombres dures sans flou. Un seul accent. Aucune fioriture.</p>
+
+<h2><span>01</span> Couleurs</h2>
+<p class="hint">Un seul accent. Le vert et le rouge sont réservés au résultat, jamais à la décoration.</p>
+<div class="panel"><div class="sws"><div class="sw">
+      <div class="sw-chip" style="background:#1B2FE0;color:#fff">#1B2FE0</div>
+      <b>field</b><span>Fond principal, le terrain</span></div><div class="sw">
+      <div class="sw-chip" style="background:#2E48FF;color:#fff">#2E48FF</div>
+      <b>fieldTop</b><span>Haut du degrade radial</span></div><div class="sw">
+      <div class="sw-chip" style="background:#1223A6;color:#fff">#1223A6</div>
+      <b>fieldDeep</b><span>Bas du degrade radial</span></div><div class="sw">
+      <div class="sw-chip" style="background:#FBFAF4;color:#0B1030">#FBFAF4</div>
+      <b>surface</b><span>Carte, feuilles, boutons clairs</span></div><div class="sw">
+      <div class="sw-chip" style="background:#0B1030;color:#fff">#0B1030</div>
+      <b>ink</b><span>Texte sur surface, contours, bandeau</span></div><div class="sw">
+      <div class="sw-chip" style="background:#0F1A66;color:#fff">#0F1A66</div>
+      <b>deep</b><span>Propositions de reponse, listes</span></div><div class="sw">
+      <div class="sw-chip" style="background:#FFE24A;color:#0B1030">#FFE24A</div>
+      <b>accent</b><span>Action principale, chiffres cles</span></div><div class="sw">
+      <div class="sw-chip" style="background:#C9A800;color:#fff">#C9A800</div>
+      <b>accentDeep</b><span>Ombre portee de l'action principale</span></div><div class="sw">
+      <div class="sw-chip" style="background:#2FE0A0;color:#0B1030">#2FE0A0</div>
+      <b>success</b><span>Bonne reponse, remplissage</span></div><div class="sw">
+      <div class="sw-chip" style="background:#159C6B;color:#fff">#159C6B</div>
+      <b>successDeep</b><span>Bonne reponse, texte et contour</span></div><div class="sw">
+      <div class="sw-chip" style="background:#FF5C63;color:#0B1030">#FF5C63</div>
+      <b>danger</b><span>Mauvaise reponse, remplissage</span></div><div class="sw">
+      <div class="sw-chip" style="background:#C22E36;color:#fff">#C22E36</div>
+      <b>dangerDeep</b><span>Mauvaise reponse, texte et contour</span></div><div class="sw">
+      <div class="sw-chip" style="background:#8288A4;color:#fff">#8288A4</div>
+      <b>muted</b><span>Club de depart, texte secondaire sur surface</span></div><div class="sw">
+      <div class="sw-chip" style="background:#9A9788;color:#fff">#9A9788</div>
+      <b>placeholder</b><span>Texte indicatif des champs</span></div></div></div>
+
+<h2><span>02</span> Typographie</h2>
+<p class="hint">Unbounded porte toute la personnalité, Figtree ne sert qu'au texte courant. Les tailles à deux valeurs sont des plages responsives.</p>
+<div class="panel"><div class="ty">
+      <div class="ty-demo" style="font-family:'Unbounded';font-weight:900;font-size:90px;
+        letter-spacing:-5.5%;line-height:0.82">Mercato 2001</div>
+      <div class="ty-meta"><b>logo</b> · Unbounded 900 · 58-90 px · -5.5% · Titre de l'app</div>
+    </div><div class="ty">
+      <div class="ty-demo" style="font-family:'Unbounded';font-weight:900;font-size:46px;
+        letter-spacing:5.0%;line-height:1.0">Mercato 2001</div>
+      <div class="ty-meta"><b>year</b> · Unbounded 900 · 32-46 px · 5.0% · Annee du transfert</div>
+    </div><div class="ty">
+      <div class="ty-demo" style="font-family:'Unbounded';font-weight:800;font-size:13px;
+        letter-spacing:20.0%;line-height:1.2">Mercato 2001</div>
+      <div class="ty-meta"><b>kind</b> · Unbounded 800 · 13 px · 20.0% · Nature du transfert</div>
+    </div><div class="ty">
+      <div class="ty-demo" style="font-family:'Unbounded';font-weight:800;font-size:34px;
+        letter-spacing:-3.5%;line-height:1.1">Mercato 2001</div>
+      <div class="ty-meta"><b>club</b> · Unbounded 800 · 24-34 px · -3.5% · Nom de club, nom revele</div>
+    </div><div class="ty">
+      <div class="ty-demo" style="font-family:'Unbounded';font-weight:900;font-size:24px;
+        letter-spacing:0.0%;line-height:1.0">Mercato 2001</div>
+      <div class="ty-meta"><b>score</b> · Unbounded 900 · 24 px · 0.0% · Compteur de points</div>
+    </div><div class="ty">
+      <div class="ty-demo" style="font-family:'Unbounded';font-weight:900;font-size:26px;
+        letter-spacing:0.0%;line-height:1.0">Mercato 2001</div>
+      <div class="ty-meta"><b>bump</b> · Unbounded 900 · 26 px · 0.0% · Increment flottant</div>
+    </div><div class="ty">
+      <div class="ty-demo" style="font-family:'Unbounded';font-weight:800;font-size:23px;
+        letter-spacing:-2.0%;line-height:1.2">Mercato 2001</div>
+      <div class="ty-meta"><b>button</b> · Unbounded 800 · 19-23 px · -2.0% · Libelle de bouton</div>
+    </div><div class="ty">
+      <div class="ty-demo" style="font-family:'Unbounded';font-weight:800;font-size:19px;
+        letter-spacing:-3.0%;line-height:1.25">Mercato 2001</div>
+      <div class="ty-meta"><b>option</b> · Unbounded 800 · 19 px · -3.0% · Proposition de reponse</div>
+    </div><div class="ty">
+      <div class="ty-demo" style="font-family:'Unbounded';font-weight:800;font-size:21px;
+        letter-spacing:-3.0%;line-height:1.2">Mercato 2001</div>
+      <div class="ty-meta"><b>input</b> · Unbounded 800 · 21 px · -3.0% · Saisie du joueur</div>
+    </div><div class="ty">
+      <div class="ty-demo" style="font-family:'Unbounded';font-weight:800;font-size:14px;
+        letter-spacing:-2.0%;line-height:1.2">Mercato 2001</div>
+      <div class="ty-meta"><b>chip</b> · Unbounded 800 · 14 px · -2.0% · Indice, etiquette</div>
+    </div><div class="ty">
+      <div class="ty-demo" style="font-family:'Figtree';font-weight:600;font-size:18px;
+        letter-spacing:0.0%;line-height:1.35">Mercato 2001</div>
+      <div class="ty-meta"><b>body</b> · Figtree 600 · 18 px · 0.0% · Texte courant</div>
+    </div><div class="ty">
+      <div class="ty-demo" style="font-family:'Figtree';font-weight:700;font-size:13px;
+        letter-spacing:0.0%;line-height:1.4">Mercato 2001</div>
+      <div class="ty-meta"><b>caption</b> · Figtree 700 · 13 px · 0.0% · Sous-titre de bouton</div>
+    </div></div>
+
+<h2><span>03</span> Espacement, rayons, contours, profondeurs</h2>
+<p class="hint">La profondeur est une ombre portée pleine, sans flou. C'est elle qui donne le caractère épais.</p>
+<div class="panel">
+  <table><tr><th>Espacement</th><td class="mono">4 · 6 · 8 · 10 · 12 · 16 · 20 · 22 · 26 dp</td></tr>
+  <tr><th>Rayons</th><td class="mono">xs 14 · sm 18 · md 20 · lg 22 · xl 26 · pill 999</td></tr>
+  <tr><th>Contours</th><td class="mono">thin 2 · base 3 · thick 4 dp</td></tr>
+  <tr><th>Profondeurs</th><td class="mono">score 4 · option 6 · input 6 · button 7 · card 10 dp</td></tr></table>
+</div>
+
+<h2><span>04</span> Composants</h2>
+<p class="hint">Chaque bloc s'enfonce de sa profondeur à l'appui, l'ombre tombant à 1 dp.</p>
+<div class="grid2">
+  <div class="panel"><table><tr><th>Boutons</th></tr></table>
+    <div class="demo"><button class="tap">PRINCIPAL</button><button class="tap pale">SECONDAIRE</button><button class="tap ghost">TERTIAIRE</button></div></div>
+  <div class="panel"><table><tr><th>Propositions</th></tr></table>
+    <div class="demo"><div class="opt">Au repos</div><div class="opt ok">Bonne réponse</div><div class="opt no">Mauvaise réponse</div></div></div>
+  <div class="panel"><table><tr><th>Saisie</th></tr></table>
+    <div class="demo"><div class="inp">Au repos</div><div class="inp ok">Validée</div><div class="inp no">Refusée</div></div></div>
+  <div class="panel"><table><tr><th>Compteur et indices</th></tr></table>
+    <div class="demo" style="place-items:start">
+      <div><span class="score">0</span><span class="score up">12</span><span class="score down">9</span></div>
+      <div><span class="chip">Nationalité <b>Brésil</b></span><span class="chip">7 lettres</span></div></div></div>
+</div>
+
+<h2><span>05</span> La carte</h2>
+<p class="hint">Élément signature. Le club de départ est atténué, le club d'arrivée en encre pleine, le chevron donne le sens avant même la réponse.</p>
+<div class="panel"><div class="demo" style="place-items:center">
+  <div class="card"><div class="yb"><span>TRANSFERT</span>2001</div>
+    <div class="cin"><div class="cclub origin">Juventus Turin</div>
+      <div class="trk"><div class="tok">?</div></div>
+      <div class="cclub">Real Madrid</div></div></div>
+</div></div>
+
+<h2><span>06</span> Mouvement</h2>
+<div class="panel"><table><tr><th>Rôle</th><th>Durée</th><th>Courbe</th><th>Usage</th></tr><tr><td><b>press</b></td><td class="mono">70 ms</td>
+    <td class="mono sm">cubic-bezier(0.2,0.9,0.3,1)</td><td>Enfoncement du bouton</td></tr><tr><td><b>cardIn</b></td><td class="mono">300 ms</td>
+    <td class="mono sm">cubic-bezier(0.2,1.15,0.35,1)</td><td>Apparition de la carte</td></tr><tr><td><b>token</b></td><td class="mono">600 ms</td>
+    <td class="mono sm">cubic-bezier(0.65,0,0.2,1)</td><td>Descente du jeton</td></tr><tr><td><b>reveal</b></td><td class="mono">280 ms</td>
+    <td class="mono sm">ease-out</td><td>Apparition du nom, apres 340 ms</td></tr><tr><td><b>bump</b></td><td class="mono">900 ms</td>
+    <td class="mono sm">cubic-bezier(0.2,0.9,0.3,1)</td><td>Envol de l'increment de points</td></tr><tr><td><b>advance</b></td><td class="mono">1900 ms</td>
+    <td class="mono sm">lineaire</td><td>Passage au dossier suivant</td></tr></table></div>
+
+<h2><span>07</span> Accessibilité</h2>
+<p class="hint">Cible tactile minimale 48 dp. Anneau de focus : 4 px accent, decale de 3 px. Mouvement réduit : toutes durees ramenees a 0,01 ms.</p>
+<div class="panel"><table><tr><th>Paire</th><th>Ratio</th><th>Seuil</th><th>Verdict</th></tr><tr><td>Texte blanc sur fond</td><td class="mono">8.3</td><td class="mono">4.5</td>
+    <td><span class="verdict ok">conforme</span></td></tr><tr><td>Encre sur surface</td><td class="mono">17.76</td><td class="mono">4.5</td>
+    <td><span class="verdict ok">conforme</span></td></tr><tr><td>Accent sur encre (bandeau)</td><td class="mono">14.35</td><td class="mono">3.0</td>
+    <td><span class="verdict ok">conforme</span></td></tr><tr><td>Encre sur accent (bouton)</td><td class="mono">14.35</td><td class="mono">3.0</td>
+    <td><span class="verdict ok">conforme</span></td></tr><tr><td>Blanc sur propositions</td><td class="mono">15.44</td><td class="mono">3.0</td>
+    <td><span class="verdict ok">conforme</span></td></tr><tr><td>Encre sur bonne reponse</td><td class="mono">10.87</td><td class="mono">3.0</td>
+    <td><span class="verdict ok">conforme</span></td></tr><tr><td>Blanc sur mauvaise reponse</td><td class="mono">3.02</td><td class="mono">3.0</td>
+    <td><span class="verdict ok">conforme</span></td></tr><tr><td>Succes fonce sur surface</td><td class="mono">3.35</td><td class="mono">3.0</td>
+    <td><span class="verdict ok">conforme</span></td></tr><tr><td>Danger fonce sur surface</td><td class="mono">5.37</td><td class="mono">3.0</td>
+    <td><span class="verdict ok">conforme</span></td></tr><tr><td>Club de depart sur surface</td><td class="mono">3.34</td><td class="mono">3.0</td>
+    <td><span class="verdict ok">conforme</span></td></tr></table></div>
+
+<h2><span>08</span> Langues</h2>
+<p class="hint">Aucun sélecteur dans l'application. La langue suit le réglage système.</p>
+<div class="panel"><table>
+  <tr><th>Prises en charge</th><td class="mono">fr · en · es</td></tr>
+  <tr><th>Repli</th><td class="mono">en</td></tr>
+  <tr><th>Source</th><td>reglage systeme, aucun selecteur dans l'app</td></tr>
+</table></div>
+
+<h2><span>09</span> Fichiers</h2>
+<div class="panel"><div class="files">
+  <div class="file"><b>tokens.json</b><span>Source de vérité. Toute modification part d'ici, les autres fichiers en découlent.</span></div>
+  <div class="file"><b>DesignTokens.swift</b><span>Palette, rayons, contours, profondeurs, espacements et durées pour SwiftUI. Généré.</span></div>
+  <div class="file"><b>DesignTokens.kt</b><span>Mêmes valeurs pour Jetpack Compose. Généré.</span></div>
+  <div class="file"><b>design-system.html</b><span>Cette planche. Référence visuelle partagée entre toi et un éventuel prestataire.</span></div>
+  <div class="file"><b>mercato.html</b><span>Démo jouable, implémentation de référence du système.</span></div>
+</div></div>
+
+</div></body></html>

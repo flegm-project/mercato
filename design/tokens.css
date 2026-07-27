@@ -1,0 +1,53 @@
+:root{
+  --mc-color-blue-top: #2E48FF;
+  --mc-color-blue: #1B2FE0;
+  --mc-color-blue-deep: #1223A6;
+  --mc-color-blue-night: #0F1A66;
+  --mc-color-ink: #0B1030;
+  --mc-color-yellow: #FFE24A;
+  --mc-color-yellow-deep: #C9A800;
+  --mc-color-ivory: #FBFAF4;
+  --mc-color-club-grey: #9298B2;
+  --mc-color-muted: #4C5372;
+  --mc-color-green: #2FE0A0;
+  --mc-color-green-deep: #159C6B;
+  --mc-color-coral: #FF5C63;
+  --mc-color-coral-deep: #C22E36;
+  --mc-gradient-app: radial-gradient(130% 85% at 50% 0%, #2E48FF 0%, #1B2FE0 44%, #1223A6 100%);
+  --mc-gradient-ad: repeating-linear-gradient(135deg, #0F1A66 0 12px, #12207A 12px 24px);
+  --mc-font-display: 'Unbounded', sans-serif;
+  --mc-font-ui: 'Figtree', system-ui, sans-serif;
+  --mc-font-mono: 'IBM Plex Mono', monospace;
+  --mc-radius-chip: 999px;
+  --mc-radius-small: 14px;
+  --mc-radius-medium: 18px;
+  --mc-radius-large: 22px;
+  --mc-radius-card: 26px;
+  --mc-shadow-solid-sm: 0 5px 0 #0B1030;
+  --mc-shadow-solid-md: 0 7px 0 #0B1030;
+  --mc-shadow-solid-lg: 0 9px 0 #0B1030;
+  --mc-shadow-solid-xl: 0 11px 0 #0B1030;
+  --mc-shadow-ambient: 0 22px 44px rgba(4,8,50,.42);
+  --mc-space-xs: 6px;
+  --mc-space-sm: 10px;
+  --mc-space-md: 14px;
+  --mc-space-lg: 18px;
+  --mc-space-xl: 22px;
+  --mc-space-gutter: 16px;
+  --mc-border-heavy: 5px solid var(--mc-color-ink);
+  --mc-column-max: 440px;
+}
+
+/* Base recipes */
+.mc-btn-primary{font-family:var(--mc-font-display);font-weight:900;font-size:19px;letter-spacing:-.03em;
+  background:var(--mc-color-yellow);color:var(--mc-color-ink);border:var(--mc-border-heavy);
+  border-radius:var(--mc-radius-large);padding:17px;box-shadow:var(--mc-shadow-solid-lg);cursor:pointer}
+.mc-btn-primary:active{transform:translateY(5px)}
+.mc-btn-secondary{composes:mc-btn-primary;background:var(--mc-color-ivory)}
+.mc-card{background:var(--mc-color-ivory);border:var(--mc-border-heavy);border-radius:var(--mc-radius-card);
+  overflow:hidden;box-shadow:var(--mc-shadow-solid-xl),var(--mc-shadow-ambient)}
+.mc-card--won{border-color:var(--mc-color-green-deep);box-shadow:0 11px 0 var(--mc-color-green-deep),var(--mc-shadow-ambient)}
+.mc-card--missed{border-color:var(--mc-color-coral-deep);box-shadow:0 11px 0 var(--mc-color-coral-deep),var(--mc-shadow-ambient)}
+.mc-ad-slot{border:4px solid var(--mc-color-ink);border-radius:var(--mc-radius-small);
+  background:var(--mc-gradient-ad);display:grid;place-items:center;
+  font-family:var(--mc-font-mono);font-size:10.5px;letter-spacing:.18em;color:rgba(255,255,255,.4)}

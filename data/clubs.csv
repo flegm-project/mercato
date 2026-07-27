@@ -1,0 +1,413 @@
+id,name,notoriety
+Q10308,Real Zaragoza,66
+Q10315,Real Sociedad,80
+Q10286,Osasuna,68
+Q10300,Rayo Vallecano,69
+Q101859,Wolfsburg,81
+Q10319,Real Valladolid,64
+Q101959,Borussia Mönchengladbach,84
+Q10329,Sevilla,86
+Q102720,Hertha BSC,73
+Q10333,Valencia,92
+Q104761,Bayer Leverkusen,89
+Q10467,Barcelona Atlètic,47
+Q104770,1. Köln,75
+Q11938,PSV Eindhoven,83
+Q11945,Girona,63
+Q105254,1. FSV Mainz,65
+Q11963,Hércules,48
+Q105853,Karlsruher,57
+Q105861,Bochum,59
+Q11971,Sociedad Deportiva Huesca,49
+Q11979,UD Las Palmas,59
+Q106394,Freiburg,71
+Q12217,Real Madrid Castilla,47
+Q12236,Racing de Santander,59
+Q126334,RC Strasbourg Alsace,57
+Q12278,Sporting de Gijón,63
+Q12297,Villarreal,81
+Q1023532,Atlas,36
+Q1044651,Vegalta Sendai,36
+Q1046367,Shandong Taishan,37
+Q1051013,Paris,39
+Q1051238,Sagan Tosu,38
+Q1056948,Al-Duhail,37
+Q1059186,Rotor Volgograd,37
+Q1062259,Yokohama,36
+Q1120838,Como 1907,54
+Q1128631,Leeds United,84
+Q1130849,Liverpool,132
+Q1139095,Wydad Athletic Club,41
+Q1143000,Pumas UNAM,40
+Q124007617,Sturm Graz,51
+Q128446,Porto,93
+Q131209,FK Austria Wien,58
+Q131378,APOEL,60
+Q1422,Juventus,130
+Q130521,Guangzhou,49
+Q15755,Augsburg,74
+Q13391,Lecce,58
+Q15789,Bayern Munich,124
+Q1543,AC Milan,123
+Q131499,Benfica,90
+Q1457,U.C. Sampdoria,83
+Q136433,PFC CSKA Sofia,49
+Q131603,1860 München,58
+Q15799,Club Atlético River Plate,76
+Q132885,Olympique de Marseille,84
+Q134241,Feyenoord Rotterdam,84
+Q134255,Górnik Zabrze,63
+Q138248,Sint-Truidense V.V,41
+Q15786,1. Nürnberg,65
+Q1346756,Dinamo Batumi,39
+Q141971,1. Union Berlin,67
+Q142005,Hansa Rostock,53
+Q15214308,Orlando City,41
+Q16320,Peñarol,61
+Q16344,Perugia,47
+Q13361030,New York City,46
+Q18509,Cambridge United,37
+Q16932,Kashima Antlers,46
+Q18656,Manchester United,147
+Q17479,Flamengo,89
+Q18662,Cardiff City,70
+Q18661,Middlesbrough,70
+Q18659,Swansea City A,80
+Q17497,Dinamo Moscow,68
+Q18708,Fulham,84
+Q167615,Montréal,44
+Q18711,Aston Villa,101
+Q18716,Newcastle United,96
+Q170040,Rubin Kazan,70
+Q18723,Queens Park Rangers,69
+Q18739,Sunderland A,80
+Q170703,Boca Juniors,80
+Q18741,Tottenham,102
+Q18729,Reading,67
+Q18732,Southampton,83
+Q18736,Stoke City,74
+Q172476,Girondins de Bordeaux,71
+Q172567,Beşiktaş . (Football),85
+Q172803,GNK Dinamo Zagreb,69
+Q172969,Shakhtar Donetsk,71
+Q173009,FK Crvena zvezda,71
+Q175687,Dnipro,48
+Q176371,PFC CSKA Moscow,75
+Q179075,Dynamo Kyiv,84
+Q179658,FCSB,70
+Q180305,Monaco,84
+Q181216,HNK Hajduk Split,61
+Q182876,AJ Auxerre,55
+Q185163,OGC Nice,65
+Q186785,Rosenborg BK,62
+Q16844931,Inter Miami,62
+Q16845355,Mumbai City,36
+Q17442894,Pafos,40
+Q18380286,Los Angeles,46
+Q1886,Atalanta,86
+Q19521,Saint-Étienne,67
+Q19568,Bournemouth,77
+Q19571,Brentford,65
+Q1893,Bologna . 1909,85
+Q1900,Cagliari,76
+Q2018,Catania,55
+Q2037,ChievoVerona,57
+Q19580,Coventry City,58
+Q2052,Fiorentina,93
+Q18747,West Ham United,84
+Q18744,West Bromwich Albion,82
+Q19593,Celtic,81
+Q19598,Notts County,43
+Q19607,Sheffield United,67
+Q19604,Portsmouth,60
+Q19603,Twente,71
+Q19597,Rangers,76
+Q18750,Wigan Athletic,69
+Q19353,Anzhi Makhachkala,51
+Q19444,Birmingham City,73
+Q19451,Bolton Wanderers,70
+Q19453,Brighton & Hove Albion,72
+Q19612,Preston North End,53
+Q19442,Barnsley,57
+Q19626,Shrewsbury Town,38
+Q19628,Olympiacos,69
+Q19446,Blackburn Rovers,78
+Q19634,Swindon Town,46
+Q19458,Burnley,78
+Q19456,Bristol City,50
+Q19467,Crystal Palace,82
+Q19470,Derby County,63
+Q19477,Hull City A,69
+Q19481,Leicester City,94
+Q19487,Millwall,51
+Q19490,Nottingham Forest,78
+Q19500,Wolverhampton Wanderers,84
+Q19509,Stade Rennais,59
+Q19512,Sochaux-Montbéliard,49
+Q19513,Montpellier Hérault,57
+Q19516,Lille,71
+Q19518,Toulouse,55
+Q187528,R. . Anderlecht,69
+Q188277,Cruzeiro E.C,56
+Q188656,FK Partizan,65
+Q188841,Fortaleza E.C,53
+Q190561,Standard Liège,64
+Q189671,Basel,68
+Q190916,Club Brugge,67
+Q191264,AZ Alkmaar,65
+Q191843,R.C. Lens,59
+Q192071,Nantes,64
+Q192253,ŠK Slovan Bratislava,55
+Q192597,Hibernian,54
+Q192641,Trabzonspor,61
+Q192873,Dundee United,54
+Q193377,Stade Malherbe Caen,48
+Q193481,Sparta Prague,54
+Q193749,Legia Warsaw,61
+Q196107,Vancouver Whitecaps,42
+Q198032,Esporte Clube Bahia,39
+Q200321,Heerenveen,54
+Q201567,IFK Göteborg,56
+Q201584,AEK Athens,58
+Q203573,Bursaspor,52
+Q204220,New York Red Bulls,54
+Q204357,LA Galaxy,59
+Q204881,Malmö FF,66
+Q204888,PAOK,61
+Q207373,Club Social y Deportivo Colo Colo,90
+Q19828435,Minnesota United,36
+Q2074,Genoa CFC,84
+Q22707,TSG 1899 Hoffenheim,73
+Q207503,Helsingborgs IF,43
+Q208228,Stade de Reims,59
+Q24711,Groningen,57
+Q24689,VVV-Venlo,43
+Q208584,Helsingin Jalkapalloklubi,52
+Q208399,Bastia,49
+Q208552,Molde FK,57
+Q212269,Valenciennes,43
+Q211906,Brøndby IF,53
+Q210025,Nordsjælland,46
+Q210864,Le Mans,43
+Q209509,Grenoble Foot 38,40
+Q209619,OFK Beograd,40
+Q209895,Sparta Rotterdam,54
+Q214992,Aalesunds FK,37
+Q215163,Vélez Sarsfield,50
+Q213161,FK Čukarički,37
+Q214940,Estudiantes de La Plata,51
+Q216032,K.R.C. Genk,57
+Q214978,Independiente,56
+Q216503,C.S. Marítimo,46
+Q219235,Servette,46
+Q219233,SBV Vitesse,54
+Q218074,Neftchi Baku PFC,53
+Q218334,Figueirense,36
+Q218372,Stade Brestois 29,54
+Q218883,Urawa Red Diamonds,49
+Q219703,Boavista,47
+Q219929,FK Željezničar Sarajevo,45
+Q220621,Argentinos Juniors,46
+Q221525,Metz,59
+Q221602,AIK Fotboll,50
+Q221671,Slovan Liberec,42
+Q221695,Grêmio FBPA,59
+Q223450,Vitória S.C.,49
+Q221882,Newell's Old Boys,52
+Q238593,D.C. United,52
+Q248188,Milton Keynes Dons,39
+Q2609,Lazio,99
+Q2641,Napoli,115
+Q249662,Nagoya Grampus,43
+Q2693,Parma 1913,80
+Q2674,Palermo,105
+Q2710,Delfino Pescara 1936,52
+Q2798,Udinese,78
+Q2714,Watford,73
+Q2739,Roma,102
+Q276533,Racing Club,54
+Q2768,Torino,83
+Q270051,Ajaccio,46
+Q270995,Clube Atlético Mineiro,57
+Q274465,E.C. Vitória,39
+Q29103,Kuban Krasnodar,102
+Q274778,Krylia Sovetov Samara,49
+Q283545,Al Sadd Sports Club,50
+Q29115,Lokomotiv Moscow,70
+Q29108,Zenit Saint Petersburg,82
+Q29112,Spartak Moscow,71
+Q29390,R. Messina,35
+Q286191,Al Qadsiah,37
+Q289482,Monza,51
+Q289613,Pisa,41
+Q298217,Avellino 1912,36
+Q301431,Aarhus Gymnastikforening,47
+Q308683,Chicago Fire,43
+Q309095,New England Revolution,45
+Q309400,Boulogne,35
+Q309480,Al Ittihad,54
+Q311268,Al-Rayyan,38
+Q2636005,Al-Shabab,39
+Q316789,Melbourne Victory,43
+Q31932,NK Olimpija Ljubljana,46
+Q32494,Schalke,87
+Q318348,N.E.C,46
+Q33748,Hannover 96,69
+Q321061,Sion,49
+Q327238,Toronto,43
+Q35933,Corinthians Paulista,102
+Q38568,São Paulo,93
+Q328658,Le Havre,48
+Q329471,Baník Ostrava,41
+Q328332,FK Mladá Boleslav,40
+Q38245,Eintracht Frankfurt,103
+Q330143,Sydney FC,53
+Q332524,Junior de Barranquilla,37
+Q332605,Atlético Nacional,45
+Q332642,NAC Breda,41
+Q371136,Paços de Ferreira,46
+Q374069,Avaí,37
+Q383358,Albirex Niigata,39
+Q384850,NK Domžale,39
+Q385496,RB Omiya Ardija,39
+Q4512,Stuttgart,85
+Q41420,Borussia Dortmund,99
+Q43710,Antalyaspor,44
+Q44441,Al Ahli FC,49
+Q391984,Millonarios,38
+Q392310,LASK Linz,50
+Q420594,Kairat,49
+Q424943,Shabab AlAhli Dubai Club,35
+Q428211,Al-Gharafa,39
+Q429630,Al Jazira Club,35
+Q48951,Southend United,37
+Q50602,Manchester City,117
+Q51974,Hamburger,76
+Q459090,Club América,58
+Q459148,En Avant de Guingamp,50
+Q459794,Piacenza,37
+Q462411,N.K. Zagreb,38
+Q476880,Lahti,36
+Q51976,Werder Bremen,83
+Q52942,Lech Poznań,64
+Q478317,Coritiba,125
+Q482406,Seoul,41
+Q482764,Al-Nassr,70
+Q483020,Paris Saint-Germain,100
+Q495299,Galatasaray,93
+Q498473,Hamilton Academical,36
+Q499616,Club Nacional de Football,74
+Q501245,Venezia,53
+Q501693,ES Troyes,46
+Q503317,Dijon FCO,49
+Q503321,C.D. Guadalajara,49
+Q506832,Club Athletico Paranaense,51
+Q513840,Konyaspor,47
+Q4122219,Panathinaikos,70
+Q5014111,Vasco da Gama,51
+Q631,Inter Milan,121
+Q564216,Shanghai Port,39
+Q704,Olympique Lyonnais,80
+Q5794,Everton,103
+Q6463,St. Pauli,62
+Q6630,Ascoli 1898,46
+Q576285,Albacete Balompié,44
+Q584316,Danubio,40
+Q584858,Halmstads BK,37
+Q6641,Bari,49
+Q586787,Hokkaido Consadole Sapporo,36
+Q6651,Brescia,53
+Q604589,Club Olimpia,48
+Q6767,Livorno 1915,52
+Q7156,Barcelona,152
+Q6703,Empoli,63
+Q604581,Club Sporting Cristal,37
+Q608122,Kayserispor,44
+Q618520,Midtjylland,53
+Q620499,Tokyo Verdy,42
+Q621120,Portimonense,40
+Q622432,Rio Ave,44
+Q630279,Sanfrecce Hiroshima,44
+Q632511,Seattle Sounders FC,49
+Q646204,JEF United Chiba,39
+Q633223,Club León,37
+Q646135,New York Cosmos,35
+Q652516,Benevento,48
+Q663400,Deportivo Cali,58
+Q642408,Colorado Rapids,42
+Q643434,PFC Slavia Sofia,37
+Q692646,Banfield,39
+Q692856,Shonan Bellmare,39
+Q702455,RB Leipzig,72
+Q725018,Lierse,35
+Q725367,Shanghai Shenhua,41
+Q727147,Khimki,40
+Q54834034,PFC Sochi,35
+Q6601875,Fenerbahçe Istanbul,92
+Q8408,Modena,44
+Q8416,Novara,44
+Q72844,Al-Ettifaq,37
+Q73965,Al Hilal,63
+Q75684,Braga,67
+Q75729,Sporting,81
+Q8476,Reggina 1914,45
+Q8603,Sassuolo,68
+Q8428,Padova,41
+Q8466,1. Kaiserslautern,66
+Q8615,Spezia,57
+Q8639,Hellas Verona,68
+Q80845,Internacional,60
+Q8682,Real Madrid,151
+Q8701,Atlético Madrid,107
+Q8687,Athletic Club,87
+Q80955,Santos F.C.,74
+Q8723,Real Betis Balompié,77
+Q80987,Fluminense,71
+Q81888,Ajax,106
+Q80958,Botafogo F.R,60
+Q80964,Palmeiras,75
+Q730809,Nîmes Olympique,61
+Q732002,Royal Antwerp,47
+Q736937,Pachuca,46
+Q737753,Club Universidad de Chile,39
+Q732929,Newcastle Jets,35
+Q738423,Gamba Osaka,51
+Q738876,NK Osijek,48
+Q738886,FK Teplice,35
+Q757104,FK Sūduva,80
+Q759482,Cremonese,45
+Q768253,Monterrey,47
+Q770740,SD Eibar,57
+Q791164,Avispa Fukuoka,37
+Q823384,Shimizu S-Pulse,41
+Q812720,Al Ain,45
+Q847587,Salernitana 1919,48
+Q844271,Vissel Kobe,49
+Q844931,Kashiwa Reysol,41
+Q849823,Tigres UANL,45
+Q852033,Perth Glory,37
+Q854932,Yokohama F. Marinos,47
+Q855401,Júbilo Iwata,41
+Q855809,Cerezo Osaka,46
+Q854167,Fortuna Sittard,44
+Q856119,CD Leganés,53
+Q856619,Tokyo,41
+Q857938,İstanbul Başakşehir F.K,56
+Q868582,Deportivo Saprissa,36
+Q7482049,Strømsgodset TF,42
+Q8749,RC Celta de Vigo,72
+Q8760,Deportivo de A Coruña,69
+Q8780,RCD Espanyol de Barcelona,82
+Q8806,Getafe,67
+Q8823,Levante UD,69
+Q8835,RCD Mallorca,69
+Q8857,Málaga,65
+Q9616,Chelsea,126
+Q9617,Arsenal,124
+Q9653,Ipswich Town,67
+Q872702,Montevideo Wanderers,35
+Q874016,Kawasaki Frontale,44
+Q889348,Ural Yekaterinburg,48
+Q910453,Esporte Clube Juventude,38
+Q994811,Red Bull Salzburg,63
+Q999035,Western Sydney Wanderers,38

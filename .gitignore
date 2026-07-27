@@ -1,0 +1,47 @@
+# ---- OS / editor ----
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# ---- Rust ----
+/core/target/
+**/target/
+Cargo.lock        # library workspace; keep unlocked (revisit if we ship a binary)
+*.rs.bk
+
+# ---- Generated data artifacts (source of truth is data/*.csv) ----
+/data/build/out/
+*.db
+*.sqlite
+*.sqlite3
+!/reference/web-prototype/**   # keep the historical prototype intact
+
+# ---- iOS ----
+/apps/ios/build/
+/apps/ios/DerivedData/
+*.xcuserstate
+*.xcworkspace/xcuserdata/
+Pods/
+
+# ---- Android ----
+/apps/android/.gradle/
+/apps/android/build/
+/apps/android/**/build/
+/apps/android/local.properties
+*.apk
+*.aab
+*.keystore
+
+# ---- Rust <-> native build outputs ----
+*.a
+*.so
+*.dylib
+*.xcframework
+
+# ---- Secrets ----
+*.env
+.env.local
+google-services.json
+GoogleService-Info.plist
