@@ -515,6 +515,7 @@ struct SettingsView: View {
     let onBack: () -> Void
     let onConsent: () -> Void
     let onReplayIntro: () -> Void
+    @ObservedObject var store: Store
 
     @AppStorage("soundOn") private var soundOn = true
     @AppStorage("vibrationOn") private var vibrationOn = true
@@ -551,6 +552,8 @@ struct SettingsView: View {
                 }
                 .padding(.top, 12)
 
+                purchaseCard.padding(.top, 16)
+
                 VStack(spacing: 9) {
                     linkRow(L("rowLang"), value: "\(languageName) \u{00B7} \(L("systemV"))", action: nil)
                     linkRow(
@@ -573,6 +576,66 @@ struct SettingsView: View {
             .padding(.vertical, DesignTokens.Space.gutter)
             .frame(maxWidth: DesignTokens.Layout.columnMax)
             .frame(maxWidth: .infinity)
+        }
+    }
+
+    /// The only purchase in the app. Once owned it stops offering itself and
+    /// simply reports the state, so there is nothing left to buy anywhere.
+    private var purchaseCard: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(alignment: .top, spacing: 12) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(L("shopNoAds"))
+                        .font(DS.unbounded(18, weight: 900))
+                        .tracking(-0.04 * 18)
+                    Text(L("shopNoAdsSub"))
+                        .font(DS.figtree(13, weight: 700))
+                        .foregroundStyle(DesignTokens.Color.muted)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: 0)
+                if store.adsRemoved {
+                    Text(L("owned"))
+                        .font(DS.unbounded(12, weight: 800))
+                        .tracking(0.08 * 12)
+                        .foregroundStyle(DesignTokens.Color.ink)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 7)
+                        .background(DesignTokens.Color.green)
+                        .clipShape(Capsule())
+                } else {
+                    Button { Task { await store.purchase() } } label: {
+                        Text(store.displayPrice ?? "\u{2026}")
+                            .font(DS.unbounded(15, weight: 900))
+                            .tracking(-0.03 * 15)
+                            .foregroundStyle(DesignTokens.Color.ink)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 11)
+                            .background(DesignTokens.Color.yellow)
+                            .solidRaised(radius: 16, border: 4, depth: 6)
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(store.purchasing || store.product == nil)
+                }
+            }
+
+            if !store.adsRemoved {
+                Button { Task { await store.restore() } } label: {
+                    Text(L("restore"))
+                        .font(DS.figtree(13, weight: 800))
+                        .foregroundStyle(DesignTokens.Color.blue)
+                }
+                .buttonStyle(.plain)
+                .padding(.top, 14)
+            }
+        }
+        .foregroundStyle(DesignTokens.Color.ink)
+        .padding(18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(DesignTokens.Color.ivory)
+        .solidRaised(radius: 18, border: 4, depth: 6)
+        .alert(L("restoreToast"), isPresented: $store.restoreFoundNothing) {
+            Button("OK", role: .cancel) {}
         }
     }
 

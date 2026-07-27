@@ -34,6 +34,8 @@ struct RootView: View {
     @AppStorage("consentAnswered") private var consentAnswered = false
     /// Carried out of the last round so the recap can render it.
     @State private var summary: RoundSummary?
+    /// Owns the remove-ads entitlement; every ad slot reads it.
+    @StateObject private var store = Store()
 
     var body: some View {
         Group {
@@ -99,7 +101,8 @@ struct RootView: View {
             SettingsView(
                 onBack: { route = .home },
                 onConsent: { route = .consent },
-                onReplayIntro: { route = .onboarding }
+                onReplayIntro: { route = .onboarding },
+                store: store
             )
 
         case .game(let mode):

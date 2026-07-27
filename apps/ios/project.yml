@@ -39,6 +39,9 @@ targets:
         group: Generated
         buildPhase: resources
       # The dataset ships with the app; the core reads these CSVs at startup.
+      - path: Support/Products.storekit
+        group: Support
+        buildPhase: none
       - path: ../../data
         group: Resources
         buildPhase: resources
@@ -54,6 +57,12 @@ targets:
     dependencies:
       - framework: ../../build/ios/Mercato.xcframework
         embed: false
+    scheme:
+      # Local StoreKit products, so the purchase can be exercised without an
+      # App Store Connect entry. See Support/README.md.
+      storeKitConfiguration: Support/Products.storekit
+      testTargets:
+        - MercatoTests
     info:
       path: Sources/Info.plist
       properties:
@@ -79,3 +88,20 @@ targets:
           - Figtree-ExtraBold.ttf
           - Figtree-Black.ttf
           - IBMPlexMono-Medium.ttf
+
+  MercatoTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: Tests
+      # The same product definitions the app ships against locally, so the
+      # test buys exactly what the player would.
+      - path: Support/Products.storekit
+        buildPhase: resources
+    dependencies:
+      - target: Mercato
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        BUNDLE_LOADER: $(TEST_HOST)
+        TEST_HOST: $(BUILT_PRODUCTS_DIR)/Mercato.app/Mercato

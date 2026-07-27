@@ -1,0 +1,39 @@
+{
+  "identifier": "23B57F16-E6C4-4A45-8504-0C6A382555B8",
+  "nonRenewingSubscriptions": [],
+  "products": [
+    {
+      "displayPrice": "3.99",
+      "familyShareable": false,
+      "internalID": "DEB72E63-4AC4-4C51-B6BF-A4EB164DA22F",
+      "localizations": [
+        {
+          "description": "No banners, interstitials or rectangles.",
+          "displayName": "Remove ads",
+          "locale": "en_US"
+        },
+        {
+          "description": "Supprime bandeaux, interstitiels et paves.",
+          "displayName": "Sans publicite",
+          "locale": "fr_FR"
+        },
+        {
+          "description": "Elimina banners, intersticiales y rectangulos.",
+          "displayName": "Sin publicidad",
+          "locale": "es_ES"
+        }
+      ],
+      "productID": "com.mercato.removeads",
+      "referenceName": "Remove ads",
+      "type": "NonConsumable"
+    }
+  ],
+  "settings": {
+    "_storeKitErrors": []
+  },
+  "subscriptionGroups": [],
+  "version": {
+    "major": 4,
+    "minor": 0
+  }
+}
