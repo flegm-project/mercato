@@ -20,6 +20,7 @@ enum Route: Equatable {
     case game(GameMode)
     case recap
     case settings
+    case offline
 }
 
 /// Loads the core once and routes between screens. Loading parses the bundled
@@ -132,8 +133,12 @@ struct RootView: View {
                 onBack: { route = .profile },
                 onConsent: { route = .consent },
                 onReplayIntro: { route = .onboarding },
+                onOffline: { route = .offline },
                 store: store
             )
+
+        case .offline:
+            OfflineView(onRetry: { route = .settings })
 
         case .game(let mode):
             GameView(game: game, mode: mode) { finished in

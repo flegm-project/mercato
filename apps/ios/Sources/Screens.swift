@@ -516,6 +516,7 @@ struct SettingsView: View {
     let onBack: () -> Void
     let onConsent: () -> Void
     let onReplayIntro: () -> Void
+    let onOffline: () -> Void
     @ObservedObject var store: Store
 
     @AppStorage("soundOn") private var soundOn = true
@@ -563,6 +564,7 @@ struct SettingsView: View {
                         action: onConsent
                     )
                     linkRow(L("rowIntro"), value: "\u{203A}", action: onReplayIntro)
+                    linkRow(L("rowOffline"), value: "\u{203A}", action: onOffline)
                 }
                 .padding(.top, 16)
 
@@ -710,5 +712,58 @@ struct SwitchTrack: View {
         .frame(width: 52, height: 30)
         .inkOutlined(Capsule(), border: 3)
         .animation(.snappy(duration: 0.18), value: isOn)
+    }
+}
+
+// MARK: - Offline
+
+/// Screen 12: the game itself is fully offline, so this is the placeholder it
+/// is described as (docs/specs/screens.md): a hatched mark, the copy, and a
+/// retry that simply returns. Reachable from Settings.
+struct OfflineView: View {
+    let onRetry: () -> Void
+
+    var body: some View {
+        ZStack {
+            DS.appBackground
+            VStack(spacing: 22) {
+                Spacer()
+                DS.adHatch
+                    .frame(width: 92, height: 92)
+                    .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+                    .inkOutlined(RoundedRectangle(cornerRadius: 22, style: .continuous))
+
+                VStack(spacing: 12) {
+                    Text(L("offT"))
+                        .font(DS.unbounded(26, weight: 900))
+                        .tracking(-0.05 * 26)
+                        .foregroundStyle(DesignTokens.Color.ivory)
+                        .multilineTextAlignment(.center)
+                    Text(L("offB"))
+                        .font(DS.figtree(15, weight: 600))
+                        .foregroundStyle(DesignTokens.Color.ivory.opacity(0.7))
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                Spacer()
+
+                Button(action: onRetry) {
+                    Text(L("retry"))
+                        .font(DS.unbounded(17, weight: 900))
+                        .tracking(-0.03 * 17)
+                        .foregroundStyle(DesignTokens.Color.ink)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 17)
+                        .background(DesignTokens.Color.yellow)
+                        .solidRaised(radius: 20, depth: 8)
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, DesignTokens.Space.gutter)
+            .padding(.vertical, DesignTokens.Space.gutter)
+            .frame(maxWidth: DesignTokens.Layout.columnMax)
+            .frame(maxWidth: .infinity)
+        }
     }
 }
