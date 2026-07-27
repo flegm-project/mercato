@@ -66,8 +66,8 @@ jobs:
             exit 1
           fi
 
-  swift:
-    name: Swift bindings (typecheck + runtime smoke test)
+  native:
+    name: Native output (Swift runtime smoke test + Swift/Kotlin compile)
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -90,9 +90,17 @@ jobs:
       - name: Swift smoke test
         run: ./scripts/smoke-swift.sh
 
-      - name: Typecheck generated design tokens
+      # Generated code must actually compile. Counting braces is not enough:
+      # that is exactly how a reserved-name bug reached the generated Swift.
+      - name: Typecheck generated Swift tokens
         run: |
           node scripts/gen-design-tokens.mjs
           xcrun --sdk iphonesimulator swiftc -parse-as-library -typecheck \
             -target arm64-apple-ios17.0-simulator \
             build/tokens/DesignTokens.swift
+
+      - name: Install Kotlin
+        run: brew install kotlin
+
+      - name: Compile generated Kotlin tokens
+        run: ./scripts/check-kotlin-tokens.sh
