@@ -36,5 +36,63 @@ jobs:
       - name: Clippy
         run: cargo clippy --all-targets -- -D warnings
 
-      - name: Test (includes JS-parity fixtures)
+      - name: Test (parity fixtures + dataset integrity)
         run: cargo test --all
+
+  assets:
+    name: Generated assets (strings + design tokens)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      # gen-strings validates before it emits, so this fails the build if the
+      # three languages ever drift apart or a value is left empty.
+      - name: Localized strings
+        run: node scripts/gen-strings.mjs
+
+      - name: Design tokens
+        run: node scripts/gen-design-tokens.mjs
+
+      # Generated output is never committed; catch it if someone adds it.
+      - name: Generated output stays untracked
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "generators dirtied the working tree:"
+            git status --porcelain
+            exit 1
+          fi
+
+  swift:
+    name: Swift bindings (typecheck + runtime smoke test)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            core/target
+          key: macos-cargo-${{ hashFiles('core/**/Cargo.toml') }}
+
+      # Compiles the generated bindings against the real library and plays a
+      # round, so a break in the Rust-to-Swift chain fails here rather than in
+      # the app build.
+      - name: Swift smoke test
+        run: ./scripts/smoke-swift.sh
+
+      - name: Typecheck generated design tokens
+        run: |
+          node scripts/gen-design-tokens.mjs
+          xcrun --sdk iphonesimulator swiftc -parse-as-library -typecheck \
+            -target arm64-apple-ios17.0-simulator \
+            build/tokens/DesignTokens.swift

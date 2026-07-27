@@ -111,12 +111,46 @@ Design rules:
   or a small core-owned key-value blob across FFI; avoid a DB dependency in the
   core.
 
-## Build & CI (target)
+## Build
 
-- `cargo test` for the core (fast, runs on every push).
-- iOS: build `xcframework` via a script; assemble in Xcode.
-- Android: `cargo-ndk` to produce `.so` per ABI; assemble in Gradle.
-- CI (GitHub Actions): test core → build iOS xcframework → build Android libs.
+Everything generated (UniFFI bindings, design tokens, localized resources,
+native libraries) lands in `build/`, which is gitignored. Generated code is
+never committed: the Rust FFI surface, `design/tokens.json` and
+`design/strings.json` are the single sources of truth.
+
+| Command | What it produces |
+| --- | --- |
+| `cargo test --all` (in `core/`) | Rust tests, incl. the JS parity fixtures and dataset integrity |
+| `./scripts/build-native.sh bindings` | Swift + Kotlin bindings |
+| `./scripts/build-native.sh ios` | `Mercato.xcframework` (arm64 device + fat simulator slice) |
+| `./scripts/build-native.sh android` | `libmercato_ffi.so` per ABI, laid out as `jniLibs` |
+| `./scripts/smoke-swift.sh` | Compiles a Swift binary against the bindings and plays a real round |
+| `node scripts/gen-design-tokens.mjs` | `DesignTokens.swift` / `.kt` |
+| `node scripts/gen-strings.mjs` | Apple `.strings` + Android `strings.xml`, validating the three languages first |
+
+### Toolchain
+
+- **rustup**, not a package-manager Rust: cross-compiling to iOS and Android
+  needs `rustup target add`, which a Homebrew-only install cannot do.
+- **iOS**: full Xcode (the Command Line Tools ship an `xcodebuild` shim that
+  fails when run). If the active developer directory still points at the CLT,
+  `build-native.sh` sets `DEVELOPER_DIR` itself rather than requiring
+  `sudo xcode-select -s`.
+- **Android**: the SDK plus an NDK and `cargo-ndk`. The script auto-detects a
+  Homebrew `android-commandlinetools` install and picks the highest installed
+  NDK when `ANDROID_NDK_HOME` is unset.
+
+## CI
+
+GitHub Actions runs three jobs:
+
+- **core**: fmt, clippy (`-D warnings`), and the full Rust test suite.
+- **assets**: runs both generators, so a translation drifting out of sync or an
+  empty string fails the build; also asserts the generators leave the working
+  tree clean, catching generated output committed by mistake.
+- **swift** (macOS): runs the Swift smoke test and typechecks the generated
+  design tokens for the iOS target, so a break in the Rust-to-Swift chain
+  surfaces here rather than inside an app build.
 
 ## Decisions & open questions
 
