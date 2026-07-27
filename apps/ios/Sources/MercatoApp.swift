@@ -36,6 +36,8 @@ struct RootView: View {
     @State private var summary: RoundSummary?
     /// Owns the remove-ads entitlement; every ad slot reads it.
     @StateObject private var store = Store()
+    /// Starts the ad SDK and owns the interstitial shown at game -> recap.
+    @StateObject private var ads = AdsManager()
 
     var body: some View {
         Group {
@@ -66,6 +68,7 @@ struct RootView: View {
                 }
             }
         }
+        .onAppear { ads.bootstrap() }
     }
 
     @ViewBuilder
@@ -94,7 +97,8 @@ struct RootView: View {
         case .home:
             HomeView(
                 onPlay: { mode in route = .game(mode) },
-                onSettings: { route = .settings }
+                onSettings: { route = .settings },
+                adsRemoved: store.adsRemoved
             )
 
         case .settings:
@@ -106,9 +110,15 @@ struct RootView: View {
             )
 
         case .game(let mode):
-            GameView(game: game, mode: mode) { finished in
+            GameView(game: game, mode: mode, adsRemoved: store.adsRemoved) { finished in
                 summary = finished
-                route = .recap
+                // One interstitial may play between the last question and the
+                // recap, subject to the frequency gate and the remove-ads
+                // entitlement (docs/specs/ads.md).
+                ads.onRoundFinished(
+                    adsRemoved: store.adsRemoved,
+                    consentAnswered: consentAnswered
+                ) { route = .recap }
             } onQuit: {
                 route = .home
             }
@@ -122,6 +132,7 @@ struct RootView: View {
                     score: summary.score,
                     correct: summary.correct,
                     total: summary.total,
+                    adsRemoved: store.adsRemoved,
                     onAgain: { route = .game(summary.mode) },
                     onHome: { route = .home }
                 )

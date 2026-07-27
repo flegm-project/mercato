@@ -13,6 +13,8 @@ import SwiftUI
 struct GameView: View {
     let game: Game
     let mode: GameMode
+    /// Hides the in-game sponsor slot when the remove-ads purchase is owned.
+    var adsRemoved: Bool = false
     let onFinish: (RoundSummary) -> Void
     let onQuit: () -> Void
 
@@ -55,7 +57,7 @@ struct GameView: View {
                     .contentShape(Rectangle())
                     .onTapGesture { if answer != nil { advanceNow() } }
 
-                    SponsorBoard(label: L("adBoard"))
+                    SponsorSlot(adsRemoved: adsRemoved)
                         .padding(.top, 10)
 
                     Spacer(minLength: 16)
