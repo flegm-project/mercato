@@ -327,7 +327,10 @@ struct TransferCard: View {
             header
             content
         }
-        .background(DesignTokens.Color.ivory)
+        // No card-wide background: the header paints ink and the body paints
+        // ivory, each only where it belongs. A full-bounds ivory fill would sit
+        // behind the ink header too, and its antialiased clip edge then traced
+        // a pale arc through the top corners where no ivory should exist.
         .solidRaised(radius: DesignTokens.Radius.card, depth: 11, outline: edge, ambient: true)
     }
 
