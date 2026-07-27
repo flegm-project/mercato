@@ -284,14 +284,18 @@ struct AnswerButton: View {
 
     var body: some View {
         Text(title)
-            .font(DS.unbounded(18, weight: 800))
-            .tracking(-0.045 * 18)
+            // Same metrics as the mode cards on Home, so an answer reads as
+            // the same kind of object and the four of them fill the column.
+            .font(DS.unbounded(30, weight: 900))
+            .tracking(-0.05 * 30)
             .foregroundStyle(verdict == .correct ? DesignTokens.Color.ink : .white)
+            .lineLimit(2)
+            .minimumScaleFactor(0.5)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.vertical, 17)
-            .padding(.horizontal, 18)
+            .padding(.vertical, 22)
+            .padding(.horizontal, 20)
             .background(background)
-            .solidRaised(radius: 20, depth: 8, pressed: pressed)
+            .solidRaised(radius: DesignTokens.Radius.card, depth: 10, pressed: pressed)
             .opacity(verdict == .unpicked ? 0.4 : 1)
             .contentShape(Rectangle())
             .gesture(
@@ -365,6 +369,8 @@ struct TransferCard: View {
                 .tracking(-0.04 * 19)
                 .foregroundStyle(DesignTokens.Color.clubGrey)
                 .multilineTextAlignment(.center)
+                .lineLimit(2)
+                .minimumScaleFactor(0.5)
 
             Text("\u{25BC}")
                 .font(.system(size: 15))
@@ -377,7 +383,10 @@ struct TransferCard: View {
                 .tracking(-0.05 * 32)
                 .foregroundStyle(DesignTokens.Color.ink)
                 .multilineTextAlignment(.center)
-                .minimumScaleFactor(0.7)
+                // Capping the lines makes a long name scale down rather than
+                // wrap mid-word.
+                .lineLimit(2)
+                .minimumScaleFactor(0.45)
 
             if let revealedName, verdict != nil {
                 VStack(spacing: 0) {
@@ -387,11 +396,12 @@ struct TransferCard: View {
                         .frame(height: 4)
                         .padding(.top, 18)
                     Text(revealedName)
-                        .font(DS.unbounded(29, weight: 900))
-                        .tracking(-0.05 * 29)
+                        .font(DS.unbounded(42, weight: 900))
+                        .tracking(-0.05 * 42)
                         .foregroundStyle(edge)
                         .multilineTextAlignment(.center)
-                        .minimumScaleFactor(0.7)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.45)
                         .padding(.top, 16)
                 }
             }

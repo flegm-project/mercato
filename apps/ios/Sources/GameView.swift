@@ -12,6 +12,9 @@ import SwiftUI
 /// The other screens (Splash, Onboarding, Home, Recap, Settings) are phase 5.
 struct GameView: View {
     let game: Game
+    let mode: GameMode
+    let onFinish: (RoundSummary) -> Void
+    let onQuit: () -> Void
 
     @State private var question: QuestionView?
     @State private var answer: AnswerView?
@@ -46,14 +49,11 @@ struct GameView: View {
                     .contentShape(Rectangle())
                     .onTapGesture { if answer != nil { advanceNow() } }
 
-                    SponsorBoard(label: "SPONSOR")
+                    SponsorBoard(label: L("adBoard"))
                         .padding(.top, 10)
 
                     Spacer(minLength: 16)
                     answers(q)
-                } else if roundOver {
-                    recap
-                    Spacer(minLength: 0)
                 } else {
                     Spacer(minLength: 0)
                 }
@@ -71,7 +71,7 @@ struct GameView: View {
 
     private var topBar: some View {
         HStack(spacing: 12) {
-            CloseButton(action: startRound)
+            CloseButton(action: onQuit)
             ProgressPips(states: pipStates)
             ScorePill(
                 points: score?.points ?? 0,
@@ -92,7 +92,7 @@ struct GameView: View {
     }
 
     private func answers(_ q: QuestionView) -> some View {
-        VStack(spacing: 11) {
+        VStack(spacing: 14) {
             ForEach(Array(q.options.enumerated()), id: \.offset) { index, name in
                 AnswerButton(title: name, verdict: verdict(index: index, name: name)) {
                     choose(index)
@@ -110,36 +110,12 @@ struct GameView: View {
         return .unpicked
     }
 
-    private var recap: some View {
-        VStack(spacing: DesignTokens.Space.lg) {
-            Text("ROUND OVER")
-                .font(DS.unbounded(30, weight: 900))
-                .tracking(-0.05 * 30)
-                .foregroundStyle(DesignTokens.Color.ivory)
-            Text("\(score?.points ?? 0) points  ·  best streak \(score?.bestStreak ?? 0)")
-                .font(DS.figtree(15, weight: 700))
-                .foregroundStyle(DesignTokens.Color.ivory.opacity(0.8))
-
-            Button(action: startRound) {
-                Text("PLAY AGAIN")
-                    .font(DS.unbounded(18, weight: 800))
-                    .tracking(-0.045 * 18)
-                    .foregroundStyle(DesignTokens.Color.ink)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 17)
-                    .background(DesignTokens.Color.yellow)
-                    .solidRaised(radius: 20, depth: 8)
-            }
-            .buttonStyle(.plain)
-        }
-        .padding(.top, 40)
-    }
 
     private func kindLabel(_ kind: MoveKind) -> String {
         switch kind {
-        case .transfer: return "TRANSFER"
-        case .loan: return "LOAN"
-        case .free: return "FREE TRANSFER"
+        case .transfer: return L("perm")
+        case .loan: return L("loan")
+        case .free: return L("free")
         }
     }
 
@@ -149,7 +125,7 @@ struct GameView: View {
         let lang = languageForLocale(tag: Locale.current.identifier)
         // Seeded from the clock so each round differs. The core stays
         // deterministic for a given seed, which is what the tests rely on.
-        game.startRound(lang: lang, mode: .easy, seed: UInt32.random(in: 0...UInt32.max))
+        game.startRound(lang: lang, mode: mode, seed: UInt32.random(in: 0...UInt32.max))
         advanceWork?.cancel()
         results = []
         answer = nil
@@ -184,6 +160,15 @@ struct GameView: View {
     private func advance() {
         question = game.nextQuestion()
         score = game.score()
-        if question == nil { roundOver = true }
+        if question == nil, !roundOver {
+            roundOver = true
+            onFinish(RoundSummary(
+                mode: mode,
+                score: game.score(),
+                correct: results.filter { $0 }.count,
+                total: results.count,
+                missed: game.missed()
+            ))
+        }
     }
 }
