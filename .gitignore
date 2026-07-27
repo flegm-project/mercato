@@ -8,8 +8,9 @@ Thumbs.db
 # ---- Rust ----
 /core/target/
 **/target/
-Cargo.lock        # library workspace; keep unlocked (revisit if we ship a binary)
 *.rs.bk
+# Cargo.lock is committed: reproducible CI now, and the workspace will ship
+# app binaries later.
 
 # ---- Generated data artifacts (source of truth is data/*.csv) ----
 /data/build/out/
