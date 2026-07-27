@@ -70,6 +70,13 @@ During development always use Google's published test ad unit IDs, never the
 production ones (invalid-traffic risk). Real IDs are injected per build
 configuration (xcconfig on iOS, gradle property on Android), not hardcoded.
 
+Status: both AdMob app entries and the four ad units per platform exist
+(account ca-app-pub-5435447054359850). The IDs live in
+`apps/ios/Config/AdMob-*.xcconfig` and `apps/android/config/admob-*.properties`
+(debug = Google demo IDs, release = production IDs); see `apps/README.md`
+for the wiring. The `mercato_remove_ads` product is still to be created in
+App Store Connect and Play Console once the accounts are active.
+
 Consent: Google UMP SDK on both platforms; on iOS also App Tracking
 Transparency (UMP can chain the ATT prompt). Feed the outcome to the core via
 `set_ad_consent`; when `ad_personalization_allowed()` is false, send

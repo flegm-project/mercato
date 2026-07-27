@@ -1,0 +1,10 @@
+// AdMob configuration, Debug builds only: Google's public demo IDs.
+// Never ship these; Release uses AdMob-Release.xcconfig.
+// Wiring: Info.plist key GADApplicationIdentifier = $(ADMOB_APP_ID);
+// the app reads the ad unit IDs from build settings via Info.plist entries.
+
+ADMOB_APP_ID = ca-app-pub-3940256099942544~1458002511
+ADMOB_UNIT_BANNER = ca-app-pub-3940256099942544/2934735716
+ADMOB_UNIT_SPONSOR = ca-app-pub-3940256099942544/2934735716
+ADMOB_UNIT_INTERSTITIAL = ca-app-pub-3940256099942544/4411468910
+ADMOB_UNIT_RECTANGLE = ca-app-pub-3940256099942544/2934735716

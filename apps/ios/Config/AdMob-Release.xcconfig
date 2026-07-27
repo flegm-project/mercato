@@ -1,0 +1,10 @@
+// AdMob configuration, Release builds: production IDs for the "Mercato"
+// iOS app entry in the AdMob console (account ca-app-pub-5435447054359850).
+// Ad unit names mirror docs/MONETIZATION.md: banner, sponsor, interstitial,
+// rectangle.
+
+ADMOB_APP_ID = ca-app-pub-5435447054359850~6829263654
+ADMOB_UNIT_BANNER = ca-app-pub-5435447054359850/2890018645
+ADMOB_UNIT_SPONSOR = ca-app-pub-5435447054359850/7734196921
+ADMOB_UNIT_INTERSTITIAL = ca-app-pub-5435447054359850/1444386673
+ADMOB_UNIT_RECTANGLE = ca-app-pub-5435447054359850/2534107062
