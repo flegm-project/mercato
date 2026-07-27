@@ -117,16 +117,17 @@ struct HomeView: View {
 
 // MARK: - Recap
 
-/// End of round: verdict, stars, the score card, and what was missed.
+/// End of round: verdict, stars and the score card.
 ///
-/// The source design also awards balls and offers a rewarded video here.
-/// Neither exists in this product, so the card carries the score and the two
-/// stats only.
+/// The source design also awards balls, offers a rewarded video, and lists the
+/// transfers that were missed. None of those belong here: there is no soft
+/// currency and no rewarded ads (docs/MONETIZATION.md), and the round is not
+/// meant to be corrected answer by answer. The screen shows the score and the
+/// two stats, nothing else.
 struct RecapView: View {
     let score: ScoreView
     let correct: Int
     let total: Int
-    let missed: [MissedView]
     let onAgain: () -> Void
     let onHome: () -> Void
 
@@ -165,10 +166,6 @@ struct RecapView: View {
                     .padding(.top, 18)
 
                     scoreCard.padding(.top, 22)
-
-                    if !missed.isEmpty {
-                        missedList.padding(.top, 22)
-                    }
 
                     VStack(spacing: 10) {
                         Button(action: onAgain) {
@@ -241,40 +238,4 @@ struct RecapView: View {
         .clipShape(RoundedRectangle(cornerRadius: 15, style: .continuous))
     }
 
-    private var missedList: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(L("rMissed").uppercased())
-                .font(DS.figtree(10.5, weight: 900))
-                .tracking(0.2 * 10.5)
-                .foregroundStyle(Color.white.opacity(0.55))
-                .padding(.bottom, 2)
-
-            ForEach(Array(missed.enumerated()), id: \.offset) { _, m in
-                HStack(spacing: 12) {
-                    Text(String(m.year))
-                        .font(DS.unbounded(14, weight: 900))
-                        .foregroundStyle(DesignTokens.Color.coral)
-                        .frame(minWidth: 40, alignment: .leading)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(m.playerName)
-                            .font(DS.figtree(14, weight: 800))
-                            .foregroundStyle(DesignTokens.Color.ivory)
-                        Text("\(m.fromClub)  \u{2192}  \(m.toClub)")
-                            .font(DS.figtree(12, weight: 600))
-                            .foregroundStyle(Color.white.opacity(0.6))
-                    }
-                    Spacer(minLength: 0)
-                }
-                .padding(.horizontal, 14)
-                .padding(.vertical, 11)
-                .background(DesignTokens.Color.coral.opacity(0.14))
-                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .strokeBorder(DesignTokens.Color.coral.opacity(0.34), lineWidth: 3)
-                )
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
 }

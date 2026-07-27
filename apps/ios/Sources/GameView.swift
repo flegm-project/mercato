@@ -25,6 +25,10 @@ struct GameView: View {
     @State private var roundOver = false
     /// Cancelled when the player taps the card to advance early.
     @State private var advanceWork: DispatchWorkItem?
+    /// Hardcore only.
+    @State private var guess = ""
+    @State private var hints: [HintView] = []
+    @State private var ambiguous = false
 
     private var roundLength: Int { Int(DesignTokens.Game.roundLength) }
 
@@ -43,7 +47,8 @@ struct GameView: View {
                         fromClub: q.fromClub,
                         toClub: q.toClub,
                         verdict: answer?.correct,
-                        revealedName: answer?.revealedName
+                        revealedName: answer?.revealedName,
+                        maskedName: q.maskedName
                     )
                     .padding(.top, 14)
                     .contentShape(Rectangle())
@@ -53,7 +58,11 @@ struct GameView: View {
                         .padding(.top, 10)
 
                     Spacer(minLength: 16)
-                    answers(q)
+                    if mode == .easy {
+                        answers(q)
+                    } else {
+                        hardcore(q)
+                    }
                 } else {
                     Spacer(minLength: 0)
                 }
@@ -73,6 +82,9 @@ struct GameView: View {
         HStack(spacing: 12) {
             CloseButton(action: onQuit)
             ProgressPips(states: pipStates)
+            if mode == .hardcore {
+                Hearts(remaining: Int(question?.attemptsLeft ?? 3), total: 3)
+            }
             ScorePill(
                 points: score?.points ?? 0,
                 verdict: answer?.correct,
@@ -89,6 +101,103 @@ struct GameView: View {
             if index == results.count && question != nil && answer == nil { return .live }
             return .pending
         }
+    }
+
+    /// Free-text entry, the hint ladder, and the two controls.
+    @ViewBuilder
+    private func hardcore(_ q: QuestionView) -> some View {
+        VStack(spacing: 12) {
+            if !hints.isEmpty {
+                // Wraps onto a second line once three chips are showing.
+                FlowRow(spacing: 8) {
+                    ForEach(Array(hints.enumerated()), id: \.offset) { _, hint in
+                        HintChip(text: hintText(hint))
+                    }
+                }
+            }
+
+            if ambiguous {
+                Text(L("rAmb"))
+                    .font(DS.figtree(13, weight: 800))
+                    .foregroundStyle(DesignTokens.Color.yellow)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
+            }
+
+            GuessField(
+                text: $guess,
+                placeholder: L("ph"),
+                verdict: answer?.correct,
+                onSubmit: submitGuess
+            )
+
+            HardcoreControls(
+                hintLabel: "\(L("hint")) (\(3 - hints.count))",
+                hintEnabled: answer == nil && hints.count < 3,
+                submitLabel: L("go"),
+                submitEnabled: answer == nil && !guess.trimmingCharacters(in: .whitespaces).isEmpty,
+                onHint: takeHint,
+                onSubmit: submitGuess
+            )
+        }
+    }
+
+    /// The hint ladder in order: nationality, then position, then the shape of
+    /// the surname.
+    private func hintText(_ hint: HintView) -> String {
+        if let nationality = hint.nationality { return nationality }
+        if let position = hint.position {
+            switch position {
+            case .gk: return "GK"
+            case .def: return "DEF"
+            case .mid: return "MID"
+            case .fw: return "FW"
+            }
+        }
+        if let initial = hint.surnameInitial, let letters = hint.surnameLetters {
+            return "\(initial) \u{00B7} \(letters)"
+        }
+        return ""
+    }
+
+    private func takeHint() {
+        if let hint = game.nextHint() { hints.append(hint) }
+    }
+
+    private func submitGuess() {
+        let text = guess.trimmingCharacters(in: .whitespaces)
+        guard !text.isEmpty, answer == nil else { return }
+        guard let result = try? game.submitGuess(text: text) else { return }
+
+        // An ambiguous surname asks for the first name and costs no attempt,
+        // so the question stays open and nothing is recorded.
+        if result.rejection == .ambiguousSurname {
+            ambiguous = true
+            return
+        }
+        ambiguous = false
+
+        if !result.finished {
+            // Wrong but attempts remain: clear the field and let them try
+            // again. The cached question still carries the old attempt count,
+            // so re-read it to make the hearts drop.
+            guess = ""
+            score = game.score()
+            question = game.currentQuestion()
+            return
+        }
+
+        answer = result
+        score = game.score()
+        results.append(result.correct)
+        bumpToken += 1
+
+        let work = DispatchWorkItem { advanceNow() }
+        advanceWork = work
+        DispatchQueue.main.asyncAfter(
+            deadline: .now() + Double(DesignTokens.Motion.autoAdvance) / 1000,
+            execute: work
+        )
     }
 
     private func answers(_ q: QuestionView) -> some View {
@@ -130,6 +239,9 @@ struct GameView: View {
         results = []
         answer = nil
         pickedIndex = nil
+        guess = ""
+        hints = []
+        ambiguous = false
         roundOver = false
         advance()
     }
@@ -154,6 +266,9 @@ struct GameView: View {
         advanceWork = nil
         answer = nil
         pickedIndex = nil
+        guess = ""
+        hints = []
+        ambiguous = false
         advance()
     }
 
@@ -166,8 +281,7 @@ struct GameView: View {
                 mode: mode,
                 score: game.score(),
                 correct: results.filter { $0 }.count,
-                total: results.count,
-                missed: game.missed()
+                total: results.count
             ))
         }
     }

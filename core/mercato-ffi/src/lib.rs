@@ -135,6 +135,8 @@ pub struct QuestionView {
     /// Easy: four shuffled options. Hardcore: empty.
     pub options: Vec<String>,
     pub attempts_left: u8,
+    /// Hardcore only: the answer as dots, one per letter.
+    pub masked_name: String,
 }
 
 #[derive(Debug, Clone, uniffi::Record)]
@@ -336,6 +338,7 @@ fn question_view(q: mercato_core::Question) -> QuestionView {
         to_club: q.to_club,
         options: q.options,
         attempts_left: q.attempts_left,
+        masked_name: q.masked_name,
     }
 }
 

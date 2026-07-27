@@ -325,6 +325,8 @@ struct TransferCard: View {
     /// nil while the question is open.
     let verdict: Bool?
     let revealedName: String?
+    /// Hardcore only: the answer as dots, shown while the question is open.
+    var maskedName: String? = nil
 
     var body: some View {
         VStack(spacing: 0) {
@@ -388,6 +390,16 @@ struct TransferCard: View {
                 .lineLimit(2)
                 .minimumScaleFactor(0.45)
 
+            if let maskedName, verdict == nil, !maskedName.isEmpty {
+                Text(maskedName)
+                    .font(DS.unbounded(22, weight: 900))
+                    .tracking(0.1 * 22)
+                    .foregroundStyle(Color(red: 0.84, green: 0.83, blue: 0.77))
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.5)
+                    .padding(.top, 18)
+            }
+
             if let revealedName, verdict != nil {
                 VStack(spacing: 0) {
                     // A dashed rule separates the question from its answer.
@@ -442,5 +454,166 @@ struct SponsorBoard: View {
             )
             .inkOutlined(RoundedRectangle(cornerRadius: 13, style: .continuous))
             .accessibilityHidden(true)
+    }
+}
+
+/// Hardcore free-text entry. Turns green or coral once the question closes,
+/// mirroring the answer buttons in Easy.
+struct GuessField: View {
+    @Binding var text: String
+    let placeholder: String
+    /// nil while the question is open.
+    let verdict: Bool?
+    let onSubmit: () -> Void
+
+    var body: some View {
+        TextField(placeholder, text: $text)
+            .textInputAutocapitalization(.never)
+            .autocorrectionDisabled()
+            .submitLabel(.go)
+            .onSubmit(onSubmit)
+            .font(DS.unbounded(30, weight: 900))
+            .tracking(-0.05 * 30)
+            .foregroundStyle(verdict == false ? .white : DesignTokens.Color.ink)
+            .minimumScaleFactor(0.5)
+            .padding(.vertical, 22)
+            .padding(.horizontal, 20)
+            // Without this the padding around the field swallows taps and the
+            // field never becomes first responder.
+            .contentShape(Rectangle())
+            .background(background)
+            .solidRaised(radius: DesignTokens.Radius.card, depth: 10)
+            .disabled(verdict != nil)
+    }
+
+    private var background: Color {
+        switch verdict {
+        case .some(true): return DesignTokens.Color.green
+        case .some(false): return DesignTokens.Color.coral
+        case .none: return DesignTokens.Color.ivory
+        }
+    }
+}
+
+/// A revealed hint. Hints are free gameplay here: there is no shop.
+struct HintChip: View {
+    let text: String
+
+    var body: some View {
+        Text(text)
+            .font(DS.unbounded(13.5, weight: 800))
+            .tracking(-0.02 * 13.5)
+            .foregroundStyle(DesignTokens.Color.ink)
+            .padding(.horizontal, 15)
+            .padding(.vertical, 7)
+            .background(DesignTokens.Color.ivory)
+            .inkOutlined(Capsule())
+    }
+}
+
+/// The two controls under the guess field. The hint takes 38 percent of the
+/// width and the submit the rest, as in the source design.
+struct HardcoreControls: View {
+    let hintLabel: String
+    let hintEnabled: Bool
+    let submitLabel: String
+    let submitEnabled: Bool
+    let onHint: () -> Void
+    let onSubmit: () -> Void
+
+    private let spacing: CGFloat = 11
+    private let hintShare: CGFloat = 0.38
+
+    var body: some View {
+        GeometryReader { geo in
+            let hintWidth = max(0, (geo.size.width - spacing) * hintShare)
+            HStack(spacing: spacing) {
+                control(
+                    title: hintLabel,
+                    font: DS.unbounded(20, weight: 800),
+                    tracking: -0.03 * 20,
+                    fill: DesignTokens.Color.ivory,
+                    enabled: hintEnabled,
+                    action: onHint
+                )
+                .frame(width: hintWidth)
+
+                control(
+                    title: submitLabel,
+                    font: DS.unbounded(24, weight: 900),
+                    tracking: -0.03 * 24,
+                    fill: DesignTokens.Color.yellow,
+                    enabled: submitEnabled,
+                    action: onSubmit
+                )
+                .frame(maxWidth: .infinity)
+            }
+        }
+        // GeometryReader has no intrinsic height, so the row is given the one
+        // the controls actually need: 22pt padding either side of the label.
+        .frame(height: 22 * 2 + 34)
+    }
+
+    private func control(
+        title: String,
+        font: Font,
+        tracking: CGFloat,
+        fill: Color,
+        enabled: Bool,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Text(title)
+                .font(font)
+                .tracking(tracking)
+                .foregroundStyle(DesignTokens.Color.ink)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 22)
+                .padding(.horizontal, 12)
+                .background(fill)
+                .solidRaised(radius: DesignTokens.Radius.card, depth: 10)
+                .opacity(enabled ? 1 : 0.4)
+        }
+        .buttonStyle(.plain)
+        .disabled(!enabled)
+    }
+}
+
+/// Lays children out in a row and wraps to the next line when they no longer
+/// fit. Used for the hint chips, which reach three and can exceed the column.
+struct FlowRow: Layout {
+    var spacing: CGFloat = 8
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let maxWidth = proposal.width ?? .infinity
+        var x: CGFloat = 0, y: CGFloat = 0, lineHeight: CGFloat = 0
+        for view in subviews {
+            let size = view.sizeThatFits(.unspecified)
+            if x > 0, x + size.width > maxWidth {
+                x = 0
+                y += lineHeight + spacing
+                lineHeight = 0
+            }
+            x += size.width + spacing
+            lineHeight = max(lineHeight, size.height)
+        }
+        return CGSize(width: maxWidth, height: y + lineHeight)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        var x = bounds.minX, y = bounds.minY, lineHeight: CGFloat = 0
+        for view in subviews {
+            let size = view.sizeThatFits(.unspecified)
+            if x > bounds.minX, x + size.width > bounds.maxX {
+                x = bounds.minX
+                y += lineHeight + spacing
+                lineHeight = 0
+            }
+            view.place(at: CGPoint(x: x, y: y), proposal: ProposedViewSize(size))
+            x += size.width + spacing
+            lineHeight = max(lineHeight, size.height)
+        }
     }
 }

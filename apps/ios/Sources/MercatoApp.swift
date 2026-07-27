@@ -84,7 +84,6 @@ struct RootView: View {
                     score: summary.score,
                     correct: summary.correct,
                     total: summary.total,
-                    missed: summary.missed,
                     onAgain: { route = .game(summary.mode) },
                     onHome: { route = .home }
                 )
@@ -112,5 +111,4 @@ struct RoundSummary {
     let score: ScoreView
     let correct: Int
     let total: Int
-    let missed: [MissedView]
 }

@@ -33,6 +33,9 @@ pub struct Question {
     pub options: Vec<String>,
     /// Hardcore only: attempts still available.
     pub attempts_left: u8,
+    /// Hardcore only: the answer with every letter replaced by a dot, so the
+    /// player can see the shape of the name they are reaching for.
+    pub masked_name: String,
 }
 
 /// What a hint reveals, in unlock order.
@@ -191,6 +194,10 @@ impl Session {
                 .map(|&i| self.corpus.players[i].name(self.lang).to_string())
                 .collect(),
             attempts_left: c.attempts_left,
+            masked_name: match self.mode {
+                Mode::Hardcore => mask_name(self.corpus.players[c.player_index].name(self.lang)),
+                Mode::Easy => String::new(),
+            },
         }
     }
 
@@ -316,6 +323,15 @@ impl Session {
         self.current.as_mut()?.hints_used += 1;
         Some(hint)
     }
+}
+
+/// One dot per letter, capped at nine so a very long name stays readable, with
+/// the word boundaries kept.
+fn mask_name(name: &str) -> String {
+    name.split_whitespace()
+        .map(|word| "\u{2022}".repeat(word.chars().count().min(9)))
+        .collect::<Vec<_>>()
+        .join("  ")
 }
 
 /// Fisher-Yates using the seeded RNG, matching the reference `shuffle`.
