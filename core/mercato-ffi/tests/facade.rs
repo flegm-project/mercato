@@ -175,3 +175,50 @@ fn ads_gate_follows_questions_consent_and_purchase() {
     g.set_ads_removed(false);
     assert!(g.should_show_ad(AdPlacement::Banner));
 }
+
+#[test]
+fn lab_reports_stats_verdicts_and_collisions() {
+    use mercato_ffi::LabVerdict;
+
+    let g = game();
+    let stats = g.lab_stats();
+    assert_eq!(stats.players, 513);
+    assert_eq!(stats.clubs, 412);
+    assert_eq!(stats.transfers, 1905);
+    assert_eq!(stats.aliases, 985);
+
+    let players = g.lab_players();
+    assert_eq!(players.len(), 513);
+    let palmer = players
+        .iter()
+        .find(|p| p.name == "Cole Palmer")
+        .expect("Cole Palmer in dataset");
+
+    // Exact name: accepted, distance 0, full trace.
+    let ok = g.lab_evaluate(palmer.id.clone(), "cole palmer".into());
+    assert_eq!(ok.verdict, LabVerdict::Accept);
+    assert_eq!(ok.distance, Some(0));
+    assert!(ok.trace.iter().any(|l| l.starts_with("route: exact")));
+    assert!(ok.trace.iter().any(|l| l.starts_with("verdict: accepted")));
+
+    // Garbage: rejected.
+    let no = g.lab_evaluate(palmer.id.clone(), "xqzzk".into());
+    assert_eq!(no.verdict, LabVerdict::Reject);
+
+    // A real surname collision from the data must come back ambiguous when
+    // one of its carriers is the target and the bare surname is typed.
+    let collisions = g.lab_collisions();
+    assert!(!collisions.is_empty(), "dataset has shared surnames");
+    let case = &collisions[0];
+    assert!(case.players.len() > 1);
+    let target = players
+        .iter()
+        .find(|p| p.name == case.players[0])
+        .expect("collision player resolvable");
+    let amb = g.lab_evaluate(target.id.clone(), case.surname.clone());
+    assert_eq!(amb.verdict, LabVerdict::Ambiguous);
+
+    // Unknown target never panics.
+    let unknown = g.lab_evaluate("nope".into(), "anything".into());
+    assert_eq!(unknown.verdict, LabVerdict::Reject);
+}

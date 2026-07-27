@@ -9,8 +9,15 @@
 
 use std::sync::{Arc, Mutex};
 
+use std::collections::BTreeMap;
+
+use mercato_core::distance::{threshold_for, BASE};
+use mercato_core::matching::surname_variants;
+use mercato_core::normalize::normalize;
 use mercato_core::session::{Hint, Rejection, Session, HARDCORE_ATTEMPTS, QUESTIONS_PER_ROUND};
-use mercato_core::{AdsConfig, AdsGate, Consent, Corpus, Kind, Lang, Mode, Placement, Position};
+use mercato_core::{
+    AdsConfig, AdsGate, Consent, Corpus, Kind, Lang, Mode, Placement, Position, Route,
+};
 
 uniffi::setup_scaffolding!();
 
@@ -233,6 +240,53 @@ pub enum GameError {
     NoQuestion,
 }
 
+// --- matching lab (dev-only screens) ----------------------------------------
+// Read-only diagnostics over the matching engine, shared by the iOS and
+// Android lab screens so both platforms show the exact same verdicts. The
+// engine itself (matching.rs) is reused as-is; nothing here re-implements
+// the rule.
+
+#[derive(Debug, Clone, uniffi::Record)]
+pub struct LabStats {
+    pub players: u32,
+    pub clubs: u32,
+    pub transfers: u32,
+    pub aliases: u32,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, uniffi::Enum)]
+pub enum LabVerdict {
+    Accept,
+    Reject,
+    /// Shared surname: the engine asks for a first name (costs no attempt).
+    Ambiguous,
+}
+
+#[derive(Debug, Clone, uniffi::Record)]
+pub struct LabOutcome {
+    pub verdict: LabVerdict,
+    /// The name form the engine matched against, when any.
+    pub best_match: Option<String>,
+    /// Levenshtein distance to the best match, when one was computed.
+    pub distance: Option<u32>,
+    /// Distance threshold applied for the evaluated form.
+    pub threshold: u32,
+    /// Human-readable evaluation steps, top to bottom.
+    pub trace: Vec<String>,
+}
+
+#[derive(Debug, Clone, uniffi::Record)]
+pub struct LabPlayer {
+    pub id: String,
+    pub name: String,
+}
+
+#[derive(Debug, Clone, uniffi::Record)]
+pub struct LabCollision {
+    pub surname: String,
+    pub players: Vec<String>,
+}
+
 // --- the facade -------------------------------------------------------------
 
 /// Owns the dataset and the running session.
@@ -380,6 +434,133 @@ impl Game {
     /// Attempts per question in Hardcore.
     pub fn hardcore_attempts(&self) -> u8 {
         HARDCORE_ATTEMPTS
+    }
+
+    // --- matching lab (dev-only) --------------------------------------------
+
+    /// Dataset counters for the lab's stats panel.
+    pub fn lab_stats(&self) -> LabStats {
+        LabStats {
+            players: self.corpus.players.len() as u32,
+            clubs: self.corpus.clubs.len() as u32,
+            transfers: self.corpus.transfers.len() as u32,
+            aliases: self
+                .corpus
+                .players
+                .iter()
+                .map(|p| p.aliases.len())
+                .sum::<usize>() as u32,
+        }
+    }
+
+    /// Every player (dataset order), to pick the lab's expected answer.
+    pub fn lab_players(&self) -> Vec<LabPlayer> {
+        self.corpus
+            .players
+            .iter()
+            .map(|p| LabPlayer {
+                id: p.id.clone(),
+                name: p.name_en.clone(),
+            })
+            .collect()
+    }
+
+    /// Run one guess against one target through the real engine and report
+    /// route, distance, threshold and a readable trace.
+    pub fn lab_evaluate(&self, target_id: String, guess: String) -> LabOutcome {
+        let Some(target) = self.corpus.player(&target_id) else {
+            return LabOutcome {
+                verdict: LabVerdict::Reject,
+                best_match: None,
+                distance: None,
+                threshold: 0,
+                trace: vec![format!("unknown target id: {target_id}")],
+            };
+        };
+        let result = self
+            .corpus
+            .matcher()
+            .match_by_id(&self.corpus.players, &guess, &target_id, BASE)
+            .expect("target id resolved above");
+
+        // Threshold of the form actually evaluated: the matched candidate
+        // when there is one, the target's canonical name otherwise.
+        let evaluated = result
+            .matched
+            .clone()
+            .unwrap_or_else(|| target.name_en.clone());
+        let threshold = threshold_for(&normalize(&evaluated), BASE) as u32;
+
+        let route = match result.route {
+            Route::Exact => "exact",
+            Route::Alias => "alias",
+            Route::Fuzzy => "fuzzy",
+            Route::Surname => "surname",
+            Route::None => "none",
+        };
+        let verdict = if result.ambiguous {
+            LabVerdict::Ambiguous
+        } else if result.ok {
+            LabVerdict::Accept
+        } else {
+            LabVerdict::Reject
+        };
+
+        let mut trace = vec![
+            format!("normalized input: {}", normalize(&guess)),
+            format!(
+                "known aliases: {}",
+                if target.aliases.is_empty() {
+                    "-".to_string()
+                } else {
+                    target.aliases.join(", ")
+                }
+            ),
+            format!("route: {route}"),
+            format!("best match: {}", result.matched.as_deref().unwrap_or("-")),
+            format!(
+                "distance: {}",
+                result.dist.map_or("-".to_string(), |d| d.to_string())
+            ),
+            format!("threshold: {threshold}"),
+        ];
+        trace.push(match verdict {
+            LabVerdict::Accept => "verdict: accepted".to_string(),
+            LabVerdict::Reject => "verdict: rejected".to_string(),
+            LabVerdict::Ambiguous => "verdict: ambiguous, ask for the first name".to_string(),
+        });
+
+        LabOutcome {
+            verdict,
+            best_match: result.matched,
+            distance: result.dist.map(|d| d as u32),
+            threshold,
+            trace,
+        }
+    }
+
+    /// Surnames shared by several players (the cases Hardcore must refuse
+    /// as a bare surname), with the players carrying each of them.
+    pub fn lab_collisions(&self) -> Vec<LabCollision> {
+        // Same construction rule as the engine's SURNAME_INDEX: surname
+        // variants of the canonical names only. BTreeMap keeps the output
+        // ordered and stable for the UI.
+        let mut by_surname: BTreeMap<String, Vec<String>> = BTreeMap::new();
+        for p in &self.corpus.players {
+            for nm in p.canonical() {
+                for v in surname_variants(nm) {
+                    let entry = by_surname.entry(v).or_default();
+                    if !entry.contains(&p.name_en) {
+                        entry.push(p.name_en.clone());
+                    }
+                }
+            }
+        }
+        by_surname
+            .into_iter()
+            .filter(|(_, players)| players.len() > 1)
+            .map(|(surname, players)| LabCollision { surname, players })
+            .collect()
     }
 
     // --- ads gate (see mercato_core::ads) -----------------------------------
