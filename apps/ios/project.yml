@@ -1,0 +1,65 @@
+# XcodeGen spec for the Mercato iOS app.
+#
+# The .xcodeproj is generated from this file and is NOT committed, the same
+# rule the bindings, tokens and localized resources follow. Regenerate with
+# ./scripts/gen-ios-project.sh, which also builds everything the project
+# references.
+name: Mercato
+options:
+  bundleIdPrefix: com.mercato
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    # The Rust core is linked as a static library from the xcframework.
+    OTHER_LDFLAGS: "-ObjC"
+
+targets:
+  Mercato:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sources
+      # Generated, hence outside this directory: the FFI bindings, the design
+      # tokens, and the localized resources all come from build/.
+      - path: ../../build/bindings/swift/mercato_ffi.swift
+        group: Generated
+      - path: ../../build/tokens/DesignTokens.swift
+        group: Generated
+      - path: ../../build/strings/ios/en.lproj
+        group: Generated
+        buildPhase: resources
+      - path: ../../build/strings/ios/fr.lproj
+        group: Generated
+        buildPhase: resources
+      - path: ../../build/strings/ios/es.lproj
+        group: Generated
+        buildPhase: resources
+      # The dataset ships with the app; the core reads these CSVs at startup.
+      - path: ../../data
+        group: Resources
+        buildPhase: resources
+        excludes:
+          - "*.md"
+    dependencies:
+      - framework: ../../build/ios/Mercato.xcframework
+        embed: false
+    info:
+      path: Sources/Info.plist
+      properties:
+        CFBundleDisplayName: Mercato
+        CFBundleShortVersionString: "0.1.0"
+        CFBundleVersion: "1"
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        # The game reads the system language and falls back to English; there
+        # is no in-app picker.
+        CFBundleLocalizations:
+          - en
+          - fr
+          - es
+        CFBundleDevelopmentRegion: en

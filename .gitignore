@@ -20,6 +20,9 @@ Thumbs.db
 !/reference/web-prototype/**   # keep the historical prototype intact
 
 # ---- iOS ----
+# The project is generated from apps/ios/project.yml by xcodegen.
+*.xcodeproj
+
 /apps/ios/build/
 /apps/ios/DerivedData/
 *.xcuserstate
