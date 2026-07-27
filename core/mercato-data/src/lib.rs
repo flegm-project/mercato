@@ -9,7 +9,7 @@ mod sqlite;
 mod validate;
 
 pub use csv_load::load_corpus;
-pub use sqlite::generate_db;
+pub use sqlite::{generate_db, load_from_db};
 pub use validate::validate;
 
 pub use mercato_core::{Club, Corpus, Kind, Player, Transfer};
