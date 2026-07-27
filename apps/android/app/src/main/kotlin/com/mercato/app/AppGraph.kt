@@ -31,6 +31,12 @@ class AppGraph(private val context: Context, private val scope: CoroutineScope) 
 
     val ads by lazy { AdsController(context, game) }
 
+    /** Play Billing bridge for the remove-ads entitlement. */
+    val billing by lazy { BillingManager(context, { game }, prefs, scope) }
+
+    /** Google UMP consent flow, mapped onto the core's consent contract. */
+    val consent by lazy { ConsentManager({ game }, prefs, scope) }
+
     /** Called from Application.onCreate on a background dispatcher. */
     suspend fun warmUp() = withContext(Dispatchers.IO) {
         stageDataset()

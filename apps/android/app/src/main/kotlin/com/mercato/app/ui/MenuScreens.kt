@@ -332,7 +332,7 @@ private fun StatRow(label: Int, value: String) {
     }
 }
 
-/** 11 Settings: toggles, consent, replay intro, version footer. */
+/** 11 Settings: remove-ads purchase, toggles, consent, replay intro, footer. */
 @Composable
 fun SettingsScreen(
     graph: AppGraph,
@@ -345,6 +345,8 @@ fun SettingsScreen(
     val vibration by graph.prefs.vibration.collectAsState(initial = true)
     val notifications by graph.prefs.notifications.collectAsState(initial = false)
     val consent by graph.prefs.consent.collectAsState(initial = null)
+    val adsRemoved by graph.billing.adsRemoved.collectAsState()
+    val price by graph.billing.formattedPrice.collectAsState()
 
     ScreenColumn(Modifier.verticalScroll(rememberScrollState())) {
         Gap(DesignTokens.Space.xl)
@@ -362,6 +364,20 @@ fun SettingsScreen(
             )
         }
         Gap(DesignTokens.Space.lg)
+        // The one purchase: the remove-ads entitlement (no shop screen).
+        val activity = androidx.compose.ui.platform.LocalContext.current as? android.app.Activity
+        PurchaseRow(
+            title = stringResource(R.string.shopNoAds),
+            subtitle = stringResource(R.string.shopNoAdsSub),
+            trailing = if (adsRemoved) stringResource(R.string.owned) else price,
+            enabled = !adsRemoved && activity != null,
+        ) { activity?.let { graph.billing.launchPurchase(it) } }
+        if (!adsRemoved) {
+            LinkRow(stringResource(R.string.restore), null) {
+                scope.launch { graph.billing.restore() }
+            }
+        }
+        Gap(DesignTokens.Space.md)
         ToggleRow(R.string.soundS, sound) { scope.launch { graph.prefs.setSound(it) } }
         ToggleRow(R.string.vibrateS, vibration) { scope.launch { graph.prefs.setVibration(it) } }
         ToggleRow(R.string.notifS, notifications) {
@@ -391,6 +407,44 @@ fun SettingsScreen(
             modifier = Modifier.fillMaxWidth().padding(vertical = DesignTokens.Space.lg),
             textAlign = TextAlign.Center,
         )
+    }
+}
+
+@Composable
+private fun PurchaseRow(
+    title: String,
+    subtitle: String,
+    trailing: String?,
+    enabled: Boolean,
+    onClick: () -> Unit,
+) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .background(DesignTokens.Color.blueNight, RoundedCornerShape(DesignTokens.Radius.medium))
+            .border(
+                DesignTokens.Border.hairline,
+                DesignTokens.Color.ink,
+                RoundedCornerShape(DesignTokens.Radius.medium),
+            )
+            .clickable(enabled = enabled, onClick = onClick)
+            .padding(DesignTokens.Space.md),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(Modifier.padding(end = DesignTokens.Space.md)) {
+            Text(title, style = typeStyle(DesignTokens.Type.body, DesignTokens.Color.ivory))
+            Text(
+                subtitle,
+                style = typeStyle(
+                    DesignTokens.Type.body,
+                    DesignTokens.Color.ivory.copy(alpha = 0.6f),
+                ),
+            )
+        }
+        if (trailing != null) {
+            Text(trailing, style = typeStyle(DesignTokens.Type.answer, DesignTokens.Color.yellow))
+        }
     }
 }
 
