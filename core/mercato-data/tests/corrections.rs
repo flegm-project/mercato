@@ -41,6 +41,30 @@ fn short_forms_still_match() {
     }
 }
 
+/// Every form the review displaced was kept as an alias, so a guess that was
+/// valid before the corrections is still valid after them.
+#[test]
+fn displaced_forms_still_match() {
+    let c = load_corpus(&data_dir()).expect("dataset loads");
+    let cases = [
+        ("Q47526", "Arthur Antunes Coimbra"), // now displayed as Zico
+        ("Q342489", "Antonio de Oliveira Filho"), // now Careca
+        ("Q80892", "Francisco Roman Alarcon"), // now Isco
+        ("Q11576", "Raul Gonzalez Blanco"),   // now Raul
+        ("Q42728914", "Rodrygo Goes"),        // now Rodrygo
+        ("Q222789", "Luis Enrique Martinez Garcia"),
+        ("Q166984", "Mikel John Obi"),         // now John Obi Mikel
+        ("Q28967995", "Erling Braut Haaland"), // now Erling Haaland
+    ];
+    for (id, typed) in cases {
+        let r = c
+            .matcher()
+            .match_by_id(&c.players, typed, id, 2)
+            .unwrap_or_else(|| panic!("unknown player {id}"));
+        assert!(r.ok, "typing {typed:?} should still match {id}, got {r:?}");
+    }
+}
+
 #[test]
 fn corrected_names_are_unified_across_languages() {
     let c = load_corpus(&data_dir()).expect("dataset loads");
