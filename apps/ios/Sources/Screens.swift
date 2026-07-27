@@ -62,16 +62,34 @@ struct SplashView: View {
 /// currency in this product (docs/MONETIZATION.md), so it is left out.
 struct HomeView: View {
     let onPlay: (GameMode) -> Void
+    let onSettings: () -> Void
 
     var body: some View {
         ZStack {
             DS.appBackground
             VStack(alignment: .leading, spacing: 0) {
+                // The design puts a balls counter in this slot. There is no
+                // soft currency here, so it carries the settings entry.
+                HStack {
+                    Spacer()
+                    Button(action: onSettings) {
+                        Image(systemName: "gearshape.fill")
+                            .font(.system(size: 17, weight: .bold))
+                            .foregroundStyle(.white)
+                            .frame(width: 38, height: 38)
+                            .background(DesignTokens.Color.ink.opacity(0.45))
+                            .inkOutlined(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(L("settings"))
+                }
+                .frame(height: 38)
+
                 // The wordmark sits near the top and the modes are anchored to
                 // the bottom, as in the source design, rather than the whole
                 // block floating in the middle.
                 Wordmark()
-                    .padding(.top, 36)
+                    .padding(.top, 14)
                 Spacer(minLength: DesignTokens.Space.xl)
 
                 VStack(spacing: 14) {
@@ -485,5 +503,148 @@ struct QuitDialog: View {
             .solidRaised(radius: DesignTokens.Radius.card, depth: 12)
             .padding(24)
         }
+    }
+}
+
+// MARK: - Settings
+
+/// Sound, vibration and notification switches, plus the rows that lead back to
+/// the consent choice and the intro. The language row is read only: the game
+/// follows the system language and has no in-app picker.
+struct SettingsView: View {
+    let onBack: () -> Void
+    let onConsent: () -> Void
+    let onReplayIntro: () -> Void
+
+    @AppStorage("soundOn") private var soundOn = true
+    @AppStorage("vibrationOn") private var vibrationOn = true
+    @AppStorage("notificationsOn") private var notificationsOn = false
+    @AppStorage("adsPersonalised") private var adsPersonalised = false
+
+    var body: some View {
+        ZStack {
+            DS.appBackground
+            VStack(alignment: .leading, spacing: 0) {
+                HStack(spacing: 12) {
+                    Button(action: onBack) {
+                        Text("\u{2039}")
+                            .font(.system(size: 20, weight: .black))
+                            .foregroundStyle(.white)
+                            .frame(width: 38, height: 38)
+                            .background(DesignTokens.Color.ink.opacity(0.45))
+                            .inkOutlined(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Back")
+
+                    Text(L("settings"))
+                        .font(DS.unbounded(20, weight: 900))
+                        .tracking(-0.04 * 20)
+                        .foregroundStyle(DesignTokens.Color.ivory)
+                }
+                .frame(height: 46)
+
+                VStack(spacing: 10) {
+                    toggleRow(L("soundS"), isOn: $soundOn)
+                    toggleRow(L("vibrateS"), isOn: $vibrationOn)
+                    toggleRow(L("notifS"), isOn: $notificationsOn)
+                }
+                .padding(.top, 12)
+
+                VStack(spacing: 9) {
+                    linkRow(L("rowLang"), value: "\(languageName) \u{00B7} \(L("systemV"))", action: nil)
+                    linkRow(
+                        L("rowConsent"),
+                        value: adsPersonalised ? L("consentOn") : L("consentOff"),
+                        action: onConsent
+                    )
+                    linkRow(L("rowIntro"), value: "\u{203A}", action: onReplayIntro)
+                }
+                .padding(.top, 16)
+
+                Spacer(minLength: 20)
+
+                Text(L("version"))
+                    .font(DS.mono(11))
+                    .foregroundStyle(Color.white.opacity(0.5))
+                    .frame(maxWidth: .infinity)
+            }
+            .padding(.horizontal, DesignTokens.Space.gutter)
+            .padding(.vertical, DesignTokens.Space.gutter)
+            .frame(maxWidth: DesignTokens.Layout.columnMax)
+            .frame(maxWidth: .infinity)
+        }
+    }
+
+    private var languageName: String {
+        switch languageForLocale(tag: Locale.current.identifier) {
+        case .fr: return "Français"
+        case .es: return "Español"
+        case .en: return "English"
+        }
+    }
+
+    private func toggleRow(_ label: String, isOn: Binding<Bool>) -> some View {
+        Button { isOn.wrappedValue.toggle() } label: {
+            HStack(spacing: 14) {
+                Text(label)
+                    .font(DS.unbounded(15, weight: 800))
+                    .tracking(-0.03 * 15)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                SwitchTrack(isOn: isOn.wrappedValue)
+            }
+            .foregroundStyle(DesignTokens.Color.ink)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 15)
+            .background(DesignTokens.Color.ivory)
+            .solidRaised(radius: 18, border: 4, depth: 6)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func linkRow(_ label: String, value: String, action: (() -> Void)?) -> some View {
+        Button { action?() } label: {
+            HStack(spacing: 12) {
+                Text(label)
+                    .font(DS.figtree(14.5, weight: 800))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Text(value)
+                    .font(DS.mono(11))
+                    .foregroundStyle(Color.white.opacity(0.75))
+            }
+            .foregroundStyle(.white)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+            .background(DesignTokens.Color.ink.opacity(0.35))
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .strokeBorder(Color.white.opacity(0.16), lineWidth: 3)
+            )
+        }
+        .buttonStyle(.plain)
+        // Not `.disabled`: that dims the row, and the language row is meant to
+        // read as normal copy that simply cannot be tapped, not as unavailable.
+        .allowsHitTesting(action != nil)
+    }
+}
+
+/// 52x30 track, ink border, green when on, ivory knob.
+struct SwitchTrack: View {
+    let isOn: Bool
+
+    var body: some View {
+        ZStack(alignment: isOn ? .trailing : .leading) {
+            Capsule()
+                .fill(isOn ? DesignTokens.Color.green : DesignTokens.Color.ink.opacity(0.25))
+            Circle()
+                .fill(DesignTokens.Color.ivory)
+                .overlay(Circle().strokeBorder(DesignTokens.Color.ink, lineWidth: 3))
+                .frame(width: 22, height: 22)
+                .padding(2)
+        }
+        .frame(width: 52, height: 30)
+        .inkOutlined(Capsule(), border: 3)
+        .animation(.snappy(duration: 0.18), value: isOn)
     }
 }

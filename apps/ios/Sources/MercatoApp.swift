@@ -18,6 +18,7 @@ enum Route: Equatable {
     case home
     case game(GameMode)
     case recap
+    case settings
 }
 
 /// Loads the core once and routes between screens. Loading parses the bundled
@@ -89,7 +90,17 @@ struct RootView: View {
             }
 
         case .home:
-            HomeView { mode in route = .game(mode) }
+            HomeView(
+                onPlay: { mode in route = .game(mode) },
+                onSettings: { route = .settings }
+            )
+
+        case .settings:
+            SettingsView(
+                onBack: { route = .home },
+                onConsent: { route = .consent },
+                onReplayIntro: { route = .onboarding }
+            )
 
         case .game(let mode):
             GameView(game: game, mode: mode) { finished in
