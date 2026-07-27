@@ -124,3 +124,54 @@ fn language_changes_club_names() {
     // Same seed picks the same transfer, so only the rendering differs.
     assert_eq!(en.year, fr.year);
 }
+
+#[test]
+fn ads_gate_follows_questions_consent_and_purchase() {
+    use mercato_ffi::{AdConsent, AdPlacement};
+
+    let g = game();
+    // Fresh install, free user: static slots yes, interstitial in warmup.
+    assert!(g.should_show_ad(AdPlacement::Banner));
+    assert!(g.should_show_ad(AdPlacement::SponsorBoard));
+    assert!(g.should_show_ad(AdPlacement::Rectangle));
+    assert!(!g.should_show_ad(AdPlacement::Interstitial));
+
+    // Finishing questions is what advances the gate; no separate call.
+    g.start_round(GameLang::En, GameMode::Easy, 7);
+    for _ in 0..2 {
+        let q = g.next_question().expect("question");
+        let mut done = false;
+        for i in 0..q.options.len() {
+            if g.submit_choice(i as u32).expect("answer accepted").finished {
+                done = true;
+                break;
+            }
+        }
+        assert!(done);
+    }
+    assert!(g.should_show_ad(AdPlacement::Interstitial));
+    g.record_interstitial_shown();
+    assert!(!g.should_show_ad(AdPlacement::Interstitial));
+
+    // Consent flips personalisation, never slot visibility.
+    assert!(!g.ad_personalization_allowed());
+    g.set_ad_consent(AdConsent::Personalized);
+    assert!(g.ad_personalization_allowed());
+    g.set_ad_consent(AdConsent::NonPersonalized);
+    assert!(!g.ad_personalization_allowed());
+    assert!(g.should_show_ad(AdPlacement::Banner));
+
+    // Remove-ads entitlement: everything goes dark, and back on restore-fail.
+    g.set_ads_removed(true);
+    assert!(g.ads_removed());
+    for p in [
+        AdPlacement::Banner,
+        AdPlacement::SponsorBoard,
+        AdPlacement::Interstitial,
+        AdPlacement::Rectangle,
+    ] {
+        assert!(!g.should_show_ad(p));
+    }
+    g.set_ads_removed(false);
+    assert!(g.should_show_ad(AdPlacement::Banner));
+}
