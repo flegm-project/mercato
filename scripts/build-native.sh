@@ -50,11 +50,20 @@ bindings() {
 }
 
 ios() {
-  # A Command Line Tools install still provides an xcodebuild shim that fails
-  # when run, so probe it rather than just checking that it is on PATH.
+  # A Command Line Tools install still ships an xcodebuild shim that fails when
+  # run, so probe it rather than just checking PATH. If the active developer
+  # directory is the CLT one but Xcode is installed, point at Xcode ourselves:
+  # that needs no sudo, unlike `xcode-select -s`.
+  if ! xcodebuild -version >/dev/null 2>&1; then
+    if [ -d /Applications/Xcode.app/Contents/Developer ]; then
+      export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
+    fi
+  fi
   xcodebuild -version >/dev/null 2>&1 || die \
-    "xcodebuild is not usable. Full Xcode is required (Command Line Tools alone is not enough):
-     install Xcode, then run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer"
+    "xcodebuild is not usable. Full Xcode is required (Command Line Tools alone is not enough).
+     Install Xcode, then either run
+       sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+     or export DEVELOPER_DIR to that path."
   need_targets "${IOS_TARGETS[@]}"
 
   echo "==> building iOS static libs"
