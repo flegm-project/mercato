@@ -1,0 +1,412 @@
+import SwiftUI
+
+/// The Mercato design system, ported from the source design
+/// (reference/design-source/Mercato.dc.html) and docs/specs/components.md.
+/// Numbers come from that design or from design/tokens.json, never invented
+/// here, so a component can be diffed against its origin.
+enum DS {
+    // MARK: - Type
+    //
+    // Unbounded carries the display voice, Figtree the UI voice, IBM Plex Mono
+    // the technical labels. Upstream ships variable fonts, which iOS cannot
+    // pick a weight from reliably, so design/fonts holds static cuts and each
+    // weight is its own family (see design/fonts/README.md).
+
+    static func unbounded(_ size: CGFloat, weight: Int = 900) -> Font {
+        .custom(weight >= 900 ? "Unbounded-Black" : "Unbounded-ExtraBold", fixedSize: size)
+    }
+
+    static func figtree(_ size: CGFloat, weight: Int = 700) -> Font {
+        let name: String
+        switch weight {
+        case ..<600: name = "Figtree-Medium"
+        case ..<700: name = "Figtree-SemiBold"
+        case ..<800: name = "Figtree-Bold"
+        case ..<900: name = "Figtree-ExtraBold"
+        default: name = "Figtree-Black"
+        }
+        return .custom(name, fixedSize: size)
+    }
+
+    static func mono(_ size: CGFloat) -> Font {
+        .custom("IBMPlexMono-Medium", fixedSize: size)
+    }
+
+    // MARK: - Surfaces
+
+    /// gradient.app-background: radial-gradient(130% 85% at 50% 0%, ...)
+    static var appBackground: some View {
+        GeometryReader { geo in
+            RadialGradient(
+                stops: [
+                    .init(color: DesignTokens.Color.blueTop, location: 0),
+                    .init(color: DesignTokens.Color.blue, location: 0.44),
+                    .init(color: DesignTokens.Color.blueDeep, location: 1),
+                ],
+                center: .top,
+                startRadius: 0,
+                endRadius: geo.size.width * 1.3
+            )
+            .ignoresSafeArea()
+        }
+    }
+
+    /// The 45-degree hatch behind an ad slot, so a placeholder reads as part of
+    /// the game rather than a broken image. Stripes are 11pt on a 22pt period,
+    /// matching gradient.ad-hatch.
+    static var adHatch: some View {
+        Canvas { context, size in
+            context.fill(Path(CGRect(origin: .zero, size: size)), with: .color(DesignTokens.Color.blueNight))
+            let period: CGFloat = 22
+            var x = -size.height
+            while x < size.width + size.height {
+                var stripe = Path()
+                stripe.move(to: CGPoint(x: x, y: size.height))
+                stripe.addLine(to: CGPoint(x: x + size.height, y: 0))
+                stripe.addLine(to: CGPoint(x: x + size.height + 11, y: 0))
+                stripe.addLine(to: CGPoint(x: x + 11, y: size.height))
+                stripe.closeSubpath()
+                context.fill(stripe, with: .color(Color(red: 0.07, green: 0.13, blue: 0.48)))
+                x += period
+            }
+        }
+    }
+}
+
+/// Ink outline plus a solid (unblurred) drop shadow: the signature of every
+/// raised surface here. The token shadows are pure offsets, so they are drawn
+/// as an offset copy of the shape rather than with SwiftUI's blurred shadow.
+struct SolidRaised: ViewModifier {
+    var radius: CGFloat
+    var border: CGFloat
+    var depth: CGFloat
+    var outline: Color = DesignTokens.Color.ink
+    /// The card also carries an ambient shadow to lift it off the background.
+    var ambient: Bool = false
+    var pressed: Bool = false
+
+    func body(content: Content) -> some View {
+        content
+            .clipShape(RoundedRectangle(cornerRadius: radius))
+            .overlay(
+                RoundedRectangle(cornerRadius: radius)
+                    .strokeBorder(outline, lineWidth: border)
+            )
+            .background(
+                RoundedRectangle(cornerRadius: radius)
+                    .fill(outline)
+                    // Pressing sinks the surface onto its shadow, which is what
+                    // motion.press (translateY 5px) describes.
+                    .offset(y: pressed ? max(0, depth - 5) : depth)
+            )
+            .background(
+                ambient
+                    ? RoundedRectangle(cornerRadius: radius)
+                        .fill(Color(red: 0.016, green: 0.031, blue: 0.196).opacity(0.42))
+                        .blur(radius: 22)
+                        .offset(y: 22)
+                    : nil
+            )
+            .offset(y: pressed ? 5 : 0)
+    }
+}
+
+extension View {
+    func solidRaised(
+        radius: CGFloat,
+        border: CGFloat = 5,
+        depth: CGFloat,
+        outline: Color = DesignTokens.Color.ink,
+        ambient: Bool = false,
+        pressed: Bool = false
+    ) -> some View {
+        modifier(SolidRaised(radius: radius, border: border, depth: depth, outline: outline, ambient: ambient, pressed: pressed))
+    }
+}
+
+/// Closes the round. Sits at the head of the top bar.
+struct CloseButton: View {
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text("\u{2715}")
+                .font(.system(size: 16, weight: .black))
+                .foregroundStyle(.white)
+                .frame(width: 38, height: 38)
+                .background(DesignTokens.Color.ink.opacity(0.45))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .strokeBorder(DesignTokens.Color.ink, lineWidth: DesignTokens.Border.standard)
+                )
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Quit")
+    }
+}
+
+/// One pip per question, filling the width between the close button and the
+/// score. Green correct, coral wrong, yellow live, ink 45% still to come.
+struct ProgressPips: View {
+    enum State { case correct, wrong, live, pending }
+    let states: [State]
+
+    var body: some View {
+        HStack(spacing: 5) {
+            ForEach(Array(states.enumerated()), id: \.offset) { _, state in
+                Capsule()
+                    .fill(color(state))
+                    .overlay(Capsule().strokeBorder(DesignTokens.Color.ink, lineWidth: DesignTokens.Border.hairline))
+                    .frame(height: 9)
+            }
+        }
+    }
+
+    private func color(_ state: State) -> Color {
+        switch state {
+        case .correct: return DesignTokens.Color.green
+        case .wrong: return DesignTokens.Color.coral
+        case .live: return DesignTokens.Color.yellow
+        case .pending: return DesignTokens.Color.ink.opacity(0.45)
+        }
+    }
+}
+
+/// Lives, Hardcore only.
+struct Hearts: View {
+    let remaining: Int
+    let total: Int
+
+    var body: some View {
+        HStack(spacing: 5) {
+            ForEach(0..<total, id: \.self) { index in
+                Circle()
+                    .fill(index < remaining ? DesignTokens.Color.coral : DesignTokens.Color.ink.opacity(0.45))
+                    .overlay(Circle().strokeBorder(DesignTokens.Color.ink, lineWidth: DesignTokens.Border.hairline))
+                    .frame(width: 13, height: 13)
+            }
+        }
+    }
+}
+
+/// Score readout: an ivory pill that takes the colour of the last verdict, with
+/// the gain flying up from underneath it.
+struct ScorePill: View {
+    let points: Int64
+    /// nil while the question is open, then the verdict.
+    let verdict: Bool?
+    /// Drives the fly-up; changes on every settled answer.
+    let bumpToken: Int
+
+    @State private var flying = false
+
+    var body: some View {
+        ZStack(alignment: .top) {
+            Text("\(points)")
+                .font(DS.unbounded(22, weight: 900))
+                .monospacedDigit()
+                .foregroundStyle(foreground)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 6)
+                .background(background)
+                .clipShape(Capsule())
+                .overlay(Capsule().strokeBorder(DesignTokens.Color.ink, lineWidth: DesignTokens.Border.standard))
+                .background(Capsule().fill(DesignTokens.Color.ink).offset(y: 6))
+
+            if let verdict {
+                Text(verdict ? "+3" : "0")
+                    .font(DS.unbounded(30, weight: 900))
+                    .foregroundStyle(verdict ? DesignTokens.Color.green : DesignTokens.Color.coral)
+                    .shadow(color: DesignTokens.Color.ink, radius: 0, x: 3, y: 3)
+                    .offset(y: flying ? -4 : 40)
+                    .opacity(flying ? 0 : 1)
+                    .allowsHitTesting(false)
+                    .onAppear {
+                        flying = false
+                        withAnimation(.easeOut(duration: 1.5)) { flying = true }
+                    }
+            }
+        }
+        .id(bumpToken)
+        .fixedSize()
+    }
+
+    private var background: Color {
+        switch verdict {
+        case .some(true): return DesignTokens.Color.green
+        case .some(false): return DesignTokens.Color.coral
+        case .none: return DesignTokens.Color.ivory
+        }
+    }
+
+    private var foreground: Color {
+        verdict == false ? .white : DesignTokens.Color.ink
+    }
+}
+
+/// An answer option: left-aligned display type on blue-night, turning green
+/// when it is the answer and coral when it was the wrong pick. Options left
+/// untouched fade so the eye goes to the answer.
+struct AnswerButton: View {
+    enum Verdict { case idle, correct, wrongPick, unpicked }
+
+    let title: String
+    let verdict: Verdict
+    let action: () -> Void
+
+    @GestureState private var pressed = false
+
+    var body: some View {
+        Text(title)
+            .font(DS.unbounded(18, weight: 800))
+            .tracking(-0.045 * 18)
+            .foregroundStyle(verdict == .correct ? DesignTokens.Color.ink : .white)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.vertical, 17)
+            .padding(.horizontal, 18)
+            .background(background)
+            .solidRaised(radius: 20, depth: 8, pressed: pressed)
+            .opacity(verdict == .unpicked ? 0.4 : 1)
+            .contentShape(Rectangle())
+            .gesture(
+                DragGesture(minimumDistance: 0)
+                    .updating($pressed) { _, state, _ in if verdict == .idle { state = true } }
+                    .onEnded { _ in if verdict == .idle { action() } }
+            )
+    }
+
+    private var background: Color {
+        switch verdict {
+        case .correct: return DesignTokens.Color.green
+        case .wrongPick: return DesignTokens.Color.coral
+        case .idle, .unpicked: return DesignTokens.Color.blueNight
+        }
+    }
+}
+
+/// The transfer card: an ink header with the move kind and the year, over an
+/// ivory body holding the two clubs, and the answer once the question closes.
+struct TransferCard: View {
+    let kindLabel: String
+    let isLoan: Bool
+    let year: Int32
+    let fromClub: String
+    let toClub: String
+    /// nil while the question is open.
+    let verdict: Bool?
+    let revealedName: String?
+
+    var body: some View {
+        VStack(spacing: 0) {
+            header
+            content
+        }
+        .background(DesignTokens.Color.ivory)
+        .solidRaised(radius: DesignTokens.Radius.card, depth: 11, outline: edge, ambient: true)
+    }
+
+    private var header: some View {
+        HStack(alignment: .center, spacing: 12) {
+            Text(kindLabel)
+                .font(DS.unbounded(11, weight: 800))
+                .tracking(0.14 * 11)
+                .foregroundStyle(DesignTokens.Color.ink)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                // A loan is called out with a yellow chip.
+                .background(isLoan ? DesignTokens.Color.yellow : DesignTokens.Color.ivory)
+                .clipShape(Capsule())
+            Spacer(minLength: 0)
+            Text(String(year))
+                .font(DS.unbounded(42, weight: 900))
+                .monospacedDigit()
+                .foregroundStyle(DesignTokens.Color.yellow)
+        }
+        .padding(.horizontal, 18)
+        .padding(.top, 12)
+        .padding(.bottom, 14)
+        .frame(maxWidth: .infinity)
+        .background(DesignTokens.Color.ink)
+    }
+
+    private var content: some View {
+        VStack(spacing: 0) {
+            Text(fromClub)
+                .font(DS.unbounded(19, weight: 800))
+                .tracking(-0.04 * 19)
+                .foregroundStyle(DesignTokens.Color.clubGrey)
+                .multilineTextAlignment(.center)
+
+            Text("\u{25BC}")
+                .font(.system(size: 15))
+                .foregroundStyle(arrowColor)
+                .padding(.top, 10)
+                .padding(.bottom, 12)
+
+            Text(toClub)
+                .font(DS.unbounded(32, weight: 900))
+                .tracking(-0.05 * 32)
+                .foregroundStyle(DesignTokens.Color.ink)
+                .multilineTextAlignment(.center)
+                .minimumScaleFactor(0.7)
+
+            if let revealedName, verdict != nil {
+                VStack(spacing: 0) {
+                    // A dashed rule separates the question from its answer.
+                    Rectangle()
+                        .fill(DesignTokens.Color.ink.opacity(0.14))
+                        .frame(height: 4)
+                        .padding(.top, 18)
+                    Text(revealedName)
+                        .font(DS.unbounded(29, weight: 900))
+                        .tracking(-0.05 * 29)
+                        .foregroundStyle(edge)
+                        .multilineTextAlignment(.center)
+                        .minimumScaleFactor(0.7)
+                        .padding(.top, 16)
+                }
+            }
+        }
+        .padding(.horizontal, 18)
+        .padding(.top, 20)
+        .padding(.bottom, 22)
+        .frame(maxWidth: .infinity)
+        .background(DesignTokens.Color.ivory)
+    }
+
+    private var edge: Color {
+        switch verdict {
+        case .some(true): return DesignTokens.Color.greenDeep
+        case .some(false): return DesignTokens.Color.coralDeep
+        case .none: return DesignTokens.Color.ink
+        }
+    }
+
+    private var arrowColor: Color {
+        verdict == nil ? DesignTokens.Color.ink.opacity(0.28) : edge
+    }
+}
+
+/// Static sponsor board under the card. Never animates, never interactive, so
+/// it cannot be mistaken for part of the question.
+struct SponsorBoard: View {
+    let label: String
+
+    var body: some View {
+        DS.adHatch
+            .frame(height: 44)
+            .overlay(
+                Text(label)
+                    .font(DS.mono(10.5))
+                    .tracking(0.18 * 10.5)
+                    .foregroundStyle(Color.white.opacity(0.4))
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 13))
+            .overlay(
+                RoundedRectangle(cornerRadius: 13)
+                    .strokeBorder(DesignTokens.Color.ink, lineWidth: DesignTokens.Border.standard)
+            )
+            .accessibilityHidden(true)
+    }
+}

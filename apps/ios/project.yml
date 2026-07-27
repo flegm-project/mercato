@@ -44,6 +44,13 @@ targets:
         buildPhase: resources
         excludes:
           - "*.md"
+      # Committed, not generated: see design/fonts/README.md.
+      - path: ../../design/fonts
+        group: Resources
+        buildPhase: resources
+        excludes:
+          - "*.md"
+          - "*.txt"
     dependencies:
       - framework: ../../build/ios/Mercato.xcframework
         embed: false
@@ -63,3 +70,12 @@ targets:
           - fr
           - es
         CFBundleDevelopmentRegion: en
+        UIAppFonts:
+          - Unbounded-ExtraBold.ttf
+          - Unbounded-Black.ttf
+          - Figtree-Medium.ttf
+          - Figtree-SemiBold.ttf
+          - Figtree-Bold.ttf
+          - Figtree-ExtraBold.ttf
+          - Figtree-Black.ttf
+          - IBMPlexMono-Medium.ttf

@@ -49,6 +49,11 @@ jobs:
         with:
           node-version: '18'
 
+      # Catches invisible dataset corruption (a digit standing in for a letter,
+      # a Greek alpha instead of a Latin A) and referential integrity.
+      - name: Dataset checks
+        run: node scripts/check-data.mjs
+
       # gen-strings validates before it emits, so this fails the build if the
       # three languages ever drift apart or a value is left empty.
       - name: Localized strings

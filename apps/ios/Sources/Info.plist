@@ -26,6 +26,17 @@
 	<string>0.1.0</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Unbounded-ExtraBold.ttf</string>
+		<string>Unbounded-Black.ttf</string>
+		<string>Figtree-Medium.ttf</string>
+		<string>Figtree-SemiBold.ttf</string>
+		<string>Figtree-Bold.ttf</string>
+		<string>Figtree-ExtraBold.ttf</string>
+		<string>Figtree-Black.ttf</string>
+		<string>IBMPlexMono-Medium.ttf</string>
+	</array>
 	<key>UILaunchScreen</key>
 	<dict/>
 	<key>UISupportedInterfaceOrientations</key>

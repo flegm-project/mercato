@@ -19,19 +19,27 @@ struct RootView: View {
         Group {
             switch loadResult {
             case .none:
-                ProgressView().task { loadResult = Self.loadGame() }
+                ZStack {
+                    DS.appBackground
+                    ProgressView().tint(DesignTokens.Color.ivory)
+                }
+                .task { loadResult = Self.loadGame() }
             case .success(let game):
                 GameView(game: game)
             case .failure(let error):
-                VStack(spacing: 12) {
-                    Text("Could not load the dataset")
-                        .font(.headline)
-                    Text(String(describing: error))
-                        .font(.footnote)
-                        .multilineTextAlignment(.center)
-                        .foregroundStyle(.secondary)
+                ZStack {
+                    DS.appBackground
+                    VStack(spacing: DesignTokens.Space.sm) {
+                        Text("Could not load the dataset")
+                            .font(.system(size: 22, weight: .black))
+                        Text(String(describing: error))
+                            .font(.system(size: 13))
+                            .multilineTextAlignment(.center)
+                            .opacity(0.75)
+                    }
+                    .foregroundStyle(DesignTokens.Color.ivory)
+                    .padding(DesignTokens.Space.gutter)
                 }
-                .padding()
             }
         }
     }

@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;800;900&family=Figtree:wght@500;600;700;800;900&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;padding:0;background:#1223A6;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+a{color:#FFE24A;text-decoration:none}a:hover{color:#fff}
+input,button,select{font-family:inherit}
+input::placeholder{color:#9A9788;font-family:'Figtree',sans-serif;font-weight:800;letter-spacing:0}
+:focus-visible{outline:4px solid #FFE24A;outline-offset:3px}
+button:active{transform:translateY(5px)}
+@keyframes mcPop{from{opacity:0;transform:translateY(18px) scale(.95)}to{opacity:1;transform:none}}
+@keyframes mcFly{0%{opacity:0;transform:translateY(14px) scale(.7)}18%{opacity:1;transform:translateY(0) scale(1.35)}62%{opacity:1;transform:translateY(-14px) scale(1.15)}100%{opacity:0;transform:translateY(-44px) scale(1)}}
+@keyframes mcPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.09)}}
+@keyframes mcLoad{from{width:8%}to{width:100%}}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+<script src="./mercato-data.js"></script>
+</helmet>
+<div style="min-height:100vh;display:flex;justify-content:center;font-family:'Figtree',system-ui,sans-serif;color:#fff;background:radial-gradient(130% 85% at 50% 0%,#2E48FF 0%,#1B2FE0 44%,#1223A6 100%)">
+<div style="width:100%;max-width:440px;min-height:100vh;padding:16px 16px 0;display:flex;flex-direction:column;position:relative">
+
+<sc-if value="{{ isSplash }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-direction:column;flex:1;align-items:center;justify-content:center;padding-bottom:60px">
+  <h1 style="font-family:'Unbounded',sans-serif;font-weight:900;font-size:clamp(54px,17vw,74px);line-height:.84;letter-spacing:-.06em;margin:0;text-shadow:6px 7px 0 #0B1030;text-align:center">MER<span style="color:#FFE24A">CATO</span></h1>
+  <div style="width:172px;height:14px;border:4px solid #0B1030;border-radius:999px;background:rgba(11,16,48,.4);margin-top:34px;overflow:hidden">
+    <div style="height:100%;background:#FFE24A;animation:mcLoad 1.3s cubic-bezier(.5,.1,.3,1) forwards"></div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isOnboard }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;flex:1;padding-bottom:20px;animation:mcPop .3s both">
+  <div style="display:flex;justify-content:flex-end;height:38px;align-items:center">
+    <button onClick="{{ skipOnboard }}" style="background:none;border:0;color:rgba(255,255,255,.45);font-weight:900;font-size:13px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;padding:8px">{{ L.obSkip }}</button>
+  </div>
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:26px">
+    <div style="height:200px;border:5px solid #0B1030;border-radius:26px;background:repeating-linear-gradient(135deg,#FBFAF4 0 14px,#EFEDE3 14px 28px);box-shadow:0 10px 0 #0B1030;display:grid;place-items:center;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.18em;color:#9298B2;text-align:center;padding:20px">{{ obArt }}</div>
+    <div>
+      <div style="font-family:'Unbounded',sans-serif;font-weight:900;font-size:30px;letter-spacing:-.05em;line-height:1.06;text-wrap:balance">{{ obTitle }}</div>
+      <p style="font-size:16px;font-weight:700;line-height:1.4;color:rgba(255,255,255,.66);margin:12px 0 0;max-width:24em;text-wrap:pretty">{{ obBody }}</p>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;justify-content:center;margin-bottom:18px">
+    <sc-for list="{{ obDots }}" as="d" hint-placeholder-count="3">
+      <i style="{{ d }}"></i>
+    </sc-for>
+  </div>
+  <button onClick="{{ obNext }}" style="width:100%;font-family:'Unbounded',sans-serif;font-weight:900;font-size:22px;letter-spacing:-.03em;background:#FFE24A;color:#0B1030;border:5px solid #0B1030;border-radius:22px;padding:20px;box-shadow:0 9px 0 #0B1030;cursor:pointer">{{ obCta }}</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ isConsent }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;flex:1;padding-bottom:20px;animation:mcPop .3s both">
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
+    <div style="background:#FBFAF4;color:#0B1030;border:5px solid #0B1030;border-radius:26px;padding:22px;box-shadow:0 10px 0 #0B1030">
+      <div style="font-family:'Unbounded',sans-serif;font-weight:900;font-size:24px;letter-spacing:-.05em;line-height:1.08">{{ L.cnTitle }}</div>
+      <p style="font-size:14.5px;font-weight:600;line-height:1.5;color:#4C5372;margin:12px 0 0">{{ L.cnBody }}</p>
+      <div style="display:flex;flex-direction:column;gap:9px;margin-top:16px">
+        <sc-for list="{{ cnPoints }}" as="p" hint-placeholder-count="3">
+          <div style="display:flex;gap:10px;align-items:flex-start;font-size:13.5px;font-weight:700;color:#0B1030"><span style="color:#1B2FE0;font-family:'Unbounded',sans-serif;font-weight:900">·</span><span style="flex:1">{{ p }}</span></div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+  <div style="display:grid;gap:11px">
+    <button onClick="{{ acceptAll }}" style="width:100%;font-family:'Unbounded',sans-serif;font-weight:900;font-size:18px;letter-spacing:-.03em;background:#FFE24A;color:#0B1030;border:5px solid #0B1030;border-radius:22px;padding:19px;box-shadow:0 9px 0 #0B1030;cursor:pointer">{{ L.cnAccept }}</button>
+    <button onClick="{{ refuseAll }}" style="width:100%;font-family:'Unbounded',sans-serif;font-weight:800;font-size:15px;letter-spacing:-.03em;background:#FBFAF4;color:#0B1030;border:5px solid #0B1030;border-radius:22px;padding:17px;box-shadow:0 9px 0 #0B1030;cursor:pointer">{{ L.cnRefuse }}</button>
+    <div style="text-align:center;font-size:11.5px;font-weight:700;color:rgba(255,255,255,.4);padding:4px 0 0">{{ L.cnFoot }}</div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isHome }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;flex:1;padding-bottom:172px;animation:mcPop .3s both">
+  <div style="display:flex;justify-content:flex-end;height:36px;align-items:center">
+    <div style="display:flex;align-items:center;gap:7px;background:#0B1030;border:4px solid #0B1030;border-radius:999px;padding:5px 14px 5px 6px;box-shadow:0 5px 0 rgba(11,16,48,.55)">
+      <span style="width:20px;height:20px;border-radius:99px;background:#FBFAF4;border:3px solid #0B1030;display:grid;place-items:center;font-size:10px;line-height:1">⚽</span>
+      <b style="font-family:'Unbounded',sans-serif;font-weight:900;font-size:14px;color:#FFE24A">{{ balls }}</b>
+    </div>
+  </div>
+  <h1 style="font-family:'Unbounded',sans-serif;font-weight:900;font-size:clamp(54px,17vw,74px);line-height:.84;letter-spacing:-.06em;margin:14px 0 0;text-shadow:6px 7px 0 #0B1030">MER<span style="color:#FFE24A">CATO</span></h1>
+  <div style="display:flex;flex-direction:column;gap:14px;margin-top:auto">
+    <sc-for list="{{ modes }}" as="m" hint-placeholder-count="2">
+      <button onClick="{{ m.play }}" style="{{ m.style }}">
+        <span style="flex:1;text-align:left;font-family:'Unbounded',sans-serif;font-weight:900;font-size:30px;letter-spacing:-.05em">{{ m.title }}</span>
+        <span style="{{ m.chipStyle }}">{{ m.chip }}</span>
+      </button>
+    </sc-for>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isShop }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;flex:1;padding-bottom:172px;animation:mcPop .3s both">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:20px">
+    <h2 style="font-family:'Unbounded',sans-serif;font-weight:900;font-size:30px;letter-spacing:-.05em;margin:0">{{ L.shop }}</h2>
+    <div style="display:flex;align-items:center;gap:7px;background:#0B1030;border:4px solid #0B1030;border-radius:999px;padding:5px 14px 5px 6px;box-shadow:0 5px 0 rgba(11,16,48,.55)">
+      <span style="width:20px;height:20px;border-radius:99px;background:#FBFAF4;border:3px solid #0B1030;display:grid;place-items:center;font-size:10px;line-height:1">⚽</span>
+      <b style="font-family:'Unbounded',sans-serif;font-weight:900;font-size:14px;color:#FFE24A">{{ balls }}</b>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:12px;margin-top:18px">
+    <sc-for list="{{ shopItems }}" as="it" hint-placeholder-count="4">
+      <div style="display:flex;align-items:center;gap:13px;background:#FBFAF4;color:#0B1030;border:4px solid #0B1030;border-radius:20px;padding:15px;box-shadow:0 7px 0 #0B1030">
+        <span style="{{ it.tagStyle }}">{{ it.tag }}</span>
+        <span style="flex:1;min-width:0">
+          <span style="display:block;font-family:'Unbounded',sans-serif;font-weight:900;font-size:15.5px;letter-spacing:-.04em">{{ it.title }}</span>
+          <span style="display:block;font-size:12.5px;font-weight:800;color:#4C5372;margin-top:3px">{{ it.sub }}</span>
+        </span>
+        <button onClick="{{ it.buy }}" disabled="{{ it.disabled }}" style="{{ it.btnStyle }}">{{ it.price }}</button>
+      </div>
+    </sc-for>
+  </div>
+  <button onClick="{{ restore }}" style="margin-top:16px;background:none;border:0;color:rgba(255,255,255,.45);font-weight:900;font-size:13px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;padding:10px">{{ L.restore }}</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ isProfile }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;flex:1;padding-bottom:172px;animation:mcPop .3s both">
+  <h2 style="font-family:'Unbounded',sans-serif;font-weight:900;font-size:30px;letter-spacing:-.05em;margin:22px 0 0">{{ L.profile }}</h2>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px">
+    <sc-for list="{{ stats }}" as="s" hint-placeholder-count="4">
+      <div style="background:#FBFAF4;color:#0B1030;border:4px solid #0B1030;border-radius:20px;padding:16px;box-shadow:0 7px 0 #0B1030">
+        <div style="font-family:'Unbounded',sans-serif;font-weight:900;font-size:30px;letter-spacing:-.04em">{{ s.v }}</div>
+        <div style="font-size:12px;font-weight:900;color:#4C5372;margin-top:5px">{{ s.k }}</div>
+      </div>
+    </sc-for>
+  </div>
+  <button onClick="{{ openSettings }}" style="margin-top:16px;width:100%;display:flex;align-items:center;gap:12px;text-align:left;background:rgba(11,16,48,.35);border:3px solid rgba(255,255,255,.16);border-radius:18px;padding:16px 17px;color:#fff;font-family:'Unbounded',sans-serif;font-weight:800;font-size:14px;letter-spacing:-.03em;cursor:pointer">
+    <span style="flex:1">{{ L.settings }}</span><span style="color:rgba(255,255,255,.45)">›</span>
+  </button>
+</div>
+</sc-if>
+
+<sc-if value="{{ isSettings }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;flex:1;padding-bottom:20px;animation:mcPop .3s both">
+  <div style="height:46px;display:flex;align-items:center;gap:12px">
+    <button onClick="{{ backProfile }}" aria-label="Retour" style="width:38px;height:38px;border-radius:12px;border:4px solid #0B1030;background:rgba(11,16,48,.45);color:#fff;font-size:16px;font-weight:900;cursor:pointer">‹</button>
+    <span style="font-family:'Unbounded',sans-serif;font-weight:900;font-size:20px;letter-spacing:-.04em">{{ L.settings }}</span>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px">
+    <sc-for list="{{ toggles }}" as="t" hint-placeholder-count="3">
+      <button onClick="{{ t.flip }}" style="width:100%;display:flex;align-items:center;gap:14px;text-align:left;background:#FBFAF4;color:#0B1030;border:4px solid #0B1030;border-radius:18px;padding:15px 16px;box-shadow:0 6px 0 #0B1030;cursor:pointer">
+        <span style="flex:1;font-family:'Unbounded',sans-serif;font-weight:800;font-size:15px;letter-spacing:-.03em">{{ t.label }}</span>
+        <span style="{{ t.trackStyle }}"><span style="{{ t.knobStyle }}"></span></span>
+      </button>
+    </sc-for>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:9px;margin-top:16px">
+    <sc-for list="{{ settingsRows }}" as="r" hint-placeholder-count="5">
+      <button onClick="{{ r.go }}" style="width:100%;display:flex;align-items:center;gap:12px;text-align:left;background:rgba(11,16,48,.35);border:3px solid rgba(255,255,255,.16);border-radius:16px;padding:14px 16px;color:#fff;font-family:'Figtree',sans-serif;font-weight:800;font-size:14.5px;cursor:pointer">
+        <span style="flex:1">{{ r.label }}</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(255,255,255,.5)">{{ r.value }}</span>
+      </button>
+    </sc-for>
+  </div>
+  <div style="margin-top:auto;padding-top:20px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(255,255,255,.32)">{{ L.version }}</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isOffline }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;flex:1;padding-bottom:20px;align-items:center;justify-content:center;text-align:center;animation:mcPop .3s both">
+  <div style="width:110px;height:110px;border:5px solid #0B1030;border-radius:26px;background:repeating-linear-gradient(135deg,#0F1A66 0 12px,#12207A 12px 24px);display:grid;place-items:center;font-family:'Unbounded',sans-serif;font-weight:900;font-size:40px;color:rgba(255,255,255,.45);box-shadow:0 9px 0 #0B1030">!</div>
+  <div style="font-family:'Unbounded',sans-serif;font-weight:900;font-size:26px;letter-spacing:-.05em;margin-top:26px">{{ L.offT }}</div>
+  <p style="font-size:15px;font-weight:700;line-height:1.4;color:rgba(255,255,255,.6);margin:12px 0 0;max-width:22em">{{ L.offB }}</p>
+  <button onClick="{{ retry }}" style="margin-top:28px;min-width:200px;font-family:'Unbounded',sans-serif;font-weight:900;font-size:18px;letter-spacing:-.03em;background:#FFE24A;color:#0B1030;border:5px solid #0B1030;border-radius:22px;padding:18px 22px;box-shadow:0 9px 0 #0B1030;cursor:pointer">{{ L.retry }}</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ isGame }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;flex:1;padding-bottom:16px">
+  <div style="display:flex;align-items:center;gap:12px">
+    <button onClick="{{ askQuit }}" aria-label="Quitter" style="width:38px;height:38px;flex:none;border-radius:12px;border:4px solid #0B1030;background:rgba(11,16,48,.45);color:#fff;font-size:16px;font-weight:900;cursor:pointer;line-height:1">✕</button>
+    <div style="flex:1;display:flex;gap:5px">
+      <sc-for list="{{ pips }}" as="p" hint-placeholder-count="10">
+        <i style="{{ p.style }}"></i>
+      </sc-for>
+    </div>
+    <sc-if value="{{ isHard }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;gap:5px;flex:none">
+        <sc-for list="{{ hearts }}" as="h" hint-placeholder-count="3">
+          <i style="{{ h.style }}"></i>
+        </sc-for>
+      </div>
+    </sc-if>
+    <div style="position:relative;flex:none">
+      <div style="{{ scoreStyle }}">{{ score }}</div>
+      <div style="{{ bumpStyle }}">{{ bumpText }}</div>
+    </div>
+  </div>
+
+  <div onClick="{{ tapCard }}" style="{{ cardStyle }}">
+    <div style="background:#0B1030;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 18px 14px">
+      <span style="{{ kindStyle }}">{{ kindLabel }}</span>
+      <span style="font-family:'Unbounded',sans-serif;font-weight:900;font-size:42px;line-height:.9;letter-spacing:.01em;color:#FFE24A">{{ year }}</span>
+    </div>
+    <div style="padding:20px 18px 22px;display:flex;flex-direction:column;align-items:center;text-align:center">
+      <div style="font-family:'Unbounded',sans-serif;font-weight:800;font-size:19px;letter-spacing:-.04em;line-height:1.15;color:#9298B2;text-wrap:balance">{{ fromClub }}</div>
+      <div style="{{ arrowStyle }}">▼</div>
+      <div style="font-family:'Unbounded',sans-serif;font-weight:900;font-size:clamp(24px,7.4vw,32px);letter-spacing:-.05em;line-height:1.06;color:#0B1030;text-wrap:balance">{{ toClub }}</div>
+      <sc-if value="{{ showMask }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-top:18px;font-family:'Unbounded',sans-serif;font-weight:900;font-size:22px;letter-spacing:.1em;color:#D6D3C4">{{ masked }}</div>
+      </sc-if>
+      <sc-if value="{{ done }}" hint-placeholder-val="{{ false }}">
+        <div style="{{ revealStyle }}">{{ revealName }}</div>
+      </sc-if>
+    </div>
+  </div>
+
+  <sc-if value="{{ adsOn }}" hint-placeholder-val="{{ true }}">
+    <div style="margin-top:10px;height:44px;border:4px solid #0B1030;border-radius:13px;background:repeating-linear-gradient(135deg,#0F1A66 0 11px,#12207A 11px 22px);display:grid;place-items:center;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.18em;color:rgba(255,255,255,.4)">{{ L.adBoard }}</div>
+  </sc-if>
+
+  <div style="margin-top:auto;padding-top:16px">
+    <sc-if value="{{ isEasy }}" hint-placeholder-val="{{ true }}">
+      <div style="display:grid;gap:11px">
+        <sc-for list="{{ opts }}" as="o" hint-placeholder-count="4">
+          <button onClick="{{ o.pick }}" disabled="{{ o.disabled }}" style="{{ o.style }}">{{ o.name }}</button>
+        </sc-for>
+      </div>
+    </sc-if>
+    <sc-if value="{{ isHard }}" hint-placeholder-val="{{ false }}">
+      <div>
+        <sc-if value="{{ hasHints }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:13px">
+            <sc-for list="{{ hintChips }}" as="c" hint-placeholder-count="2">
+              <span style="background:#FBFAF4;color:#0B1030;border:4px solid #0B1030;border-radius:999px;padding:7px 15px;font-family:'Unbounded',sans-serif;font-weight:800;font-size:13.5px;letter-spacing:-.02em">{{ c }}</span>
+            </sc-for>
+          </div>
+        </sc-if>
+        <input type="text" autocomplete="off" autocapitalize="off" spellcheck="false" value="{{ guess }}" disabled="{{ done }}" onChange="{{ onGuess }}" onKeyDown="{{ onKey }}" placeholder="{{ L.ph }}" aria-label="{{ L.who }}" style="{{ inputStyle }}">
+        <div style="display:flex;gap:11px;margin-top:12px">
+          <button onClick="{{ takeHint }}" disabled="{{ hintDisabled }}" style="{{ hintBtnStyle }}">{{ hintLabel }}</button>
+          <button onClick="{{ submit }}" disabled="{{ done }}" style="{{ submitStyle }}">{{ L.go }}</button>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isAd }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;flex:1;padding-bottom:20px;animation:mcPop .25s both">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:4px 0 14px">
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.2em;color:rgba(255,255,255,.45)">{{ L.adLabel }}</span>
+    <button onClick="{{ closeAd }}" disabled="{{ adLocked }}" style="{{ adCloseStyle }}">{{ adCloseLabel }}</button>
+  </div>
+  <div style="flex:1;border:4px solid #0B1030;border-radius:22px;background:repeating-linear-gradient(135deg,#0F1A66 0 13px,#12207A 13px 26px);display:grid;place-items:center;text-align:center;padding:24px">
+    <div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.2em;color:rgba(255,255,255,.5)">{{ L.adFull }}</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(255,255,255,.28);margin-top:8px">320 × 480</div>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isRecap }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;flex:1;padding:6px 0 20px;animation:mcPop .3s both;align-items:center;text-align:center">
+  <div style="font-family:'Unbounded',sans-serif;font-weight:900;font-size:28px;letter-spacing:-.05em;margin-top:22px">{{ recapTitle }}</div>
+  <div style="display:flex;gap:12px;margin-top:18px">
+    <sc-for list="{{ stars }}" as="st" hint-placeholder-count="3">
+      <span style="{{ st.style }}">★</span>
+    </sc-for>
+  </div>
+  <div style="width:100%;margin-top:22px;background:#FBFAF4;color:#0B1030;border:5px solid #0B1030;border-radius:26px;padding:22px;box-shadow:0 10px 0 #0B1030">
+    <b style="font-family:'Unbounded',sans-serif;font-weight:900;font-size:64px;line-height:.9;display:block">{{ score }}</b>
+    <div style="font-size:12.5px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:#4C5372;margin-top:8px">{{ L.pts }}</div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:9px;margin-top:14px;background:rgba(11,16,48,.07);border-radius:999px;padding:9px 16px;width:fit-content;margin-left:auto;margin-right:auto">
+      <span style="width:22px;height:22px;border-radius:99px;background:#FBFAF4;border:3px solid #0B1030;display:grid;place-items:center;font-size:11px;line-height:1">⚽</span>
+      <b style="font-family:'Unbounded',sans-serif;font-weight:900;font-size:17px">{{ ballsEarned }}</b>
+      <span style="font-size:12px;font-weight:900;color:#4C5372">{{ L.ballsWon }}</span>
+    </div>
+    <div style="display:flex;gap:11px;margin-top:16px">
+      <div style="flex:1;background:rgba(11,16,48,.07);border-radius:15px;padding:13px">
+        <div style="font-family:'Unbounded',sans-serif;font-weight:900;font-size:22px;color:#159C6B">{{ recapRight }}</div>
+        <div style="font-size:11.5px;font-weight:900;color:#4C5372;margin-top:3px">{{ L.rGood }}</div>
+      </div>
+      <div style="flex:1;background:rgba(11,16,48,.07);border-radius:15px;padding:13px">
+        <div style="font-family:'Unbounded',sans-serif;font-weight:900;font-size:22px">{{ bestStreak }}</div>
+        <div style="font-size:11.5px;font-weight:900;color:#4C5372;margin-top:3px">{{ L.rStreak }}</div>
+      </div>
+    </div>
+  </div>
+  <sc-if value="{{ adsOn }}" hint-placeholder-val="{{ true }}">
+    <button onClick="{{ watchAd }}" disabled="{{ rewardTaken }}" style="{{ rewardStyle }}">{{ rewardLabel }}</button>
+    <div style="width:100%;margin-top:12px;height:118px;border:4px solid #0B1030;border-radius:18px;background:repeating-linear-gradient(135deg,#0F1A66 0 13px,#12207A 13px 26px);display:grid;place-items:center;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.18em;color:rgba(255,255,255,.4)">{{ L.adRect }}</div>
+  </sc-if>
+
+  <sc-if value="{{ hasMisses }}" hint-placeholder-val="{{ false }}">
+    <div style="width:100%;margin-top:22px;text-align:left">
+      <div style="font-size:10.5px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:10px">{{ L.rMissed }}</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <sc-for list="{{ misses }}" as="x" hint-placeholder-count="2">
+          <div style="display:flex;align-items:center;gap:12px;background:rgba(255,92,99,.14);border:3px solid rgba(255,92,99,.34);border-radius:16px;padding:11px 14px">
+            <span style="font-family:'Unbounded',sans-serif;font-weight:900;font-size:14px;color:#FF5C63;min-width:40px">{{ x.year }}</span>
+            <span style="flex:1;min-width:0">
+              <span style="display:block;font-family:'Unbounded',sans-serif;font-weight:800;font-size:15px;letter-spacing:-.04em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ x.name }}</span>
+              <span style="display:block;font-size:11.5px;font-weight:800;color:rgba(255,255,255,.42);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ x.route }}</span>
+            </span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <div style="display:grid;gap:11px;width:100%;margin-top:auto;padding-top:24px">
+    <button onClick="{{ replay }}" style="width:100%;font-family:'Unbounded',sans-serif;font-weight:900;font-size:22px;letter-spacing:-.03em;background:#FFE24A;color:#0B1030;border:5px solid #0B1030;border-radius:22px;padding:20px;box-shadow:0 9px 0 #0B1030;cursor:pointer">{{ L.again }}</button>
+    <button onClick="{{ goHome }}" style="width:100%;background:transparent;border:3px solid rgba(255,255,255,.24);border-radius:18px;color:rgba(255,255,255,.7);font-family:'Figtree',sans-serif;font-weight:900;font-size:15px;padding:15px;cursor:pointer">{{ L.home }}</button>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isLab }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;flex:1;padding-bottom:20px">
+  <div style="height:46px;display:flex;align-items:center;gap:10px">
+    <button onClick="{{ backSettings }}" aria-label="Retour" style="width:38px;height:38px;border-radius:12px;border:4px solid #0B1030;background:rgba(11,16,48,.45);color:#fff;font-size:16px;font-weight:900;cursor:pointer">‹</button>
+    <span style="font-family:'Unbounded',sans-serif;font-weight:800;font-size:15px;letter-spacing:-.03em;color:rgba(255,255,255,.8)">{{ L.lab }}</span>
+  </div>
+  <div style="background:#FBFAF4;color:#0B1030;border:5px solid #0B1030;border-radius:24px;padding:18px;margin-top:6px;box-shadow:0 9px 0 #0B1030">
+    <h3 style="font-family:'Unbounded',sans-serif;font-weight:900;font-size:18px;letter-spacing:-.03em;margin:0">{{ L.labT }}</h3>
+    <p style="font-size:13.5px;font-weight:600;line-height:1.45;color:#4C5372;margin:8px 0 0">{{ L.labN }}</p>
+    <label style="display:block;font-family:'Unbounded',sans-serif;font-weight:800;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#4C5372;margin:16px 0 6px">{{ L.labTarget }}</label>
+    <select value="{{ labTarget }}" onChange="{{ onLabTarget }}" style="width:100%;font-weight:700;font-size:16px;padding:12px;border-radius:13px;border:3px solid #0B1030;background:#fff;color:#0B1030">
+      <sc-for list="{{ labPlayers }}" as="p" hint-placeholder-count="6">
+        <option value="{{ p.id }}">{{ p.name }}</option>
+      </sc-for>
+    </select>
+    <label style="display:block;font-family:'Unbounded',sans-serif;font-weight:800;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#4C5372;margin:14px 0 6px">{{ L.labGuess }}</label>
+    <input type="text" spellcheck="false" value="{{ labGuess }}" onChange="{{ onLabGuess }}" placeholder="mbape · zizou · van dijk · silva" style="width:100%;font-weight:700;font-size:16px;padding:12px;border-radius:13px;border:3px solid #0B1030;background:#fff;color:#0B1030">
+    <label style="display:block;font-family:'Unbounded',sans-serif;font-weight:800;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#4C5372;margin:14px 0 6px">{{ labThLabel }}</label>
+    <input type="range" min="0" max="3" step="1" value="{{ labTh }}" onChange="{{ onLabTh }}" style="width:100%;accent-color:#1B2FE0">
+    <div style="margin-top:12px;font-size:14px;font-weight:600;font-variant-numeric:tabular-nums">
+      <sc-for list="{{ labTrace }}" as="r" hint-placeholder-count="6">
+        <div style="display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:2px solid rgba(11,16,48,.09)"><span>{{ r.k }}</span><span style="{{ r.style }}">{{ r.v }}</span></div>
+      </sc-for>
+    </div>
+    <h3 style="font-family:'Unbounded',sans-serif;font-weight:900;font-size:18px;letter-spacing:-.03em;margin:20px 0 6px">{{ L.stats }}</h3>
+    <div style="font-size:14px;font-weight:600;font-variant-numeric:tabular-nums">
+      <sc-for list="{{ labStats }}" as="s" hint-placeholder-count="5">
+        <div style="display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:2px solid rgba(11,16,48,.09)"><span>{{ s.k }}</span><span style="font-weight:900">{{ s.v }}</span></div>
+      </sc-for>
+    </div>
+    <h3 style="font-family:'Unbounded',sans-serif;font-weight:900;font-size:18px;letter-spacing:-.03em;margin:20px 0 6px">{{ L.ambT }}</h3>
+    <p style="font-size:13px;font-weight:600;line-height:1.45;color:#4C5372;margin:0 0 10px">{{ L.ambN }}</p>
+    <div style="font-size:13px;font-weight:600;line-height:1.7;max-height:190px;overflow:auto">
+      <sc-for list="{{ labAmb }}" as="a" hint-placeholder-count="6">
+        <div><b style="color:#C22E36;font-family:'Unbounded',sans-serif;font-weight:800">{{ a.s }}</b> · {{ a.who }}</div>
+      </sc-for>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ showTabs }}" hint-placeholder-val="{{ false }}">
+<div style="position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;pointer-events:none">
+  <div style="width:100%;max-width:440px;padding:0 16px;margin-bottom:14px;pointer-events:auto">
+    <sc-if value="{{ adsOn }}" hint-placeholder-val="{{ true }}">
+      <div style="height:52px;border:4px solid #0B1030;border-radius:14px;background:repeating-linear-gradient(135deg,#0F1A66 0 11px,#12207A 11px 22px);display:grid;place-items:center;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.18em;color:rgba(255,255,255,.4);margin-bottom:11px">{{ L.adBanner }}</div>
+    </sc-if>
+    <div style="display:flex;gap:6px;background:#0B1030;border:4px solid #0B1030;border-radius:20px;padding:6px;box-shadow:0 7px 0 rgba(11,16,48,.6)">
+      <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="3">
+        <button onClick="{{ t.pick }}" style="{{ t.style }}">{{ t.label }}</button>
+      </sc-for>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ quitOpen }}" hint-placeholder-val="{{ false }}">
+<div style="position:fixed;inset:0;z-index:95;background:rgba(6,9,30,.78);display:flex;align-items:center;justify-content:center;padding:24px">
+  <div style="width:100%;max-width:360px;background:#FBFAF4;color:#0B1030;border:5px solid #0B1030;border-radius:26px;padding:22px;box-shadow:0 12px 0 #0B1030;animation:mcPop .22s both">
+    <div style="font-family:'Unbounded',sans-serif;font-weight:900;font-size:22px;letter-spacing:-.05em;line-height:1.1">{{ L.quitT }}</div>
+    <p style="font-size:14px;font-weight:700;color:#4C5372;margin:10px 0 18px">{{ L.quitB }}</p>
+    <div style="display:grid;gap:10px">
+      <button onClick="{{ cancelQuit }}" style="width:100%;font-family:'Unbounded',sans-serif;font-weight:900;font-size:17px;letter-spacing:-.03em;background:#FFE24A;color:#0B1030;border:5px solid #0B1030;border-radius:20px;padding:16px;box-shadow:0 8px 0 #0B1030;cursor:pointer">{{ L.quitStay }}</button>
+      <button onClick="{{ confirmQuit }}" style="width:100%;font-family:'Unbounded',sans-serif;font-weight:800;font-size:15px;letter-spacing:-.03em;background:#FF5C63;color:#fff;border:5px solid #0B1030;border-radius:20px;padding:15px;box-shadow:0 8px 0 #0B1030;cursor:pointer">{{ L.quitGo }}</button>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;left:50%;bottom:120px;transform:translateX(-50%);background:#0B1030;color:#fff;font-family:'Unbounded',sans-serif;font-weight:800;font-size:13.5px;padding:13px 22px;border:4px solid #0B1030;border-radius:999px;z-index:99;box-shadow:0 7px 24px rgba(0,0,0,.45)">{{ toast }}</div>
+</sc-if>
+
+</div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;runLength&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:10,&quot;min&quot;:5,&quot;max&quot;:20,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Partie&quot;},&quot;showAds&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Monétisation&quot;},&quot;showLab&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Démo&quot;}}">
+class Component extends DCLogic {
+  state = { ready:false, lang:"fr", screen:"splash", mode:"l1", q:null, tries:3, hints:0, done:false,
+    won:false, picked:null, streak:0, bestStreak:0, score:0, run:[], idx:0, misses:[], guess:"", toast:"",
+    adLeft:5, rewardTaken:false, ballsEarned:0, balls:120, hintPack:0, obStep:0, quitOpen:false,
+    adsRemoved:false, consent:null, sound:true, vibrate:true, notif:false,
+    labTarget:"", labGuess:"", labTh:2 };
+
+  componentDidMount(){
+    const sys=(navigator.language||"fr").slice(0,2).toLowerCase();
+    if(["fr","en","es"].indexOf(sys)>=0 && sys!==this.state.lang) this.setState({lang:sys});
+    const boot=()=>{ window.MERCATO_DATA?this.build():setTimeout(boot,40); }; boot();
+    this._splash=setTimeout(()=>{ if(this.state.screen==="splash") this.setState({screen:"onboard"}); },1500);
+  }
+  componentWillUnmount(){ clearTimeout(this._toast); clearTimeout(this._adv); clearTimeout(this._splash); clearInterval(this._ad); }
+
+  build(){
+    const D=window.MERCATO_DATA;
+    this.CLUBS=D.clubs; this.PLAYERS=D.players; this.NATS=D.nats; this.TRANSFERS=D.transfers;
+    this.POS={gk:{fr:"Gardien",en:"Goalkeeper",es:"Portero"},def:{fr:"Défenseur",en:"Defender",es:"Defensa"},
+      mid:{fr:"Milieu",en:"Midfielder",es:"Centrocampista"},fw:{fr:"Attaquant",en:"Forward",es:"Delantero"}};
+    this.PARTICLES=new Set(["van","von","de","del","della","di","da","do","dos","das","du","des","le","la","el","al","bin","ibn","ter","ten","st","mc","mac","o","van't","der","den"]);
+    const sidx={}, eidx={};
+    const addS=(k,id)=>{ if(k)(sidx[k]=sidx[k]||new Set()).add(id); };
+    const addE=(k,id)=>{ if(k)(eidx[k]=eidx[k]||new Set()).add(id); };
+    for(const id in this.PLAYERS){
+      const p=this.PLAYERS[id];
+      for(const nm of [p.n.fr,p.n.en,p.n.es]) this.surnameVariants(nm).forEach(v=>addS(v,id));
+      for(const nm of this.namesOf(p)){ addE(this.norm(nm),id); this.surnameVariants(nm).forEach(v=>addE(v,id)); }
+    }
+    const flat=o=>{const r={};for(const k in o)r[k]=Array.from(o[k]);return r;};
+    this.SUR=flat(sidx); this.EX=flat(eidx);
+    this.AMB=Object.keys(this.SUR).filter(s=>this.SUR[s].length>1).sort();
+    this.MAXL=Math.max.apply(null,Object.keys(this.PLAYERS).map(id=>this.PLAYERS[id].l||0));
+    this.RANKED=Object.keys(this.PLAYERS).sort((a,b)=>this.PLAYERS[b].l-this.PLAYERS[a].l);
+    this.setState({ready:true,labTarget:this.RANKED[0]});
+  }
+
+  /* ---------- moteur (inchangé) ---------- */
+  norm(s){ return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+    .replace(/[ØøŁłÐðÞþ]/g,m=>({"Ø":"O","ø":"o","Ł":"L","ł":"l","Ð":"D","ð":"d","Þ":"T","þ":"t"}[m]))
+    .toLowerCase().replace(/[.'’`\-_]/g," ").replace(/[^a-z0-9 ]/g,"").replace(/\s+/g," ").trim(); }
+  lev(a,b){ if(a===b)return 0; if(!a.length)return b.length; if(!b.length)return a.length;
+    let prev=new Array(b.length+1); for(let j=0;j<=b.length;j++)prev[j]=j;
+    for(let i=1;i<=a.length;i++){ const cur=[i];
+      for(let j=1;j<=b.length;j++){ const c=a[i-1]===b[j-1]?0:1; cur[j]=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+c); }
+      prev=cur; } return prev[b.length]; }
+  thr(str,base){ if(str.length<=4)return 0; if(str.length<=6)return Math.min(1,base); return base; }
+  namesOf(p){ return Array.from(new Set([p.n.fr,p.n.en,p.n.es].concat(p.alt||[]))); }
+  surnameVariants(name){
+    const tk=this.norm(name).split(" ").filter(Boolean);
+    if(tk.length<2) return [tk[0]||""];
+    let i=tk.length-1;
+    while(i-1>=1 && this.PARTICLES.has(tk[i-1])) i--;
+    const full=tk.slice(i).join(" "), bare=tk[tk.length-1];
+    return full===bare?[bare]:[full,bare];
+  }
+  claimedByOther(g,pid){ const o=this.EX[g]; return !!o && o.indexOf(pid)===-1; }
+  match(guess,pid,base){
+    base=(base===undefined)?2:base;
+    const p=this.PLAYERS[pid], g=this.norm(guess);
+    const out={ok:false,route:"none",dist:null,matched:null,ambiguous:false};
+    if(!g) return out;
+    const cands=this.namesOf(p), canon=new Set([p.n.fr,p.n.en,p.n.es].map(c=>this.norm(c)));
+    for(const c of cands) if(g===this.norm(c)){ out.ok=true; out.dist=0; out.matched=c; out.route=canon.has(this.norm(c))?"exact":"alias"; return out; }
+    let best={d:Infinity,c:null};
+    for(const c of cands){ const d=this.lev(g,this.norm(c)); if(d<best.d) best={d:d,c:c}; }
+    if(best.c && best.d<=this.thr(this.norm(best.c),base) && !this.claimedByOther(g,pid)){
+      out.ok=true; out.route="fuzzy"; out.dist=best.d; out.matched=best.c; return out; }
+    const vars=new Set();
+    for(const nm of [p.n.en,p.n.fr,p.n.es]) this.surnameVariants(nm).forEach(v=>vars.add(v));
+    let hit=null;
+    for(const sn of vars){ if(!sn) continue; const d=this.lev(g,sn);
+      if(d<=this.thr(sn,base) && (hit===null||d<hit.d)) hit={sn:sn,d:d}; }
+    if(hit){ out.dist=hit.d; out.matched=hit.sn; out.route="surname";
+      if(hit.d>0 && this.claimedByOther(g,pid)){ out.ok=false; out.route="none"; return out; }
+      if((this.SUR[hit.sn]||[]).length>1){ out.ambiguous=true; out.ok=false; } else out.ok=true;
+      return out; }
+    out.dist=best.d; out.matched=best.c; return out;
+  }
+  distractors(pid){
+    const tg=this.PLAYERS[pid], M=this.MAXL;
+    const score=id=>{ const p=this.PLAYERS[id]; let s=0;
+      if(p.pos===tg.pos)s+=3; if(p.b&&tg.b&&Math.abs(p.b-tg.b)<=6)s+=2; if(p.nat===tg.nat)s+=1;
+      s+=2*(p.l||0)/M; s-=1.5*Math.abs((p.l||0)-(tg.l||0))/M; return s; };
+    return Object.keys(this.PLAYERS).filter(id=>id!==pid)
+      .map(id=>({id:id,s:score(id)+Math.random()*0.9})).sort((a,b)=>b.s-a.s).slice(0,3).map(o=>o.id);
+  }
+  shuffle(a){ const x=a.slice(); for(let i=x.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=x[i];x[i]=x[j];x[j]=t;} return x; }
+
+  strings(){
+    const T={
+      fr:{l1:"FACILE",l3:"HARDCORE",c1:"4 choix",c3:"3 vies",lab:"Labo du matching",
+        perm:"TRANSFERT",loan:"PRÊT",free:"TRANSFERT LIBRE",
+        who:"Qui est-ce ?",ph:"Nom du joueur…",go:"VALIDER",hint:"INDICE",skip:"Passer",
+        rAmb:"Nom de famille ambigu · précise le prénom",rNone:"Pas ça · il te reste des vies",
+        winT:"MANCHE RÉUSSIE",loseT:"MANCHE TERMINÉE",pts:"points",
+        rGood:"bonnes réponses",rStreak:"meilleure série",rMissed:"À revoir",ballsWon:"ballons",
+        again:"REJOUER",home:"Accueil",
+        tPlay:"JOUER",tShop:"BOUTIQUE",tProfile:"PROFIL",profile:"PROFIL",shop:"BOUTIQUE",settings:"RÉGLAGES",
+        stPlayed:"Manches jouées",stBest:"Meilleur score",stStreak:"Série record",stAcc:"Réussite",
+        adLabel:"PUBLICITÉ",adFull:"EMPLACEMENT PLEIN ÉCRAN",adBanner:"BANDEAU 320×50",
+        adBoard:"PANNEAU SPONSOR",adRect:"PAVÉ 300×250",adSkip:"PASSER",adWait:"PASSER DANS",
+        reward:"▶ VIDÉO BONUS · ×2 BALLONS",rewardDone:"BALLONS DOUBLÉS",rewardToast:"Ballons doublés !",
+        obSkip:"Passer",obNext:"SUIVANT",obStart:"COMMENCER",
+        ob:[{a:"ILLUSTRATION · CARTE TRANSFERT",t:"Deux clubs. Une année.",b:"Chaque manche enchaîne dix transferts réels, de 1985 à aujourd'hui."},
+            {a:"ILLUSTRATION · RÉPONSES",t:"Trouve le joueur.",b:"En facile, quatre propositions. En hardcore, tu écris le nom, avec trois vies."},
+            {a:"ILLUSTRATION · BALLONS",t:"+3 par bonne réponse.",b:"Une mauvaise réponse ne rapporte rien. Les points se transforment en ballons à la fin de la manche."}],
+        cnTitle:"Publicité et données",cnBody:"MERCATO est gratuit et financé par la publicité. Tu choisis le niveau de personnalisation.",
+        cnPoints:["Publicités personnalisées : contenus adaptés à tes centres d'intérêt.","Publicités non personnalisées : mêmes emplacements, aucun profilage.","Statistiques de jeu anonymes dans les deux cas."],
+        cnAccept:"TOUT ACCEPTER",cnRefuse:"PUBLICITÉS NON PERSONNALISÉES",cnFoot:"Modifiable à tout moment dans Réglages.",
+        shopNoAds:"Sans publicité",shopNoAdsSub:"Supprime bandeaux, interstitiels et pavés",
+        shopH1:"10 indices",shopH1Sub:"À dépenser en mode hardcore",
+        shopH2:"50 indices",shopH2Sub:"Le meilleur rapport",
+        shopBalls:"200 ballons",shopBallsSub:"Recharge de ballons",
+        owned:"ACQUIS",restore:"Restaurer mes achats",restoreToast:"Aucun achat à restaurer",
+        buyToast:"Achat simulé · démo",adsOffToast:"Publicités désactivées",noBalls:"Pas assez de ballons",
+        soundS:"Son",vibrateS:"Vibrations",notifS:"Notifications",
+        rowLang:"Langue",rowConsent:"Consentement publicitaire",rowIntro:"Revoir l'introduction",
+        rowLab:"Labo du matching",rowOffline:"Écran hors-ligne",
+        consentOn:"Personnalisées",consentOff:"Non personnalisées",systemV:"Système",
+        version:"MERCATO 1.0 · démo",
+        quitT:"Quitter la manche ?",quitB:"Ta progression sera perdue.",quitStay:"CONTINUER",quitGo:"QUITTER",
+        offT:"Pas de connexion",offB:"Les manches déjà téléchargées restent jouables. Reconnecte-toi pour synchroniser tes scores.",retry:"RÉESSAYER",
+        labT:"Banc d'essai du matching",labN:"Le niveau hardcore dépend entièrement de ce composant. Teste ce qui doit passer et ce qui doit être refusé.",
+        labTarget:"Joueur attendu",labGuess:"Ce que tape le joueur",labTh:"Seuil de Levenshtein",
+        kNorm:"Saisie normalisée",kAlias:"Alias connus",kBest:"Meilleure correspondance",kDist:"Distance",kRoute:"Voie",kVerdict:"Verdict",
+        rExact:"réponse exacte",rAlias:"alias reconnu",rFuzzy:"faute de frappe tolérée",rSurname:"nom de famille seul",rNoneL:"aucune correspondance",
+        yes:"Accepté",no:"Refusé",amb:"Ambigu",
+        stats:"Contenu de la base",sClubs:"Clubs",sPlayers:"Joueurs",sTr:"Transferts",sGold:"Noyau or",sAmb:"Noms ambigus",
+        ambT:"Collisions de noms de famille",ambN:"Cas réels extraits des données. Le niveau hardcore doit refuser le nom de famille seul pour chacun."},
+      en:{l1:"EASY",l3:"HARDCORE",c1:"4 options",c3:"3 lives",lab:"Matching lab",
+        perm:"TRANSFER",loan:"LOAN",free:"FREE TRANSFER",
+        who:"Who is it?",ph:"Player name…",go:"SUBMIT",hint:"HINT",skip:"Skip",
+        rAmb:"Ambiguous surname · add the first name",rNone:"Not it · you still have lives",
+        winT:"ROUND WON",loseT:"ROUND OVER",pts:"points",
+        rGood:"correct",rStreak:"best streak",rMissed:"Worth revisiting",ballsWon:"balls",
+        again:"PLAY AGAIN",home:"Home",
+        tPlay:"PLAY",tShop:"SHOP",tProfile:"PROFILE",profile:"PROFILE",shop:"SHOP",settings:"SETTINGS",
+        stPlayed:"Rounds played",stBest:"Best score",stStreak:"Record streak",stAcc:"Accuracy",
+        adLabel:"ADVERTISEMENT",adFull:"FULL-SCREEN SLOT",adBanner:"BANNER 320×50",
+        adBoard:"SPONSOR BOARD",adRect:"RECTANGLE 300×250",adSkip:"SKIP",adWait:"SKIP IN",
+        reward:"▶ BONUS VIDEO · ×2 BALLS",rewardDone:"BALLS DOUBLED",rewardToast:"Balls doubled!",
+        obSkip:"Skip",obNext:"NEXT",obStart:"START",
+        ob:[{a:"ILLUSTRATION · TRANSFER CARD",t:"Two clubs. One year.",b:"Every round chains ten real transfers, from 1985 to today."},
+            {a:"ILLUSTRATION · ANSWERS",t:"Name the player.",b:"Easy gives you four options. Hardcore makes you type it, with three lives."},
+            {a:"ILLUSTRATION · BALLS",t:"+3 per correct answer.",b:"A miss scores nothing. Points turn into balls at the end of the round."}],
+        cnTitle:"Ads and data",cnBody:"MERCATO is free and ad-funded. You choose how personalised those ads are.",
+        cnPoints:["Personalised ads: content matched to your interests.","Non-personalised ads: same slots, no profiling.","Anonymous gameplay stats either way."],
+        cnAccept:"ACCEPT ALL",cnRefuse:"NON-PERSONALISED ADS",cnFoot:"Changeable any time in Settings.",
+        shopNoAds:"Remove ads",shopNoAdsSub:"No banners, interstitials or rectangles",
+        shopH1:"10 hints",shopH1Sub:"To spend in hardcore mode",
+        shopH2:"50 hints",shopH2Sub:"Best value",
+        shopBalls:"200 balls",shopBallsSub:"Top up your balls",
+        owned:"OWNED",restore:"Restore purchases",restoreToast:"Nothing to restore",
+        buyToast:"Simulated purchase · demo",adsOffToast:"Ads disabled",noBalls:"Not enough balls",
+        soundS:"Sound",vibrateS:"Vibration",notifS:"Notifications",
+        rowLang:"Language",rowConsent:"Ad consent",rowIntro:"Replay intro",
+        rowLab:"Matching lab",rowOffline:"Offline screen",
+        consentOn:"Personalised",consentOff:"Non-personalised",systemV:"System",
+        version:"MERCATO 1.0 · demo",
+        quitT:"Quit the round?",quitB:"Your progress will be lost.",quitStay:"KEEP PLAYING",quitGo:"QUIT",
+        offT:"No connection",offB:"Downloaded rounds stay playable. Reconnect to sync your scores.",retry:"RETRY",
+        labT:"Matching test bench",labN:"Hardcore level lives or dies on this component. Test what must pass and what must be rejected.",
+        labTarget:"Expected player",labGuess:"What the player types",labTh:"Levenshtein threshold",
+        kNorm:"Normalised input",kAlias:"Known aliases",kBest:"Best match",kDist:"Distance",kRoute:"Route",kVerdict:"Verdict",
+        rExact:"exact answer",rAlias:"known alias",rFuzzy:"typo tolerated",rSurname:"surname only",rNoneL:"no match",
+        yes:"Accepted",no:"Rejected",amb:"Ambiguous",
+        stats:"Dataset",sClubs:"Clubs",sPlayers:"Players",sTr:"Transfers",sGold:"Gold pool",sAmb:"Ambiguous names",
+        ambT:"Surname collisions",ambN:"Real cases from the data. Hardcore must reject the bare surname for each."},
+      es:{l1:"FÁCIL",l3:"HARDCORE",c1:"4 opciones",c3:"3 vidas",lab:"Taller de emparejamiento",
+        perm:"TRASPASO",loan:"CESIÓN",free:"AGENTE LIBRE",
+        who:"¿Quién es?",ph:"Nombre del jugador…",go:"COMPROBAR",hint:"PISTA",skip:"Saltar",
+        rAmb:"Apellido ambiguo · añade el nombre",rNone:"No es · aún te quedan vidas",
+        winT:"RONDA GANADA",loseT:"RONDA TERMINADA",pts:"puntos",
+        rGood:"aciertos",rStreak:"mejor racha",rMissed:"Para repasar",ballsWon:"balones",
+        again:"JUGAR OTRA VEZ",home:"Inicio",
+        tPlay:"JUGAR",tShop:"TIENDA",tProfile:"PERFIL",profile:"PERFIL",shop:"TIENDA",settings:"AJUSTES",
+        stPlayed:"Rondas jugadas",stBest:"Mejor puntuación",stStreak:"Racha récord",stAcc:"Acierto",
+        adLabel:"PUBLICIDAD",adFull:"ESPACIO A PANTALLA COMPLETA",adBanner:"BANNER 320×50",
+        adBoard:"VALLA PATROCINADOR",adRect:"RECTÁNGULO 300×250",adSkip:"SALTAR",adWait:"SALTAR EN",
+        reward:"▶ VÍDEO BONUS · ×2 BALONES",rewardDone:"BALONES DOBLADOS",rewardToast:"¡Balones doblados!",
+        obSkip:"Saltar",obNext:"SIGUIENTE",obStart:"EMPEZAR",
+        ob:[{a:"ILUSTRACIÓN · TARJETA",t:"Dos clubes. Un año.",b:"Cada ronda encadena diez traspasos reales, de 1985 a hoy."},
+            {a:"ILUSTRACIÓN · RESPUESTAS",t:"Encuentra al jugador.",b:"En fácil, cuatro opciones. En hardcore escribes el nombre, con tres vidas."},
+            {a:"ILUSTRACIÓN · BALONES",t:"+3 por acierto.",b:"Un fallo no suma. Los puntos se convierten en balones al final de la ronda."}],
+        cnTitle:"Publicidad y datos",cnBody:"MERCATO es gratis y se financia con publicidad. Tú eliges el nivel de personalización.",
+        cnPoints:["Anuncios personalizados: contenidos según tus intereses.","Anuncios no personalizados: mismos espacios, sin perfilado.","Estadísticas de juego anónimas en ambos casos."],
+        cnAccept:"ACEPTAR TODO",cnRefuse:"ANUNCIOS NO PERSONALIZADOS",cnFoot:"Se puede cambiar en Ajustes.",
+        shopNoAds:"Sin publicidad",shopNoAdsSub:"Quita banners, intersticiales y rectángulos",
+        shopH1:"10 pistas",shopH1Sub:"Para gastar en hardcore",
+        shopH2:"50 pistas",shopH2Sub:"La mejor relación",
+        shopBalls:"200 balones",shopBallsSub:"Recarga de balones",
+        owned:"ADQUIRIDO",restore:"Restaurar compras",restoreToast:"Nada que restaurar",
+        buyToast:"Compra simulada · demo",adsOffToast:"Publicidad desactivada",noBalls:"No hay suficientes balones",
+        soundS:"Sonido",vibrateS:"Vibración",notifS:"Notificaciones",
+        rowLang:"Idioma",rowConsent:"Consentimiento publicitario",rowIntro:"Ver la introducción",
+        rowLab:"Taller de emparejamiento",rowOffline:"Pantalla sin conexión",
+        consentOn:"Personalizados",consentOff:"No personalizados",systemV:"Sistema",
+        version:"MERCATO 1.0 · demo",
+        quitT:"¿Salir de la ronda?",quitB:"Perderás tu progreso.",quitStay:"SEGUIR",quitGo:"SALIR",
+        offT:"Sin conexión",offB:"Las rondas descargadas siguen jugables. Reconéctate para sincronizar tus puntuaciones.",retry:"REINTENTAR",
+        labT:"Banco de pruebas",labN:"El nivel hardcore depende por completo de este componente. Prueba lo que debe pasar y lo que debe rechazarse.",
+        labTarget:"Jugador esperado",labGuess:"Lo que escribe el jugador",labTh:"Umbral de Levenshtein",
+        kNorm:"Entrada normalizada",kAlias:"Alias conocidos",kBest:"Mejor coincidencia",kDist:"Distancia",kRoute:"Vía",kVerdict:"Veredicto",
+        rExact:"respuesta exacta",rAlias:"alias reconocido",rFuzzy:"errata tolerada",rSurname:"solo el apellido",rNoneL:"sin coincidencia",
+        yes:"Aceptado",no:"Rechazado",amb:"Ambiguo",
+        stats:"Base de datos",sClubs:"Clubes",sPlayers:"Jugadores",sTr:"Traspasos",sGold:"Núcleo oro",sAmb:"Nombres ambiguos",
+        ambT:"Colisiones de apellidos",ambN:"Casos reales de los datos. El nivel hardcore debe rechazar el apellido solo en cada uno."}
+    };
+    return T[this.state.lang]||T.fr;
+  }
+  club(id){ return this.CLUBS[id][this.state.lang]; }
+  pname(id){ return this.PLAYERS[id].n[this.state.lang]; }
+  runLen(){ return this.props.runLength ?? 10; }
+  adsOn(){ return (this.props.showAds ?? true) && !this.state.adsRemoved; }
+  toast(m){ clearTimeout(this._toast); this.setState({toast:m}); this._toast=setTimeout(()=>this.setState({toast:""}),2000); }
+
+  start(mode){
+    clearTimeout(this._adv);
+    this.setState({mode:mode,screen:"game",run:[],misses:[],score:0,idx:0,streak:0,bestStreak:0,done:false,rewardTaken:false,ballsEarned:0},()=>this.next());
+  }
+  next(){
+    clearTimeout(this._adv);
+    if(this.state.idx>=this.runLen()){ this.endRound(); return; }
+    const pool=this.state.mode==="l1"?this.TRANSFERS.filter(x=>x.d<=2):this.TRANSFERS;
+    const tr=pool[Math.floor(Math.random()*pool.length)];
+    const opts=this.state.mode==="l1"?this.shuffle(this.distractors(tr.p).concat([tr.p])):null;
+    this.setState({q:{tr:tr,opts:opts},tries:3,hints:0,done:false,won:false,picked:null,guess:"",toast:""});
+  }
+  endRound(){
+    const gained=this.state.score;
+    this.setState(st=>({ballsEarned:gained,balls:st.balls+gained}));
+    if(!this.adsOn()){ this.setState({screen:"recap",done:false}); return; }
+    clearInterval(this._ad);
+    this.setState({screen:"ad",done:false,adLeft:5});
+    this._ad=setInterval(()=>{
+      this.setState(st=>{ const n=st.adLeft-1; if(n<=0) clearInterval(this._ad); return {adLeft:Math.max(0,n)}; });
+    },1000);
+  }
+  finish(won,pickedId){
+    const s=this.state, gain=won?3:0, streak=won?s.streak+1:0;
+    const misses=won?s.misses:s.misses.concat([{year:String(s.q.tr.y),name:this.pname(s.q.tr.p),
+      route:this.club(s.q.tr.f)+" → "+this.club(s.q.tr.t)}]);
+    this.setState({done:true,won:won,picked:pickedId||null,score:s.score+gain,
+      streak:streak,bestStreak:Math.max(s.bestStreak,streak),run:s.run.concat([won]),idx:s.idx+1,misses:misses});
+    clearTimeout(this._adv);
+    this._adv=setTimeout(()=>this.next(),1900);
+  }
+  answer(val,pickedId){
+    if(this.state.done||!this.state.q) return;
+    const r=this.match(val,this.state.q.tr.p,2);
+    if(r.ok) return this.finish(true,pickedId);
+    if(r.ambiguous){ this.toast(this.strings().rAmb); return; }
+    if(this.state.mode==="l3" && this.state.tries>1){
+      this.setState(st=>({tries:st.tries-1,hints:Math.min(3,st.hints+1),guess:""}));
+      this.toast(this.strings().rNone); return;
+    }
+    this.finish(false,pickedId);
+  }
+
+  renderVals(){
+    const s=this.state, L=this.strings();
+    const flags={splash:"isSplash",onboard:"isOnboard",consent:"isConsent",home:"isHome",shop:"isShop",
+      profile:"isProfile",settings:"isSettings",offline:"isOffline",game:"isGame",ad:"isAd",recap:"isRecap",lab:"isLab"};
+    const base={ L:L, toast:s.toast, quitOpen:s.quitOpen, adsOn:this.adsOn(), balls:String(s.balls),
+      isSplash:false,isOnboard:false,isConsent:false,isHome:false,isShop:false,isProfile:false,isSettings:false,
+      isOffline:false,isGame:false,isAd:false,isRecap:false,isLab:false, done:false, showTabs:false,
+      goHome:()=>{ clearInterval(this._ad); clearTimeout(this._adv); this.setState({screen:"home",done:false,quitOpen:false}); },
+      backProfile:()=>this.setState({screen:"profile"}),
+      backSettings:()=>this.setState({screen:"settings"}),
+      openSettings:()=>this.setState({screen:"settings"}),
+      retry:()=>this.setState({screen:"home"}),
+      askQuit:()=>this.setState({quitOpen:true}),
+      cancelQuit:()=>this.setState({quitOpen:false}),
+      confirmQuit:()=>{ clearTimeout(this._adv); this.setState({quitOpen:false,screen:"home",done:false}); } };
+    base[flags[s.screen]]=true;
+    if(!s.ready) return base;
+    base.showTabs = s.screen==="home"||s.screen==="shop"||s.screen==="profile";
+    if(base.showTabs) Object.assign(base,this.tabVals(L));
+    if(s.screen==="onboard") Object.assign(base,this.obVals(L));
+    if(s.screen==="consent") Object.assign(base,this.consentVals(L));
+    if(s.screen==="home") Object.assign(base,this.homeVals(L));
+    if(s.screen==="shop") Object.assign(base,this.shopVals(L));
+    if(s.screen==="profile") Object.assign(base,this.profileVals(L));
+    if(s.screen==="settings") Object.assign(base,this.settingsVals(L));
+    if(s.screen==="game") Object.assign(base,this.gameVals(L));
+    if(s.screen==="ad") Object.assign(base,this.adVals(L));
+    if(s.screen==="recap") Object.assign(base,this.recapVals(L));
+    if(s.screen==="lab") Object.assign(base,this.labVals(L));
+    return base;
+  }
+
+  tabVals(L){
+    const s=this.state;
+    const tab=(id,label)=>({label:label,pick:()=>this.setState({screen:id}),
+      style:"flex:1;padding:13px 4px;border:0;border-radius:15px;cursor:pointer;font-family:'Unbounded',sans-serif;font-weight:800;font-size:11.5px;letter-spacing:-.01em;background:"+
+        (s.screen===id?"#FFE24A":"transparent")+";color:"+(s.screen===id?"#0B1030":"rgba(255,255,255,.5)")});
+    return { tabs:[tab("home",L.tPlay),tab("shop",L.tShop),tab("profile",L.tProfile)] };
+  }
+
+  obVals(L){
+    const s=this.state, step=Math.min(s.obStep,L.ob.length-1), pg=L.ob[step], last=step===L.ob.length-1;
+    return { obArt:pg.a, obTitle:pg.t, obBody:pg.b, obCta:last?L.obStart:L.obNext,
+      obDots:L.ob.map((x,i)=>"width:"+(i===step?"26px":"10px")+";height:10px;border-radius:99px;border:3px solid #0B1030;background:"+(i===step?"#FFE24A":"rgba(11,16,48,.45)")),
+      obNext:()=>{ if(last) this.setState({screen:"consent"}); else this.setState(st=>({obStep:st.obStep+1})); },
+      skipOnboard:()=>this.setState({screen:"consent"}) };
+  }
+
+  consentVals(L){
+    return { cnPoints:L.cnPoints,
+      acceptAll:()=>this.setState({consent:"personalised",screen:"home"}),
+      refuseAll:()=>this.setState({consent:"basic",screen:"home"}) };
+  }
+
+  homeVals(L){
+    const btn=bg=>"display:flex;align-items:center;gap:14px;width:100%;cursor:pointer;border:5px solid #0B1030;border-radius:26px;padding:22px 20px;background:"+bg+";color:#0B1030;box-shadow:0 10px 0 #0B1030;font-family:'Figtree',sans-serif";
+    const chip="flex:none;background:#0B1030;color:#FFE24A;border-radius:999px;padding:7px 14px;font-family:'Unbounded',sans-serif;font-weight:800;font-size:12px;letter-spacing:-.02em";
+    return { modes:[
+      {title:L.l1,chip:L.c1,play:()=>this.start("l1"),style:btn("#FFE24A"),chipStyle:chip},
+      {title:L.l3,chip:L.c3,play:()=>this.start("l3"),style:btn("#FBFAF4"),chipStyle:chip}
+    ] };
+  }
+
+  shopVals(L){
+    const s=this.state;
+    const tag=bg=>"width:46px;height:46px;flex:none;border-radius:14px;border:4px solid #0B1030;display:grid;place-items:center;font-family:'Unbounded',sans-serif;font-weight:900;font-size:15px;color:#0B1030;background:"+bg;
+    const btn=on=>"flex:none;font-family:'Unbounded',sans-serif;font-weight:800;font-size:12.5px;letter-spacing:-.02em;border:4px solid #0B1030;border-radius:14px;padding:11px 14px;cursor:"+
+      (on?"pointer":"default")+";box-shadow:0 5px 0 #0B1030;background:"+(on?"#FFE24A":"rgba(11,16,48,.18)")+";color:"+(on?"#0B1030":"rgba(11,16,48,.45)");
+    const buyBalls=(cost,fn)=>()=>{ if(this.state.balls<cost){ this.toast(L.noBalls); return; }
+      this.setState(st=>({balls:st.balls-cost})); fn(); };
+    return { shopItems:[
+      {tag:"⚽",tagStyle:tag("#FBFAF4"),title:L.shopNoAds,sub:L.shopNoAdsSub,
+       price:s.adsRemoved?L.owned:"3,99 €",disabled:s.adsRemoved,btnStyle:btn(!s.adsRemoved),
+       buy:()=>{ this.setState({adsRemoved:true}); this.toast(L.adsOffToast); }},
+      {tag:"?",tagStyle:tag("#FFE24A"),title:L.shopH1,sub:L.shopH1Sub,price:"120 ⚽",disabled:false,btnStyle:btn(true),
+       buy:buyBalls(120,()=>{ this.setState(st=>({hintPack:st.hintPack+10})); this.toast(L.buyToast); })},
+      {tag:"?",tagStyle:tag("#FFE24A"),title:L.shopH2,sub:L.shopH2Sub,price:"500 ⚽",disabled:false,btnStyle:btn(true),
+       buy:buyBalls(500,()=>{ this.setState(st=>({hintPack:st.hintPack+50})); this.toast(L.buyToast); })},
+      {tag:"⚽",tagStyle:tag("#2FE0A0"),title:L.shopBalls,sub:L.shopBallsSub,price:"1,99 €",disabled:false,btnStyle:btn(true),
+       buy:()=>{ this.setState(st=>({balls:st.balls+200})); this.toast(L.buyToast); }}
+    ], restore:()=>this.toast(L.restoreToast) };
+  }
+
+  profileVals(L){
+    return { stats:[{k:L.stPlayed,v:"38"},{k:L.stBest,v:"27"},{k:L.stStreak,v:"14"},{k:L.stAcc,v:"73 %"}] };
+  }
+
+  settingsVals(L){
+    const s=this.state;
+    const track=on=>"width:52px;height:30px;border-radius:999px;border:4px solid #0B1030;display:flex;align-items:center;padding:2px;justify-content:"+
+      (on?"flex-end":"flex-start")+";background:"+(on?"#2FE0A0":"#D6D3C4");
+    const knob="width:20px;height:20px;border-radius:99px;background:#FBFAF4;border:3px solid #0B1030;display:block";
+    const t=(key,label,val)=>({label:label,trackStyle:track(val),knobStyle:knob,flip:()=>this.setState(st=>{const o={};o[key]=!st[key];return o;})});
+    return { toggles:[t("sound",L.soundS,s.sound),t("vibrate",L.vibrateS,s.vibrate),t("notif",L.notifS,s.notif)],
+      settingsRows:[
+        {label:L.rowLang,value:{fr:"Français",en:"English",es:"Español"}[s.lang]+" · "+L.systemV,go:()=>{}},
+        {label:L.rowConsent,value:s.consent==="basic"?L.consentOff:L.consentOn,go:()=>this.setState({screen:"consent"})},
+        {label:L.rowIntro,value:"›",go:()=>this.setState({screen:"onboard",obStep:0})},
+        {label:L.rowOffline,value:"›",go:()=>this.setState({screen:"offline"})},
+        {label:L.rowLab,value:"›",go:()=>this.setState({screen:"lab"})}
+      ] };
+  }
+
+  gameVals(L){
+    const s=this.state, q=s.q; if(!q) return {};
+    const tr=q.tr, p=this.PLAYERS[tr.p], hard=s.mode==="l3";
+    const edge=s.done?(s.won?"#159C6B":"#C22E36"):"#0B1030";
+    const pips=[];
+    for(let i=0;i<this.runLen();i++){
+      const r=s.run[i], cur=i===s.idx&&!s.done;
+      pips.push({style:"flex:1;height:9px;border-radius:99px;border:3px solid #0B1030;background:"+
+        (r===true?"#2FE0A0":r===false?"#FF5C63":cur?"#FFE24A":"rgba(11,16,48,.45)")});
+    }
+    const hearts=hard?[0,1,2].map(i=>({style:"width:13px;height:13px;border-radius:99px;border:3px solid #0B1030;background:"+(i<s.tries?"#FF5C63":"rgba(11,16,48,.45)")})):[];
+    const opts=(q.opts||[]).map(id=>{
+      const right=s.done&&id===tr.p, wrong=s.done&&!s.won&&id===s.picked;
+      const bg=right?"#2FE0A0":wrong?"#FF5C63":"#0F1A66";
+      return { name:this.pname(id), disabled:s.done, pick:()=>this.answer(this.pname(id),id),
+        style:"width:100%;text-align:left;font-family:'Unbounded',sans-serif;font-weight:800;font-size:18px;letter-spacing:-.045em;background:"+bg+";color:"+(right?"#0B1030":"#fff")+
+          ";border:5px solid #0B1030;border-radius:20px;padding:17px 18px;cursor:"+(s.done?"default":"pointer")+";box-shadow:0 8px 0 #0B1030;opacity:"+(s.done&&!right&&!wrong?".4":"1") };
+    });
+    const hintChips=[];
+    if(hard){
+      if(s.hints>=1&&p.nat&&this.NATS[p.nat]) hintChips.push(this.NATS[p.nat][s.lang]||this.NATS[p.nat].en);
+      if(s.hints>=2&&p.pos) hintChips.push(this.POS[p.pos][s.lang]);
+      if(s.hints>=3){ const sn=this.pname(tr.p).split(" ").pop();
+        hintChips.push(sn[0].toUpperCase()+" · "+sn.length+" "+(s.lang==="fr"?"lettres":s.lang==="es"?"letras":"letters")); }
+    }
+    return {
+      pips:pips, hearts:hearts, score:String(s.score),
+      scoreStyle:"font-family:'Unbounded',sans-serif;font-weight:900;font-size:22px;font-variant-numeric:tabular-nums;border:4px solid #0B1030;border-radius:999px;padding:6px 16px;box-shadow:0 6px 0 #0B1030;background:"+
+        (s.done?(s.won?"#2FE0A0":"#FF5C63"):"#FBFAF4")+";color:"+(s.done&&!s.won?"#fff":"#0B1030"),
+      bumpStyle:"position:absolute;right:6px;top:40px;z-index:5;font-family:'Unbounded',sans-serif;font-weight:900;font-size:30px;pointer-events:none;text-shadow:3px 3px 0 #0B1030;color:"+
+        (s.won?"#2FE0A0":"#FF5C63")+";opacity:0;"+(s.done?"animation:mcFly 1.5s cubic-bezier(.2,.9,.3,1) forwards":""),
+      bumpText:s.done?(s.won?"+3":"0"):"",
+      kindLabel:L[tr.k], year:String(tr.y),
+      kindStyle:"font-family:'Unbounded',sans-serif;font-weight:800;font-size:11px;letter-spacing:.14em;color:#0B1030;background:"+
+        (tr.k==="loan"?"#FFE24A":"#FBFAF4")+";border-radius:999px;padding:6px 12px",
+      fromClub:this.club(tr.f), toClub:this.club(tr.t),
+      arrowStyle:"font-size:15px;line-height:1;margin:10px 0 12px;color:"+(s.done?(s.won?"#159C6B":"#C22E36"):"rgba(11,16,48,.28)"),
+      showMask:hard&&!s.done, masked:this.pname(tr.p).split(" ").map(w=>"•".repeat(Math.min(w.length,9))).join("  "),
+      revealName:this.pname(tr.p),
+      revealStyle:"margin-top:18px;padding-top:16px;border-top:4px dashed rgba(11,16,48,.14);width:100%;font-family:'Unbounded',sans-serif;font-weight:900;font-size:clamp(22px,6.6vw,29px);letter-spacing:-.05em;line-height:1.06;color:"+
+        (s.won?"#159C6B":"#C22E36"),
+      cardStyle:"background:#FBFAF4;border:5px solid "+edge+";border-radius:26px;margin-top:14px;overflow:hidden;cursor:"+(s.done?"pointer":"default")+
+        ";box-shadow:0 11px 0 "+edge+",0 22px 44px rgba(4,8,50,.42);animation:mcPop .3s cubic-bezier(.2,1.1,.35,1)",
+      tapCard:()=>{ if(this.state.done) this.next(); },
+      done:s.done, isEasy:!hard, isHard:hard, opts:opts, hintChips:hintChips, hasHints:hintChips.length>0, canSkip:!s.done,
+      guess:s.guess, onGuess:e=>this.setState({guess:e.target.value}),
+      onKey:e=>{ if(e.key==="Enter") this.answer(this.state.guess,null); },
+      submit:()=>this.answer(this.state.guess,null),
+      takeHint:()=>{ if(this.state.hints<3) this.setState(st=>({hints:st.hints+1})); },
+      hintDisabled:s.done||s.hints>=3, hintLabel:L.hint+" ("+(3-s.hints)+")",
+      inputStyle:"width:100%;font-family:'Unbounded',sans-serif;font-weight:800;font-size:19px;letter-spacing:-.04em;padding:17px 18px;border-radius:20px;border:5px solid #0B1030;box-shadow:0 8px 0 #0B1030;background:"+
+        (s.done?(s.won?"#2FE0A0":"#FF5C63"):"#FBFAF4")+";color:"+(s.done&&!s.won?"#fff":"#0B1030"),
+      hintBtnStyle:"flex:0 0 38%;font-family:'Unbounded',sans-serif;font-weight:800;font-size:14px;letter-spacing:-.02em;background:#FBFAF4;color:#0B1030;border:5px solid #0B1030;border-radius:20px;padding:16px 8px;box-shadow:0 8px 0 #0B1030;cursor:pointer;opacity:"+(s.done||s.hints>=3?".4":"1"),
+      submitStyle:"flex:1;font-family:'Unbounded',sans-serif;font-weight:900;font-size:17px;letter-spacing:-.02em;background:#FFE24A;color:#0B1030;border:5px solid #0B1030;border-radius:20px;padding:16px 8px;box-shadow:0 8px 0 #0B1030;cursor:pointer;opacity:"+(s.done?".4":"1"),
+      skip:()=>{ if(!s.done) this.finish(false,null); }
+    };
+  }
+
+  adVals(L){
+    const s=this.state, locked=s.adLeft>0;
+    return { adLocked:locked, adCloseLabel:locked?L.adWait+" "+s.adLeft+" s":L.adSkip+" ✕",
+      adCloseStyle:"font-family:'Unbounded',sans-serif;font-weight:800;font-size:12.5px;letter-spacing:-.02em;border:4px solid #0B1030;border-radius:14px;padding:10px 15px;cursor:"+
+        (locked?"default":"pointer")+";background:"+(locked?"rgba(11,16,48,.45)":"#FFE24A")+";color:"+(locked?"rgba(255,255,255,.6)":"#0B1030")+";box-shadow:0 5px 0 #0B1030",
+      closeAd:()=>{ if(this.state.adLeft<=0){ clearInterval(this._ad); this.setState({screen:"recap"}); } } };
+  }
+
+  recapVals(L){
+    const s=this.state, right=s.run.filter(Boolean).length, acc=right/this.runLen();
+    const n=acc>=.9?3:acc>=.6?2:acc>0?1:0;
+    const off=s.rewardTaken||s.ballsEarned===0;
+    return { recapTitle:n>=2?L.winT:L.loseT, score:String(s.score), ballsEarned:"+"+s.ballsEarned,
+      stars:[0,1,2].map(i=>({style:"font-size:46px;line-height:1;color:"+(i<n?"#FFE24A":"rgba(255,255,255,.15)")+
+        ";text-shadow:4px 4px 0 #0B1030;"+(i<n?"animation:mcPulse 1.6s "+(i*.15)+"s infinite":"")})),
+      recapRight:right+"/"+this.runLen(), bestStreak:String(s.bestStreak),
+      misses:s.misses, hasMisses:s.misses.length>0,
+      rewardTaken:off, rewardLabel:s.rewardTaken?L.rewardDone:L.reward,
+      rewardStyle:"width:100%;margin-top:14px;font-family:'Unbounded',sans-serif;font-weight:800;font-size:14.5px;letter-spacing:-.02em;border:5px solid #0B1030;border-radius:20px;padding:16px;cursor:"+
+        (off?"default":"pointer")+";box-shadow:0 8px 0 #0B1030;background:"+(off?"rgba(255,255,255,.16)":"#2FE0A0")+";color:"+(off?"rgba(255,255,255,.6)":"#0B1030"),
+      watchAd:()=>{ if(this.state.rewardTaken||this.state.ballsEarned===0) return;
+        this.setState(st=>({rewardTaken:true,balls:st.balls+st.ballsEarned,ballsEarned:st.ballsEarned*2}));
+        this.toast(L.rewardToast); },
+      replay:()=>this.start(s.mode) };
+  }
+
+  labVals(L){
+    const s=this.state, id=s.labTarget||this.RANKED[0], p=this.PLAYERS[id];
+    const r=this.match(s.labGuess,id,s.labTh);
+    const routeL={exact:L.rExact,alias:L.rAlias,fuzzy:L.rFuzzy,surname:L.rSurname,none:L.rNoneL}[r.route];
+    const verdict=r.ambiguous?L.amb:(r.ok?L.yes:L.no);
+    const vColor=r.ambiguous?"#A87400":(r.ok?"#159C6B":"#C22E36");
+    const k="font-weight:900;text-align:right";
+    return { labTarget:id, labGuess:s.labGuess, labTh:s.labTh, labThLabel:L.labTh+" : "+s.labTh,
+      labPlayers:this.RANKED.slice(0,220).map(i=>({id:i,name:this.pname(i)})),
+      onLabTarget:e=>this.setState({labTarget:e.target.value}),
+      onLabGuess:e=>this.setState({labGuess:e.target.value}),
+      onLabTh:e=>this.setState({labTh:+e.target.value}),
+      labTrace:[
+        {k:L.kNorm,v:this.norm(s.labGuess)||"-",style:k},
+        {k:L.kAlias,v:(p.alt||[]).join(", ")||"-",style:k},
+        {k:L.kBest,v:r.matched||"-",style:k},
+        {k:L.kDist,v:r.dist===null?"-":String(r.dist),style:k},
+        {k:L.kRoute,v:routeL,style:k},
+        {k:L.kVerdict,v:verdict,style:"font-weight:900;text-align:right;color:"+vColor}
+      ],
+      labStats:[
+        {k:L.sClubs,v:String(Object.keys(this.CLUBS).length)},
+        {k:L.sPlayers,v:String(Object.keys(this.PLAYERS).length)},
+        {k:L.sTr,v:String(this.TRANSFERS.length)},
+        {k:L.sGold,v:String(this.TRANSFERS.filter(x=>x.g===1).length)},
+        {k:L.sAmb,v:String(this.AMB.length)}
+      ],
+      labAmb:this.AMB.slice(0,60).map(sn=>({s:sn,who:this.SUR[sn].map(i=>this.pname(i)).join(", ")})) };
+  }
+}
+</script>
+</body>
+</html>
