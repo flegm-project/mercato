@@ -79,11 +79,21 @@ ios() {
     "$CORE/target/x86_64-apple-ios/release/libmercato_ffi.a" \
     -output "$sim/libmercato_ffi.a"
 
+  # The xcframework must carry the C header and a module map, otherwise the
+  # generated mercato_ffi.swift cannot import the FFI module. Xcode expects the
+  # map to be named module.modulemap, while uniffi emits it under the module's
+  # own name, so it is copied rather than referenced.
+  local headers="$OUT/ios/headers"
+  rm -rf "$headers"
+  mkdir -p "$headers"
+  cp "$OUT/bindings/swift/mercato_ffiFFI.h" "$headers/"
+  cp "$OUT/bindings/swift/mercato_ffiFFI.modulemap" "$headers/module.modulemap"
+
   echo "==> assembling xcframework"
   rm -rf "$OUT/ios/Mercato.xcframework"
   xcodebuild -create-xcframework \
-    -library "$CORE/target/aarch64-apple-ios/release/libmercato_ffi.a" \
-    -library "$sim/libmercato_ffi.a" \
+    -library "$CORE/target/aarch64-apple-ios/release/libmercato_ffi.a" -headers "$headers" \
+    -library "$sim/libmercato_ffi.a" -headers "$headers" \
     -output "$OUT/ios/Mercato.xcframework"
   echo "    -> $OUT/ios/Mercato.xcframework"
 }
