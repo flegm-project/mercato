@@ -51,6 +51,20 @@ struct RootView: View {
 
             case .success(let game):
                 content(game)
+                    .onAppear {
+                        // The gate is app-lifetime state that resets with each
+                        // fresh Game, so seed it on load: the store entitlement
+                        // and the stored consent choice.
+                        game.setAdsRemoved(removed: store.adsRemoved)
+                        if consentAnswered {
+                            let personalised = UserDefaults.standard.bool(forKey: "adsPersonalised")
+                            game.setAdConsent(consent: personalised ? .personalized : .nonPersonalized)
+                        }
+                        ads.bootstrap(game: game)
+                    }
+                    .onChange(of: store.adsRemoved) { _, removed in
+                        game.setAdsRemoved(removed: removed)
+                    }
 
             case .failure(let error):
                 ZStack {
@@ -68,7 +82,6 @@ struct RootView: View {
                 }
             }
         }
-        .onAppear { ads.bootstrap() }
     }
 
     @ViewBuilder
@@ -87,9 +100,11 @@ struct RootView: View {
 
         case .consent:
             ConsentView { personalised in
-                // Stored for the ad SDK to read in phase 6. Refusing means
-                // non-personalised ads, not fewer of them.
+                // Refusing means non-personalised ads, not fewer of them. The
+                // choice is reported to the core gate and mirrored to
+                // UserDefaults so Settings can show its current state.
                 UserDefaults.standard.set(personalised, forKey: "adsPersonalised")
+                game.setAdConsent(consent: personalised ? .personalized : .nonPersonalized)
                 consentAnswered = true
                 route = .home
             }
@@ -98,7 +113,7 @@ struct RootView: View {
             HomeView(
                 onPlay: { mode in route = .game(mode) },
                 onSettings: { route = .settings },
-                adsRemoved: store.adsRemoved
+                game: game
             )
 
         case .settings:
@@ -110,15 +125,11 @@ struct RootView: View {
             )
 
         case .game(let mode):
-            GameView(game: game, mode: mode, adsRemoved: store.adsRemoved) { finished in
+            GameView(game: game, mode: mode) { finished in
                 summary = finished
                 // One interstitial may play between the last question and the
-                // recap, subject to the frequency gate and the remove-ads
-                // entitlement (docs/specs/ads.md).
-                ads.onRoundFinished(
-                    adsRemoved: store.adsRemoved,
-                    consentAnswered: consentAnswered
-                ) { route = .recap }
+                // recap, if the core gate allows it (docs/specs/ads.md).
+                ads.onRoundFinished { route = .recap }
             } onQuit: {
                 route = .home
             }
@@ -132,7 +143,7 @@ struct RootView: View {
                     score: summary.score,
                     correct: summary.correct,
                     total: summary.total,
-                    adsRemoved: store.adsRemoved,
+                    game: game,
                     onAgain: { route = .game(summary.mode) },
                     onHome: { route = .home }
                 )

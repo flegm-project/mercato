@@ -63,8 +63,8 @@ struct SplashView: View {
 struct HomeView: View {
     let onPlay: (GameMode) -> Void
     let onSettings: () -> Void
-    /// Hidden once the remove-ads purchase is owned.
-    var adsRemoved: Bool = false
+    /// The core gate decides whether the banner shows.
+    let game: Game
 
     var body: some View {
         ZStack {
@@ -103,7 +103,7 @@ struct HomeView: View {
                     }
                 }
 
-                BannerSlot(adsRemoved: adsRemoved)
+                BannerSlot(game: game)
                     .frame(maxWidth: .infinity)
                     .padding(.top, 14)
             }
@@ -152,8 +152,8 @@ struct RecapView: View {
     let score: ScoreView
     let correct: Int
     let total: Int
-    /// Hides the recap rectangle when the remove-ads purchase is owned.
-    var adsRemoved: Bool = false
+    /// The core gate decides whether the rectangle shows.
+    let game: Game
     let onAgain: () -> Void
     let onHome: () -> Void
 
@@ -193,7 +193,7 @@ struct RecapView: View {
 
                     scoreCard.padding(.top, 22)
 
-                    RectangleSlot(adsRemoved: adsRemoved)
+                    RectangleSlot(game: game)
                         .padding(.top, 20)
 
                     VStack(spacing: 10) {
