@@ -55,7 +55,7 @@ The critical component - **port exactly**, do not approximate. Full algorithm in
 `core/reference/engine.reference.js`. Summary:
 
 - Normalize (NFD, strip diacritics, `ø→o` `ł→l` …, lowercase, punctuation→space).
-- Adaptive Levenshtein threshold by target length: `<=4 → 0`, `5–6 → 1`, `>6 → 2`.
+- Adaptive Levenshtein threshold by target length: `<=4 → 0`, `5-6 → 1`, `>6 → 2`.
 - Routes in order: exact → alias → fuzzy → surname → none.
 - Surname variants keep particles (`van`, `de`, `di`, `dos`, `mc` …).
 - **Two mandatory safety rules**: exact match on another player beats a fuzzy

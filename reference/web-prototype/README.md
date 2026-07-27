@@ -31,7 +31,7 @@ the only external dependency is Google Fonts.
 
 ## Fonts
 
-Unbounded (800, 900) display, Figtree (500–900) UI, IBM Plex Mono (500) technical
+Unbounded (800, 900) display, Figtree (500-900) UI, IBM Plex Mono (500) technical
 labels - all on Google Fonts.
 
 ## Note on language

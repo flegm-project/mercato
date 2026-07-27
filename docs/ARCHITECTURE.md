@@ -62,7 +62,7 @@ approximate. Spec: `docs/specs/engine.md` and `reference/web-prototype/functiona
 - **Normalize**: NFD, strip diacritics, map `Ø ø Ł ł Ð ð Þ þ`, lowercase,
   turn `. ' ’ \` - _` into spaces, drop non-`[a-z0-9 ]`, collapse + trim.
 - **Distance**: Levenshtein; adaptive threshold by target length -
-  `<=4 → 0`, `5–6 → min(1, base)`, `>6 → base` (base = 2).
+  `<=4 → 0`, `5-6 → min(1, base)`, `>6 → base` (base = 2).
 - **Routes, in order**: exact (canonical FR/EN/ES) → alias → fuzzy → surname →
   none. Surname variants keep particles (`van`, `de`, `di`, `dos`, `mc` …) and
   never eat into the first name.

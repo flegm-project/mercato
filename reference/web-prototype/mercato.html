@@ -701,10 +701,10 @@ function paintLab(){
     const rt={exact:L.rExact,alias:L.rAlias,fuzzy:L.rFuzzy,surname:L.rSurname,none:L.rNone}[r.route];
     const v=r.ambiguous?`<span class="pill w">${L.amb}</span>`:(r.ok?`<span class="pill y">${L.yes}</span>`:`<span class="pill n">${L.no}</span>`);
     $("#ltrace").innerHTML=`
-      <div><span>${L.kNorm}</span><span>${normalize(g)||"—"}</span></div>
-      <div><span>${L.kAlias}</span><span>${(p.alt||[]).join(", ")||"—"}</span></div>
-      <div><span>${L.kBest}</span><span>${r.matched||"—"}</span></div>
-      <div><span>${L.kDist}</span><span>${r.dist===null?"—":r.dist}</span></div>
+      <div><span>${L.kNorm}</span><span>${normalize(g)||"-"}</span></div>
+      <div><span>${L.kAlias}</span><span>${(p.alt||[]).join(", ")||"-"}</span></div>
+      <div><span>${L.kBest}</span><span>${r.matched||"-"}</span></div>
+      <div><span>${L.kDist}</span><span>${r.dist===null?"-":r.dist}</span></div>
       <div><span>${L.kRoute}</span><span>${rt}</span></div>
       <div><span>${L.kVerdict}</span><span>${v}</span></div>`;
   };
