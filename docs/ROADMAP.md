@@ -5,8 +5,9 @@ playable reference, a design system, and EN/FR/ES strings, this is a **porting**
 plan (web → Rust core + native UI), not a design-from-scratch plan. See
 [REUSE.md](REUSE.md). Each phase is shippable/reviewable on its own.
 
-**Status:** Phases 0, 1, 2 and 4 are done. Phase 3 is done on the Rust side; its
-native builds are blocked on toolchain (see below).
+**Status:** Phases 0, 1, 2 and 4 are done. Phase 3 is in progress: the Rust core,
+the FFI facade and the iOS build are done and verified; the Android library and
+the first screens remain.
 
 ## Phase 0 - Foundations [DONE]
 
@@ -36,7 +37,7 @@ native builds are blocked on toolchain (see below).
 - Integration tests assert the real volumes (412 / 513 / 1905 / 945 aliases) and
   that the Easy pool is exactly the 956 transfers the spec quotes.
 
-## Phase 3 - Cross the FFI, first playable [RUST SIDE DONE]
+## Phase 3 - Cross the FFI, first playable [IN PROGRESS]
 
 Done:
 - `mercato-core::session` drives a round (10 questions, Easy 4-option / Hardcore
@@ -47,12 +48,18 @@ Done:
 - Swift and Kotlin bindings generate cleanly (`scripts/build-native.sh bindings`).
 - Integration tests play full rounds through the facade against the real data.
 
-Blocked on toolchain (nothing to design, only to install):
-- iOS `xcframework` needs **full Xcode** plus **rustup** (a Homebrew-only Rust
-  cannot add the `aarch64-apple-ios*` targets).
-- Android `.so` needs the **Android SDK/NDK** and `cargo-ndk`.
-- `scripts/build-native.sh ios|android` performs both builds once those exist.
-- Minimal SwiftUI + Compose screens then follow.
+- Toolchain installed (rustup with the six mobile targets, full Xcode, Android
+  SDK/NDK, cargo-ndk). See the toolchain notes in
+  [ARCHITECTURE.md](ARCHITECTURE.md#toolchain).
+- `Mercato.xcframework` builds: an arm64 device slice plus a fat
+  x86_64 + arm64 simulator slice.
+- `scripts/smoke-swift.sh` compiles a Swift binary against the generated
+  bindings and plays a real round, so the Rust-to-Swift chain is proven at
+  runtime and not merely typechecked.
+
+Remaining:
+- Android `.so` per ABI (`scripts/build-native.sh android`).
+- Minimal SwiftUI and Compose screens on top of the facade.
 - **Exit**: same core logic playable on simulator + emulator.
 
 ## Phase 4 - Trilingual data (v1 requirement) [DONE]
