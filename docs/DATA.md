@@ -1,7 +1,6 @@
 # Data
 
-> A real dataset already exists in `data/`. This doc describes it and the
-> work left to close the i18n gap. See [REUSE.md](REUSE.md).
+> The dataset lives in `data/` as CSV, and is trilingual. See [REUSE.md](REUSE.md).
 
 ## What we use (and what we do not)
 
@@ -69,12 +68,14 @@ the extracted FR/ES club/position/nationality data is folded into the CSVs.
 
 ## Bundling
 
-- **CSVs under `data/` are the source of truth** (committed, diffable).
-- A build step (`data/build/`, Phase 0/1) generates the bundled read-only
-  **SQLite** artifact - schema, constraints, and indexes for decoy queries -
-  which `mercato-data` loads at startup. The generated DB is a build artifact
-  (gitignored), not committed.
-- CI regenerates the DB from the CSVs and validates referential integrity.
+- **CSVs under `data/` are the source of truth** (committed, diffable), and the
+  apps bundle them directly.
+- `mercato-data::load_corpus` parses them into memory at startup and validates
+  referential integrity, so a broken dataset fails immediately rather than
+  producing a broken round. At these volumes (a few thousand rows) an in-memory
+  corpus is faster and simpler than an embedded database; revisit only if the
+  dataset grows by an order of magnitude.
+- CI runs that load against the committed CSVs on every push.
 
 ## Answer matching data needs
 

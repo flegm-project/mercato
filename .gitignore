@@ -35,7 +35,9 @@ Pods/
 *.aab
 *.keystore
 
-# ---- Rust <-> native build outputs ----
+# ---- Generated native build outputs ----
+/build/
+
 *.a
 *.so
 *.dylib

@@ -5,17 +5,20 @@ playable reference, a design system, and EN/FR/ES strings, this is a **porting**
 plan (web → Rust core + native UI), not a design-from-scratch plan. See
 [REUSE.md](REUSE.md). Each phase is shippable/reviewable on its own.
 
-## Phase 0 - Foundations
+**Status:** Phases 0, 1, 2 and 4 are done. Phase 3 is done on the Rust side; its
+native builds are blocked on toolchain (see below).
+
+## Phase 0 - Foundations [DONE]
 
 - Init repo, `LICENSE`, CONTRIBUTING, English-only policy, `.gitignore`
   (Rust / Xcode / Gradle).
 - Rust workspace (`core/`) with `mercato-core`, `mercato-data`, `mercato-ffi`
   crates; empty native shells (`apps/ios`, `apps/android`).
-- Data pipeline `data/build/`: CSV (source of truth in `data/`) → generated
-  bundled DB (gitignored artifact). CSVs are already in place.
-- CI skeleton: `cargo test` on push.
+- CSVs are the committed source of truth in `data/`; no separate DB artifact is
+  needed, the loader reads them directly.
+- CI: fmt + clippy + `cargo test` on push.
 
-## Phase 1 - Port the engine (highest value first)
+## Phase 1 - Port the engine (highest value first) [DONE]
 
 - Port `matching.rs`, `decoy.rs`, `rng.rs` from
   `core/reference/engine.reference.js` **exactly**.
@@ -24,25 +27,45 @@ plan (web → Rust core + native UI), not a design-from-scratch plan. See
 - Port scoring (+3/+0, streak) and per-mode pool selection.
 - **Exit**: `cargo test` green; engine provably matches the reference.
 
-## Phase 2 - Data loading
+## Phase 2 - Data loading [DONE]
 
-- `mercato-data`: load the generated bundled SQLite DB into the model; build
-  EXACT / SURNAME indexes at load.
-- Validate referential integrity in CI (regenerate DB from CSVs, check FKs).
-- **Exit**: core generates real rounds from the real dataset.
+- `mercato-data::load_corpus` parses the CSVs into the core model, joins
+  aliases onto players, and validates referential integrity so a broken dataset
+  fails at startup rather than mid-round.
+- `Corpus` owns the EXACT / SURNAME matching indexes, built once at load.
+- Integration tests assert the real volumes (412 / 513 / 1905 / 945 aliases) and
+  that the Easy pool is exactly the 956 transfers the spec quotes.
 
-## Phase 3 - Cross the FFI, first playable
+## Phase 3 - Cross the FFI, first playable [RUST SIDE DONE]
 
-- `mercato-ffi` UniFFI `Game` facade (start_round, submit_guess, options, score).
-- Build iOS `xcframework` and Android `.so` (cargo-ndk); smoke-test bindings.
-- Minimal SwiftUI + Compose screen: one round, Easy multiple choice, score.
+Done:
+- `mercato-core::session` drives a round (10 questions, Easy 4-option / Hardcore
+  free text with 3 attempts and the free hint ladder), deterministic per seed.
+- `mercato-ffi` exposes the UniFFI `Game` facade: `start_round`,
+  `next_question`, `submit_choice`, `submit_guess`, `next_hint`, `score`,
+  `missed`, plus `language_for_locale` for the system-language fallback.
+- Swift and Kotlin bindings generate cleanly (`scripts/build-native.sh bindings`).
+- Integration tests play full rounds through the facade against the real data.
+
+Blocked on toolchain (nothing to design, only to install):
+- iOS `xcframework` needs **full Xcode** plus **rustup** (a Homebrew-only Rust
+  cannot add the `aarch64-apple-ios*` targets).
+- Android `.so` needs the **Android SDK/NDK** and `cargo-ndk`.
+- `scripts/build-native.sh ios|android` performs both builds once those exist.
+- Minimal SwiftUI + Compose screens then follow.
 - **Exit**: same core logic playable on simulator + emulator.
 
-## Phase 4 - Trilingual data (v1 requirement)
+## Phase 4 - Trilingual data (v1 requirement) [DONE]
 
-- Add per-language club names (`name_en`/`name_fr`/`name_es`) + translation
-  tables for positions and nationalities. Regenerate the bundled DB from CSVs.
-- **Exit**: EN/FR/ES render club/position/nationality correctly; English fallback.
+- `clubs.csv` and `players.csv` now carry `name_en` / `name_fr` / `name_es`, and
+  `nationalities.csv` is the nationality translation table (players reference it
+  by Wikidata id, so decoy comparison stays exact while display follows the UI
+  language).
+- This was an extraction, not a translation: the values came from the
+  prototype's inline DATA (`scripts/enrich-csv-i18n.mjs`), which was verified to
+  agree with the CSVs on every id first. 155 clubs differ EN/FR, 137 EN/ES, and
+  43 of the 53 nationalities differ EN/FR.
+- Positions are a fixed four-value set, mapped in the UI layer.
 
 ## Phase 5 - Build the screens
 

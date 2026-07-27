@@ -3,13 +3,18 @@
 The shared Rust workspace: all game logic and data access, consumed by the native
 iOS/Android apps through UniFFI. See [`../docs/ARCHITECTURE.md`](../docs/ARCHITECTURE.md).
 
-## Crates (added in Phase 0/1)
+## Crates
 
 | Crate | Responsibility |
 | --- | --- |
-| `mercato-core` | Pure game logic: matching, decoys, RNG, rounds, scoring, i18n. No I/O, deterministic. |
-| `mercato-data` | Data model + loading the bundled dataset into memory. |
+| `mercato-core` | Pure game logic: matching, decoys, RNG, rounds, scoring, session. No I/O, deterministic given a seed. |
+| `mercato-data` | Loads the `data/` CSVs into a `Corpus`, validating referential integrity. |
 | `mercato-ffi` | UniFFI surface - the `Game` facade the apps call. |
+
+Run the tests with `cargo test --all` from this directory. Generate the Swift and
+Kotlin bindings with `../scripts/build-native.sh bindings`; the native library
+builds (`ios`, `android`) additionally need full Xcode / the Android NDK and a
+rustup toolchain.
 
 ## `reference/`
 

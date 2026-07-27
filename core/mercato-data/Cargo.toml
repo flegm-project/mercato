@@ -8,3 +8,5 @@ description = "Loads the Mercato dataset (CSV source of truth) into mercato-core
 
 [dependencies]
 mercato-core = { path = "../mercato-core" }
+csv = "1"
+serde = { workspace = true }

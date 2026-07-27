@@ -108,6 +108,27 @@ impl Club {
     }
 }
 
+/// A nationality, keyed by Wikidata id and translated per language.
+/// `Player::nationality` holds the id, so decoy comparison stays exact while
+/// display follows the UI language.
+#[derive(Debug, Clone, Deserialize)]
+pub struct Nationality {
+    pub id: String,
+    pub name_en: String,
+    pub name_fr: String,
+    pub name_es: String,
+}
+
+impl Nationality {
+    pub fn name(&self, lang: Lang) -> &str {
+        match lang {
+            Lang::En => &self.name_en,
+            Lang::Fr => &self.name_fr,
+            Lang::Es => &self.name_es,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Deserialize)]
 pub struct Transfer {
     pub id: i64,

@@ -48,7 +48,7 @@ fn matching_parity() {
     let mut first: Vec<String> = Vec::new();
     for c in &cases {
         let r = matcher
-            .match_by_id(&c.guess, &c.player_id, BASE)
+            .match_by_id(&players, &c.guess, &c.player_id, BASE)
             .expect("known player id");
         let ok =
             r.ok == c.ok && r.route == c.route && r.dist == c.dist && r.ambiguous == c.ambiguous;

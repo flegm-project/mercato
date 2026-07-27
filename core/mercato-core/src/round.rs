@@ -10,14 +10,27 @@ pub enum Mode {
     Hardcore,
 }
 
-/// Transfers eligible for a mode. Easy keeps tiers 1 and 2; Hardcore keeps all.
+/// Is this transfer askable in `mode`? Easy keeps tiers 1 and 2.
+pub fn eligible(transfer: &Transfer, mode: Mode) -> bool {
+    match mode {
+        Mode::Easy => transfer.tier <= 2,
+        Mode::Hardcore => true,
+    }
+}
+
+/// Transfers eligible for a mode.
 pub fn pool(transfers: &[Transfer], mode: Mode) -> Vec<&Transfer> {
+    transfers.iter().filter(|t| eligible(t, mode)).collect()
+}
+
+/// Indices of the eligible transfers, for callers that need to index back into
+/// the corpus.
+pub fn pool_indices(transfers: &[Transfer], mode: Mode) -> Vec<usize> {
     transfers
         .iter()
-        .filter(|t| match mode {
-            Mode::Easy => t.tier <= 2,
-            Mode::Hardcore => true,
-        })
+        .enumerate()
+        .filter(|(_, t)| eligible(t, mode))
+        .map(|(i, _)| i)
         .collect()
 }
 

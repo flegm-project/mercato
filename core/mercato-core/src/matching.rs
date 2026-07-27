@@ -80,9 +80,14 @@ pub fn surname_variants(name: &str) -> Vec<String> {
 
 /// Matcher over a fixed corpus. Builds the EXACT and SURNAME indexes at
 /// construction, exactly as the reference does at module load.
-pub struct Matcher<'a> {
-    players: &'a [Player],
-    by_id: HashMap<&'a str, usize>,
+///
+/// The indexes are owned (they store player *indices*, not references), so a
+/// `Matcher` can live alongside the players it describes -- e.g. inside
+/// [`crate::Corpus`] -- without a self-referential borrow. Query methods take
+/// the player slice back.
+#[derive(Debug, Clone, Default)]
+pub struct Matcher {
+    by_id: HashMap<String, usize>,
     /// normalized form -> player indices that own it (full names + surnames).
     exact_index: HashMap<String, Vec<usize>>,
     /// normalized surname -> player indices (canonical names only).
@@ -99,14 +104,14 @@ fn push_unique(map: &mut HashMap<String, Vec<usize>>, key: String, idx: usize) {
     }
 }
 
-impl<'a> Matcher<'a> {
-    pub fn new(players: &'a [Player]) -> Self {
+impl Matcher {
+    pub fn new(players: &[Player]) -> Self {
         let mut by_id = HashMap::with_capacity(players.len());
         let mut exact_index: HashMap<String, Vec<usize>> = HashMap::new();
         let mut surname_index: HashMap<String, Vec<usize>> = HashMap::new();
 
         for (idx, p) in players.iter().enumerate() {
-            by_id.insert(p.id.as_str(), idx);
+            by_id.insert(p.id.clone(), idx);
 
             // EXACT_INDEX: every normalized name form and every surname variant.
             for nm in p.names() {
@@ -124,7 +129,6 @@ impl<'a> Matcher<'a> {
         }
 
         Self {
-            players,
             by_id,
             exact_index,
             surname_index,
@@ -147,8 +151,14 @@ impl<'a> Matcher<'a> {
 
     /// Match `guess` against the player at index `pid`. Ported from
     /// `matchAnswer`; iteration orders are preserved deliberately.
-    pub fn match_answer(&self, guess: &str, pid: usize, base: usize) -> MatchResult {
-        let p = &self.players[pid];
+    pub fn match_answer(
+        &self,
+        players: &[Player],
+        guess: &str,
+        pid: usize,
+        base: usize,
+    ) -> MatchResult {
+        let p = &players[pid];
         let g = normalize(guess);
         if g.is_empty() {
             return MatchResult::none_empty();
@@ -248,9 +258,15 @@ impl<'a> Matcher<'a> {
     }
 
     /// Convenience: match by player id.
-    pub fn match_by_id(&self, guess: &str, player_id: &str, base: usize) -> Option<MatchResult> {
+    pub fn match_by_id(
+        &self,
+        players: &[Player],
+        guess: &str,
+        player_id: &str,
+        base: usize,
+    ) -> Option<MatchResult> {
         let pid = self.player_index(player_id)?;
-        Some(self.match_answer(guess, pid, base))
+        Some(self.match_answer(players, guess, pid, base))
     }
 }
 
