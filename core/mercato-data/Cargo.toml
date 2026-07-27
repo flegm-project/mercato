@@ -8,3 +8,7 @@ description = "Loads the Mercato dataset (CSV source of truth) into mercato-core
 
 [dependencies]
 mercato-core = { path = "../mercato-core" }
+csv = "1"
+serde = { workspace = true }
+# bundled: compile SQLite in, no system dependency (CI + dev machines).
+rusqlite = { version = "0.32", features = ["bundled"] }

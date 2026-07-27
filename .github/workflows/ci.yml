@@ -38,3 +38,8 @@ jobs:
 
       - name: Test (includes JS-parity fixtures)
         run: cargo test --all
+
+      - name: Data integrity + bundled DB generation
+        run: |
+          cargo run -p mercato-data --bin gen-db -- ../data --check
+          cargo run -p mercato-data --bin gen-db -- ../data /tmp/mercato-en.db
