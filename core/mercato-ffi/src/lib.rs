@@ -10,7 +10,7 @@
 use std::sync::{Arc, Mutex};
 
 use mercato_core::session::{Hint, Rejection, Session, HARDCORE_ATTEMPTS, QUESTIONS_PER_ROUND};
-use mercato_core::{Corpus, Kind, Lang, Mode, Position};
+use mercato_core::{AdsConfig, AdsGate, Consent, Corpus, Kind, Lang, Mode, Placement, Position};
 
 uniffi::setup_scaffolding!();
 
@@ -120,6 +120,49 @@ impl From<Rejection> for RejectionReason {
     }
 }
 
+/// An ad slot the app may render. See mercato_core::ads.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, uniffi::Enum)]
+pub enum AdPlacement {
+    /// 320x50 on menu screens, never during a question.
+    Banner,
+    /// Static full-width board below the transfer card, in game.
+    SponsorBoard,
+    /// Full screen, between the last question and the recap.
+    Interstitial,
+    /// 300x250 on the recap screen.
+    Rectangle,
+}
+
+impl From<AdPlacement> for Placement {
+    fn from(p: AdPlacement) -> Self {
+        match p {
+            AdPlacement::Banner => Placement::Banner,
+            AdPlacement::SponsorBoard => Placement::SponsorBoard,
+            AdPlacement::Interstitial => Placement::Interstitial,
+            AdPlacement::Rectangle => Placement::Rectangle,
+        }
+    }
+}
+
+/// Consent outcome from the native flow. Refusing personalisation gives
+/// non-personalised ads, never fewer slots.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, uniffi::Enum)]
+pub enum AdConsent {
+    Unknown,
+    Personalized,
+    NonPersonalized,
+}
+
+impl From<AdConsent> for Consent {
+    fn from(c: AdConsent) -> Self {
+        match c {
+            AdConsent::Unknown => Consent::Unknown,
+            AdConsent::Personalized => Consent::Personalized,
+            AdConsent::NonPersonalized => Consent::NonPersonalized,
+        }
+    }
+}
+
 // --- records ----------------------------------------------------------------
 
 /// A question, with club names already resolved to the session language.
@@ -198,6 +241,9 @@ pub enum GameError {
 pub struct Game {
     corpus: Arc<Corpus>,
     session: Mutex<Session>,
+    /// App-lifetime ads decision rule; see mercato_core::ads. Survives
+    /// rounds: frequency state must not reset with the session.
+    ads: Mutex<AdsGate>,
 }
 
 #[uniffi::export]
@@ -215,6 +261,7 @@ impl Game {
         Ok(Self {
             corpus,
             session: Mutex::new(session),
+            ads: Mutex::new(AdsGate::new(AdsConfig::default(), false)),
         })
     }
 
@@ -244,22 +291,38 @@ impl Game {
 
     /// Easy mode: choose an option by index.
     pub fn submit_choice(&self, index: u32) -> Result<AnswerView, GameError> {
-        self.session
+        let answer = self
+            .session
             .lock()
             .expect("session lock")
             .submit_choice(index as usize)
             .map(answer_view)
-            .ok_or(GameError::NoQuestion)
+            .ok_or(GameError::NoQuestion)?;
+        if answer.finished {
+            self.ads
+                .lock()
+                .expect("ads lock")
+                .record_question_completed();
+        }
+        Ok(answer)
     }
 
     /// Hardcore mode: submit a typed guess.
     pub fn submit_guess(&self, text: String) -> Result<AnswerView, GameError> {
-        self.session
+        let answer = self
+            .session
             .lock()
             .expect("session lock")
             .submit_guess(&text)
             .map(answer_view)
-            .ok_or(GameError::NoQuestion)
+            .ok_or(GameError::NoQuestion)?;
+        if answer.finished {
+            self.ads
+                .lock()
+                .expect("ads lock")
+                .record_question_completed();
+        }
+        Ok(answer)
     }
 
     /// Unlock the next hint (Hardcore). Hints are free: there is no shop.
@@ -314,6 +377,50 @@ impl Game {
     /// Attempts per question in Hardcore.
     pub fn hardcore_attempts(&self) -> u8 {
         HARDCORE_ATTEMPTS
+    }
+
+    // --- ads gate (see mercato_core::ads) -----------------------------------
+    // The SDK calls (AdMob, StoreKit, Play Billing) stay native; the decision
+    // rule lives here so both apps stay consistent.
+
+    /// Ask right before rendering a slot or presenting an interstitial.
+    pub fn should_show_ad(&self, placement: AdPlacement) -> bool {
+        self.ads
+            .lock()
+            .expect("ads lock")
+            .should_show(placement.into())
+    }
+
+    /// Call once an interstitial was actually presented, so the frequency
+    /// cap starts counting from here.
+    pub fn record_interstitial_shown(&self) {
+        self.ads
+            .lock()
+            .expect("ads lock")
+            .record_interstitial_shown();
+    }
+
+    /// Flip the remove-ads entitlement from the store (launch check,
+    /// purchase, restore).
+    pub fn set_ads_removed(&self, removed: bool) {
+        self.ads.lock().expect("ads lock").set_ads_removed(removed);
+    }
+
+    pub fn ads_removed(&self) -> bool {
+        self.ads.lock().expect("ads lock").ads_removed()
+    }
+
+    /// Report the consent outcome so ad requests carry the right flag.
+    pub fn set_ad_consent(&self, consent: AdConsent) {
+        self.ads
+            .lock()
+            .expect("ads lock")
+            .set_consent(consent.into());
+    }
+
+    /// False means send non-personalised requests (npa) to the ads SDK.
+    pub fn ad_personalization_allowed(&self) -> bool {
+        self.ads.lock().expect("ads lock").personalization_allowed()
     }
 }
 
