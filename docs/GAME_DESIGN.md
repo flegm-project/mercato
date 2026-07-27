@@ -6,7 +6,7 @@
 
 ## Concept
 
-The app shows a football transfer — club left, club joined, year, and move kind —
+The app shows a football transfer - club left, club joined, year, and move kind -
 with the player's name hidden. The player must name the footballer. **Names only,
 no photos, no club badges.**
 
@@ -50,7 +50,7 @@ Port `distractorsFor` from the reference exactly, including the seeded RNG.
 
 ## Answer matching (Hardcore mode)
 
-The critical component — **port exactly**, do not approximate. Full algorithm in
+The critical component - **port exactly**, do not approximate. Full algorithm in
 [ARCHITECTURE.md](ARCHITECTURE.md#matching-engine) and
 `core/reference/engine.reference.js`. Summary:
 

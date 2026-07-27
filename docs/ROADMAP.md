@@ -5,7 +5,7 @@ playable reference, a design system, and EN/FR/ES strings, this is a **porting**
 plan (web → Rust core + native UI), not a design-from-scratch plan. See
 [REUSE.md](REUSE.md). Each phase is shippable/reviewable on its own.
 
-## Phase 0 — Foundations
+## Phase 0 - Foundations
 
 - Init repo, `LICENSE`, CONTRIBUTING, English-only policy, `.gitignore`
   (Rust / Xcode / Gradle).
@@ -15,7 +15,7 @@ plan (web → Rust core + native UI), not a design-from-scratch plan. See
   bundled DB (gitignored artifact). CSVs are already in place.
 - CI skeleton: `cargo test` on push.
 
-## Phase 1 — Port the engine (highest value first)
+## Phase 1 - Port the engine (highest value first)
 
 - Port `matching.rs`, `decoy.rs`, `rng.rs` from
   `core/reference/engine.reference.js` **exactly**.
@@ -24,27 +24,27 @@ plan (web → Rust core + native UI), not a design-from-scratch plan. See
 - Port scoring (+3/+0, streak) and per-mode pool selection.
 - **Exit**: `cargo test` green; engine provably matches the reference.
 
-## Phase 2 — Data loading
+## Phase 2 - Data loading
 
 - `mercato-data`: load the generated bundled SQLite DB into the model; build
   EXACT / SURNAME indexes at load.
 - Validate referential integrity in CI (regenerate DB from CSVs, check FKs).
 - **Exit**: core generates real rounds from the real dataset.
 
-## Phase 3 — Cross the FFI, first playable
+## Phase 3 - Cross the FFI, first playable
 
 - `mercato-ffi` UniFFI `Game` facade (start_round, submit_guess, options, score).
 - Build iOS `xcframework` and Android `.so` (cargo-ndk); smoke-test bindings.
 - Minimal SwiftUI + Compose screen: one round, Easy multiple choice, score.
 - **Exit**: same core logic playable on simulator + emulator.
 
-## Phase 4 — Trilingual data (v1 requirement)
+## Phase 4 - Trilingual data (v1 requirement)
 
 - Add per-language club names (`name_en`/`name_fr`/`name_es`) + translation
   tables for positions and nationalities. Regenerate the bundled DB from CSVs.
 - **Exit**: EN/FR/ES render club/position/nationality correctly; English fallback.
 
-## Phase 5 — Build the screens
+## Phase 5 - Build the screens
 
 - Generate `DesignTokens.swift` / `.kt` from `tokens.json`; wire `strings.json`
   (system language, English fallback).
@@ -56,7 +56,7 @@ plan (web → Rust core + native UI), not a design-from-scratch plan. See
 - Recap: stars, missed transfers, play again. **No balls, no rewarded video.**
 - **Exit**: full offline game, both modes, EN/FR/ES.
 
-## Phase 6 — Monetization
+## Phase 6 - Monetization
 
 - AdMob per `specs/ads.md`: sponsor board, interstitial (1/round), banner on
   menus, recap rectangle. Consent (UMP) + iOS ATT. **No rewarded ads.**
@@ -64,14 +64,14 @@ plan (web → Rust core + native UI), not a design-from-scratch plan. See
   restore. No shop, no other products.
 - **Exit**: no ads after purchase (verified fresh install + restore).
 
-## Phase 7 — Data confidence & hardening
+## Phase 7 - Data confidence & hardening
 
 - Confirm dataset rows against a second source (per authors' caveat); record
   sources in `data/SOURCES.md`.
 - Privacy policy, store listings (FR/EN/ES), icons, screenshots, data-safety
   labels. QA across device sizes + accessibility. Closed beta.
 
-## Phase 8 — Launch
+## Phase 8 - Launch
 
 - Store submission (iOS + Android). Post-launch: crash/analytics monitoring,
   dataset updates per transfer window.

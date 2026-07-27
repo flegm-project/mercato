@@ -3,7 +3,7 @@
 Two mechanisms, both native:
 
 1. **Ads** (default, free users).
-2. **Remove-ads** — a one-time in-app purchase (€3.99) that permanently disables
+2. **Remove-ads** - a one-time in-app purchase (€3.99) that permanently disables
    ads. **This is the only IAP.** No shop, no soft currency, no consumables, no
    rewarded ads. (The prototype's balls/hints shop is dropped.)
 
@@ -11,7 +11,7 @@ Two mechanisms, both native:
 
 - **Provider**: Google AdMob (single SDK covering iOS + Android).
 - **Formats**:
-  - **Interstitial** between rounds/sessions — shown at natural breaks (e.g.
+  - **Interstitial** between rounds/sessions - shown at natural breaks (e.g.
     after a game-over in Endless), frequency-capped to protect retention.
   - Optional **banner** on non-gameplay screens (menus/results). Avoid banners
     during active play.

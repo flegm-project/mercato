@@ -1,4 +1,4 @@
-// Mercato matching + decoy engine — REFERENCE IMPLEMENTATION (JavaScript)
+// Mercato matching + decoy engine - REFERENCE IMPLEMENTATION (JavaScript)
 // Source: reference/web-prototype/mercato.html. Port to Rust EXACTLY (see docs/ARCHITECTURE.md).
 // Do not approximate normalize/levenshtein/thresholdFor/surnameVariants/matchAnswer/distractorsFor.
 

@@ -35,7 +35,7 @@ discarded for implausible date gaps or overly obscure clubs.
 
 The English CSVs above are the current committed form. FR/ES club and nationality
 names exist in the prototype's inline DATA
-(`reference/web-prototype/mercato.html`) and are to be extracted into the CSVs —
+(`reference/web-prototype/mercato.html`) and are to be extracted into the CSVs -
 see `docs/DATA.md`.
 
 ## To do before shipping

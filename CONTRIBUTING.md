@@ -34,13 +34,13 @@ Keep the subject ≤ 50 chars; add a body only when the "why" is not obvious.
 
 - `cargo test` passes (once the workspace exists).
 - Data changes keep referential integrity (every transfer references existing
-  player/club IDs) — CI validates this.
-- No IP-sensitive assets added (no crests, logos, kits, or photos — see
+  player/club IDs) - CI validates this.
+- No IP-sensitive assets added (no crests, logos, kits, or photos - see
   `docs/DATA.md`).
 
 ## Licensing
 
-The code is **proprietary — all rights reserved** (see `LICENSE`). The factual
+The code is **proprietary - all rights reserved** (see `LICENSE`). The factual
 dataset under `data/` follows `data/SOURCES.md` (Wikidata, CC0). Contributions
 are accepted only under the project's proprietary terms; by contributing you
 assign the necessary rights to the copyright holder.
