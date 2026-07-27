@@ -224,8 +224,11 @@ pub struct MissedView {
 
 #[derive(Debug, thiserror::Error, uniffi::Error)]
 pub enum GameError {
-    #[error("could not load the dataset: {message}")]
-    DataLoad { message: String },
+    // Field deliberately not named "message": UniFFI maps errors to
+    // Throwable subclasses in Kotlin, where a `message` field collides
+    // with Throwable.message and breaks compilation.
+    #[error("could not load the dataset: {reason}")]
+    DataLoad { reason: String },
     #[error("no question in progress")]
     NoQuestion,
 }
@@ -253,7 +256,7 @@ impl Game {
     pub fn new(data_dir: String) -> Result<Self, GameError> {
         let corpus = mercato_data::load_corpus(std::path::Path::new(&data_dir)).map_err(|e| {
             GameError::DataLoad {
-                message: e.to_string(),
+                reason: e.to_string(),
             }
         })?;
         let corpus = Arc::new(corpus);
