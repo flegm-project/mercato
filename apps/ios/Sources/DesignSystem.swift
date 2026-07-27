@@ -76,8 +76,13 @@ enum DS {
 /// Ink outline plus a solid (unblurred) drop shadow: the signature of every
 /// raised surface here. The token shadows are pure offsets, so they are drawn
 /// as an offset copy of the shape rather than with SwiftUI's blurred shadow.
-struct SolidRaised: ViewModifier {
-    var radius: CGFloat
+///
+/// The outline is a filled shape sitting *behind* inset content, not a stroke
+/// drawn on top of a clipped background. Stroking over a clipped fill leaves a
+/// hairline of that fill visible outside the stroke, which reads as a pale
+/// fringe around every surface against this dark background.
+struct SolidRaised<S: InsettableShape>: ViewModifier {
+    let shape: S
     var border: CGFloat
     var depth: CGFloat
     var outline: Color = DesignTokens.Color.ink
@@ -87,21 +92,19 @@ struct SolidRaised: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .clipShape(RoundedRectangle(cornerRadius: radius))
-            .overlay(
-                RoundedRectangle(cornerRadius: radius)
-                    .strokeBorder(outline, lineWidth: border)
-            )
+            .clipShape(shape)
+            .padding(border)
+            // Fills the padded bounds, so the ring left around the inset
+            // content is the border.
+            .background(shape.fill(outline))
             .background(
-                RoundedRectangle(cornerRadius: radius)
-                    .fill(outline)
-                    // Pressing sinks the surface onto its shadow, which is what
-                    // motion.press (translateY 5px) describes.
-                    .offset(y: pressed ? max(0, depth - 5) : depth)
+                // Pressing sinks the surface onto its shadow, which is what
+                // motion.press (translateY 5px) describes.
+                shape.fill(outline).offset(y: pressed ? max(0, depth - 5) : depth)
             )
             .background(
                 ambient
-                    ? RoundedRectangle(cornerRadius: radius)
+                    ? shape
                         .fill(Color(red: 0.016, green: 0.031, blue: 0.196).opacity(0.42))
                         .blur(radius: 22)
                         .offset(y: 22)
@@ -112,6 +115,7 @@ struct SolidRaised: ViewModifier {
 }
 
 extension View {
+    /// Rounded-rectangle surfaces (cards, answer buttons).
     func solidRaised(
         radius: CGFloat,
         border: CGFloat = 5,
@@ -120,7 +124,31 @@ extension View {
         ambient: Bool = false,
         pressed: Bool = false
     ) -> some View {
-        modifier(SolidRaised(radius: radius, border: border, depth: depth, outline: outline, ambient: ambient, pressed: pressed))
+        modifier(SolidRaised(
+            shape: RoundedRectangle(cornerRadius: radius, style: .continuous),
+            border: border,
+            depth: depth,
+            outline: outline,
+            ambient: ambient,
+            pressed: pressed
+        ))
+    }
+
+    /// Pill surfaces (the score readout).
+    func solidRaisedCapsule(
+        border: CGFloat = 4,
+        depth: CGFloat,
+        outline: Color = DesignTokens.Color.ink,
+        pressed: Bool = false
+    ) -> some View {
+        modifier(SolidRaised(shape: Capsule(), border: border, depth: depth, outline: outline, pressed: pressed))
+    }
+
+    /// Outlined but not raised (the close button, the sponsor board).
+    func inkOutlined<S: InsettableShape>(_ shape: S, border: CGFloat = 4) -> some View {
+        clipShape(shape)
+            .padding(border)
+            .background(shape.fill(DesignTokens.Color.ink))
     }
 }
 
@@ -133,13 +161,9 @@ struct CloseButton: View {
             Text("\u{2715}")
                 .font(.system(size: 16, weight: .black))
                 .foregroundStyle(.white)
-                .frame(width: 38, height: 38)
+                .frame(width: 30, height: 30)
                 .background(DesignTokens.Color.ink.opacity(0.45))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .strokeBorder(DesignTokens.Color.ink, lineWidth: DesignTokens.Border.standard)
-                )
+                .inkOutlined(RoundedRectangle(cornerRadius: 12, style: .continuous))
         }
         .buttonStyle(.plain)
         .accessibilityLabel("Quit")
@@ -210,9 +234,7 @@ struct ScorePill: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 6)
                 .background(background)
-                .clipShape(Capsule())
-                .overlay(Capsule().strokeBorder(DesignTokens.Color.ink, lineWidth: DesignTokens.Border.standard))
-                .background(Capsule().fill(DesignTokens.Color.ink).offset(y: 6))
+                .solidRaisedCapsule(depth: 6)
 
             if let verdict {
                 Text(verdict ? "+3" : "0")
@@ -402,11 +424,7 @@ struct SponsorBoard: View {
                     .tracking(0.18 * 10.5)
                     .foregroundStyle(Color.white.opacity(0.4))
             )
-            .clipShape(RoundedRectangle(cornerRadius: 13))
-            .overlay(
-                RoundedRectangle(cornerRadius: 13)
-                    .strokeBorder(DesignTokens.Color.ink, lineWidth: DesignTokens.Border.standard)
-            )
+            .inkOutlined(RoundedRectangle(cornerRadius: 13, style: .continuous))
             .accessibilityHidden(true)
     }
 }
