@@ -40,6 +40,8 @@ object Routes {
     const val RECAP = "recap"
     const val PROFILE = "profile"
     const val SETTINGS = "settings"
+    const val OFFLINE = "offline"
+    const val LAB = "lab"
 }
 
 class MainActivity : ComponentActivity() {
@@ -159,7 +161,19 @@ fun MercatoNav(graph: AppGraph) {
                 },
                 onReplayIntro = {
                     nav.navigate(Routes.ONBOARDING) { popUpTo(Routes.HOME) }
-                })
+                },
+                onOffline = { nav.navigate(Routes.OFFLINE) },
+                onLab = { nav.navigate(Routes.LAB) })
+        }
+        composable(Routes.OFFLINE) {
+            com.mercato.app.ui.OfflineScreen(onRetry = { nav.popBackStack() })
+        }
+        composable(Routes.LAB) {
+            // Dev-only surface; the Settings row is hidden in release, and
+            // the route itself refuses to render outside debug builds.
+            if (BuildConfig.DEBUG) {
+                com.mercato.app.ui.LabScreen(graph, onBack = { nav.popBackStack() })
+            }
         }
     }
 }

@@ -339,6 +339,8 @@ fun SettingsScreen(
     onBack: () -> Unit,
     onConsent: () -> Unit,
     onReplayIntro: () -> Unit,
+    onOffline: () -> Unit,
+    onLab: () -> Unit,
 ) {
     val scope = rememberCoroutineScope()
     val sound by graph.prefs.sound.collectAsState(initial = true)
@@ -397,6 +399,10 @@ fun SettingsScreen(
             onClick = onConsent,
         )
         LinkRow(stringResource(R.string.rowIntro), null, onClick = onReplayIntro)
+        LinkRow(stringResource(R.string.rowOffline), null, onClick = onOffline)
+        if (BuildConfig.DEBUG) {
+            LinkRow(stringResource(R.string.rowLab), null, onClick = onLab)
+        }
         Spacer(Modifier.weight(1f))
         Text(
             "MERCATO ${BuildConfig.VERSION_NAME}",

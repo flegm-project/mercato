@@ -110,4 +110,6 @@ dependencies {
 
     // Play Billing: the single remove-ads non-consumable.
     implementation("com.android.billingclient:billing-ktx:9.1.0")
+
+    testImplementation("junit:junit:4.13.2")
 }

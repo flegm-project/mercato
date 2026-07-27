@@ -115,13 +115,21 @@ class ConsentManager(
     @Suppress("DEPRECATION") // PreferenceManager: where the IABTCF keys live, per spec.
     private fun tcfAllowsPersonalizedAds(context: Context): Boolean {
         val sp = PreferenceManager.getDefaultSharedPreferences(context)
-        val consents = sp.getString("IABTCF_PurposeConsents", "") ?: ""
-        val legitimate = sp.getString("IABTCF_PurposeLegitimateInterests", "") ?: ""
-        fun granted(bits: String, purpose: Int) =
-            bits.length >= purpose && bits[purpose - 1] == '1'
-        fun grantedEither(purpose: Int) =
-            granted(consents, purpose) || granted(legitimate, purpose)
-        return granted(consents, 1) && granted(consents, 3) && granted(consents, 4) &&
-            grantedEither(2) && grantedEither(7) && grantedEither(9) && grantedEither(10)
+        return tcfAllowsPersonalized(
+            sp.getString("IABTCF_PurposeConsents", "") ?: "",
+            sp.getString("IABTCF_PurposeLegitimateInterests", "") ?: "",
+        )
+    }
+
+    companion object {
+        /** Pure TCF purpose-bit rule, unit-tested in TcfPersonalizationTest. */
+        fun tcfAllowsPersonalized(consents: String, legitimate: String): Boolean {
+            fun granted(bits: String, purpose: Int) =
+                bits.length >= purpose && bits[purpose - 1] == '1'
+            fun grantedEither(purpose: Int) =
+                granted(consents, purpose) || granted(legitimate, purpose)
+            return granted(consents, 1) && granted(consents, 3) && granted(consents, 4) &&
+                grantedEither(2) && grantedEither(7) && grantedEither(9) && grantedEither(10)
+        }
     }
 }
