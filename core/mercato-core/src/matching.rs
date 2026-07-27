@@ -45,6 +45,10 @@ impl MatchResult {
     }
 }
 
+/// Default fuzzy-distance base, the reference's `matchAnswer` default
+/// (`base = 2`): threshold 0 up to 4 chars, 1 up to 6, 2 above.
+pub const BASE_DISTANCE: usize = 2;
+
 /// Name particles kept with the surname (never eaten into the first name).
 /// Verbatim from the reference `PARTICLES`.
 const PARTICLES: &[&str] = &[
