@@ -50,10 +50,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.animation.core.animateDpAsState
 import com.mercato.design.DesignTokens
 
 /** Resolve a generated [DesignTokens.TypeStyle] into a Compose [TextStyle]. */
@@ -75,16 +86,42 @@ fun typeStyle(ts: DesignTokens.TypeStyle, color: Color): TextStyle {
     )
 }
 
-/** The blue app background, approximating the CSS radial gradient. */
-fun Modifier.appBackground(): Modifier = background(
-    Brush.verticalGradient(
-        listOf(
-            DesignTokens.Color.blueTop,
-            DesignTokens.Color.blue,
-            DesignTokens.Color.blueDeep,
+/**
+ * Same, but with the size and tracking stated explicitly.
+ *
+ * Overriding only `fontSize` on a token silently keeps that token's tracking,
+ * which iOS does not do: it sets tracking per call site and often sets none.
+ * Passing `tracking = null` reproduces "no tracking" rather than the token's.
+ */
+@Composable
+fun typeStyle(
+    ts: DesignTokens.TypeStyle,
+    color: Color,
+    size: TextUnit,
+    tracking: Float?,
+): TextStyle = typeStyle(ts, color).copy(
+    fontSize = size,
+    letterSpacing = tracking?.em ?: androidx.compose.ui.unit.TextUnit.Unspecified,
+)
+
+/**
+ * The blue app background: a radial burst centred on the top edge, matching
+ * iOS `DS.appBackground` and `gradient.app-background` in tokens.json.
+ * A vertical gradient reads as flat horizontal bands instead.
+ */
+fun Modifier.appBackground(): Modifier = drawBehind {
+    drawRect(
+        Brush.radialGradient(
+            colorStops = arrayOf(
+                0f to DesignTokens.Color.blueTop,
+                0.44f to DesignTokens.Color.blue,
+                1f to DesignTokens.Color.blueDeep,
+            ),
+            center = Offset(size.width / 2f, 0f),
+            radius = size.width * 1.3f,
         )
     )
-)
+}
 
 /** Diagonal ink hatch used behind every ad slot, per the ads spec. */
 fun Modifier.adHatch(): Modifier = drawBehind {
@@ -179,12 +216,18 @@ fun InkButton(
     style: ButtonStyle,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    fontSize: TextUnit = 18.sp,
+    fontWeight: Int = 800,
+    tracking: Float = -0.045f,
+    depth: Dp = 8.dp,
+    radius: Dp = DesignTokens.Radius.large,
+    height: Dp = 56.dp,
     onClick: () -> Unit,
 ) {
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
-    val drop = 8.dp
-    val shape = RoundedCornerShape(DesignTokens.Radius.large)
+    val drop = depth
+    val shape = RoundedCornerShape(radius)
     val (fill, textColor) = when (style) {
         ButtonStyle.Primary -> DesignTokens.Color.yellow to DesignTokens.Color.ink
         ButtonStyle.Secondary -> DesignTokens.Color.ivory to DesignTokens.Color.ink
@@ -195,7 +238,9 @@ fun InkButton(
         if (style == ButtonStyle.Ghost) Color.White.copy(alpha = 0.24f) else DesignTokens.Color.ink
     val borderWidth = if (style == ButtonStyle.Ghost) 3.dp else DesignTokens.Border.heavy
 
-    Box(modifier.padding(bottom = drop)) {
+    // iOS dims a disabled button to 40% (DesignSystem.swift:562). Gating only
+    // the click handler left a spent Hint looking fully active.
+    Box(modifier.padding(bottom = drop).alpha(if (enabled) 1f else 0.4f)) {
         if (style != ButtonStyle.Ghost) {
             Box(
                 Modifier
@@ -208,7 +253,7 @@ fun InkButton(
             Modifier
                 .offset(y = if (pressed && enabled) 5.dp else 0.dp)
                 .fillMaxWidth()
-                .height(56.dp)
+                .height(height)
                 .background(fill, shape)
                 .border(borderWidth, borderColor, shape)
                 .clickable(
@@ -219,7 +264,15 @@ fun InkButton(
                 ),
             contentAlignment = Alignment.Center,
         ) {
-            Text(text, style = typeStyle(DesignTokens.Type.answer, textColor))
+            Text(
+                text,
+                style = typeStyle(DesignTokens.Type.answer, textColor).copy(
+                    fontSize = fontSize,
+                    fontWeight = FontWeight(fontWeight),
+                    letterSpacing = tracking.em,
+                ),
+                maxLines = 1,
+            )
         }
     }
 }
@@ -337,8 +390,10 @@ fun ScorePill(
         ) {
             Text(
                 "$points",
-                style = typeStyle(DesignTokens.Type.year, DesignTokens.Color.ink)
-                    .copy(fontSize = 22.sp),
+                style = typeStyle(DesignTokens.Type.year, DesignTokens.Color.ink, 22.sp, null)
+                    // monospacedDigit on iOS: the pill must not resize as the
+                    // score climbs.
+                    .copy(fontFeatureSettings = "tnum"),
             )
         }
         if (lastCorrect != null) ScoreBump(lastCorrect, bumpToken)
@@ -399,11 +454,17 @@ fun MercatoToggle(checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
                 role = Role.Switch,
                 onValueChange = onCheckedChange,
             ),
-        contentAlignment = if (checked) Alignment.CenterEnd else Alignment.CenterStart,
+        contentAlignment = Alignment.CenterStart,
     ) {
+        // iOS animates the knob with .snappy(0.18); Android snapped instantly.
+        val shift by animateDpAsState(
+            targetValue = if (checked) 24.dp else 2.dp,
+            animationSpec = tween(180),
+            label = "toggleKnob",
+        )
         Box(
             Modifier
-                .padding(3.dp)
+                .offset(x = shift)
                 .size(22.dp)
                 .background(DesignTokens.Color.ivory, CircleShape)
                 .border(3.dp, DesignTokens.Color.ink, CircleShape)
@@ -451,7 +512,7 @@ private fun RowScope.TabCell(label: String, active: Boolean, onClick: () -> Unit
                 DesignTokens.Type.clubTo,
                 if (active) DesignTokens.Color.ink
                 else DesignTokens.Color.ivory.copy(alpha = 0.7f),
-            ).copy(fontSize = 14.sp, letterSpacing = (-0.02 * 14).sp),
+            ).copy(fontSize = 13.5.sp, letterSpacing = (-0.02f).em),
         )
     }
 }
@@ -486,3 +547,75 @@ fun CapsLabel(text: String, modifier: Modifier = Modifier, color: Color = Color.
 /** Vertical spacer shorthand. */
 @Composable
 fun Gap(height: Dp) = androidx.compose.foundation.layout.Spacer(Modifier.height(height))
+
+/**
+ * Hardcore free-text entry, the single most important control of that mode.
+ *
+ * Was a Material3 `OutlinedTextField`, which brought its own outline, focus
+ * chrome and label metrics and read as an Android form dropped into the game.
+ * Rebuilt on [BasicTextField] over the app's own raised surface, matching
+ * iOS `GuessField` (DesignSystem.swift:447): ivory box, heavy ink border,
+ * verdict-tinted fill, and the input in the display face at 30/900.
+ */
+@Composable
+fun GuessField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    placeholder: String,
+    /** null while the question is still open. */
+    verdict: Boolean?,
+    onSubmit: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val fill = when (verdict) {
+        true -> DesignTokens.Color.green
+        false -> DesignTokens.Color.coral
+        null -> DesignTokens.Color.ivory
+    }
+    val fg = if (verdict == false) Color.White else DesignTokens.Color.ink
+
+    BoxWithConstraints(
+        modifier
+            .fillMaxWidth()
+            .solidRaised(radius = DesignTokens.Radius.card, depth = 10.dp)
+            .background(fill)
+    ) {
+        val density = LocalDensity.current
+        val measurer = rememberTextMeasurer()
+        val base = typeStyle(DesignTokens.Type.clubTo, fg, 30.sp, -0.05f)
+        // iOS shrinks to 50% rather than scrolling (minimumScaleFactor 0.5),
+        // so a long name stays readable in full.
+        val availPx = with(density) { (maxWidth - 40.dp).toPx() }
+        val shown = value.ifEmpty { placeholder }
+        var pt = 30f
+        while (pt > 15f &&
+            measurer.measure(shown, base.copy(fontSize = pt.sp), maxLines = 1).size.width > availPx
+        ) pt -= 1f
+        val style = base.copy(fontSize = pt.sp)
+
+        Box(Modifier.padding(vertical = 22.dp, horizontal = 20.dp)) {
+            if (value.isEmpty()) {
+                Text(
+                    placeholder,
+                    style = style.copy(color = DesignTokens.Color.muted),
+                    maxLines = 1,
+                )
+            }
+            BasicTextField(
+                value = value,
+                onValueChange = onValueChange,
+                enabled = verdict == null,
+                singleLine = true,
+                textStyle = style,
+                cursorBrush = SolidColor(fg),
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.None,
+                    autoCorrectEnabled = false,
+                    imeAction = ImeAction.Go,
+                ),
+                keyboardActions = KeyboardActions(onGo = { onSubmit() }),
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+    }
+}

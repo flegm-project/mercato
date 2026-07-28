@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.width
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.google.android.gms.ads.AdListener
@@ -151,10 +152,12 @@ fun MenuBanner(ads: AdsController, modifier: Modifier = Modifier) {
         AdPlacement.BANNER,
         BuildConfig.ADMOB_BANNER_ID,
         AdSize.BANNER,
+        // iOS BannerSlot draws a bare 320x50 and lets the blue gradient show
+        // through on wider screens. A full-width ink bar was the loudest
+        // difference on Home, and worst before the ad had loaded.
         modifier
-            .fillMaxWidth()
-            .height(50.dp)
-            .background(DesignTokens.Color.ink),
+            .width(320.dp)
+            .height(50.dp),
     )
 }
 

@@ -20,8 +20,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draw.clip
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -47,6 +45,13 @@ import com.mercato.app.QuestionUi
 import com.mercato.app.R
 import com.mercato.app.RecapUi
 import com.mercato.app.RecapRectangle
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.ui.window.DialogProperties
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import com.mercato.design.DesignTokens
 import uniffi.mercato_ffi.GameMode
 import uniffi.mercato_ffi.HintView
@@ -109,7 +114,12 @@ fun GameScreen(
                     .clickable { quitAsked = true },
                 contentAlignment = Alignment.Center,
             ) {
-                Text("✕", style = typeStyle(DesignTokens.Type.answer, Color.White))
+                Text("✕", style = TextStyle(
+                        color = Color.White,
+                        fontFamily = FontFamily.Default,
+                        fontWeight = FontWeight(900),
+                        fontSize = 16.sp,
+                    ))
             }
             Gap(DesignTokens.Space.md)
             ProgressPips(pips, liveIndex = q.question.index.toInt() - 1, Modifier.weight(1f))
@@ -180,8 +190,7 @@ private fun TransferCard(ui: QuestionUi, onTap: () -> Unit) {
             // Compact card (iOS parity): year 32, from 16, to 30, masked 18.
             Text(
                 "${ui.question.year}",
-                style = typeStyle(DesignTokens.Type.year, DesignTokens.Color.yellow)
-                    .copy(fontSize = 32.sp),
+                style = typeStyle(DesignTokens.Type.year, DesignTokens.Color.yellow, 32.sp, null),
             )
         }
         Column(
@@ -200,8 +209,13 @@ private fun TransferCard(ui: QuestionUi, onTap: () -> Unit) {
                 textAlign = TextAlign.Center,
             )
             Text(
-                "↓",
-                style = typeStyle(DesignTokens.Type.clubFrom, DesignTokens.Color.ink),
+                "▼",
+                style = TextStyle(
+                    color = DesignTokens.Color.ink,
+                    fontFamily = FontFamily.Default,
+                    fontSize = 13.sp,
+                ),
+                modifier = Modifier.padding(top = 6.dp, bottom = 8.dp),
             )
             Text(
                 ui.question.toClub,
@@ -279,39 +293,12 @@ private fun HardcoreAnswers(ui: QuestionUi, vm: GameViewModel) {
                 modifier = Modifier.padding(bottom = DesignTokens.Space.xs),
             )
         }
-        // Verdict colours for the field, matching the answer buttons on iOS.
-        val fieldFill = when (ui.verdict) {
-            true -> DesignTokens.Color.green
-            false -> DesignTokens.Color.coral
-            null -> DesignTokens.Color.ivory
-        }
-        val fieldText =
-            if (ui.verdict == false) Color.White else DesignTokens.Color.ink
-        OutlinedTextField(
+        GuessField(
             value = text,
             onValueChange = { text = it },
-            enabled = ui.verdict == null,
-            singleLine = true,
-            placeholder = {
-                Text(
-                    stringResource(R.string.ph),
-                    style = typeStyle(DesignTokens.Type.body, DesignTokens.Color.muted),
-                )
-            },
-            textStyle = typeStyle(DesignTokens.Type.clubTo, fieldText).copy(fontSize = 24.sp),
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = { vm.submitGuess(text) }),
-            // The field carries the verdict like the answer buttons do.
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = fieldFill,
-                unfocusedContainerColor = fieldFill,
-                disabledContainerColor = fieldFill,
-                focusedBorderColor = DesignTokens.Color.ink,
-                unfocusedBorderColor = DesignTokens.Color.ink,
-                disabledBorderColor = DesignTokens.Color.ink,
-            ),
-            shape = RoundedCornerShape(DesignTokens.Radius.medium),
-            modifier = Modifier.fillMaxWidth(),
+            placeholder = stringResource(R.string.ph),
+            verdict = ui.verdict,
+            onSubmit = { vm.submitGuess(text) },
         )
         Gap(DesignTokens.Space.sm)
         Row(horizontalArrangement = Arrangement.spacedBy(DesignTokens.Space.sm)) {
@@ -378,12 +365,12 @@ private fun StatTile(modifier: Modifier, value: String, label: String, tint: Col
     ) {
         Text(
             value,
-            style = typeStyle(DesignTokens.Type.year, tint).copy(fontSize = 22.sp),
+            style = typeStyle(DesignTokens.Type.year, tint, 22.sp, null),
         )
         Text(
             label,
-            style = typeStyle(DesignTokens.Type.body, DesignTokens.Color.muted)
-                .copy(fontSize = 11.5.sp),
+            style = typeStyle(DesignTokens.Type.body, DesignTokens.Color.muted, 11.5.sp, null)
+                .copy(fontWeight = FontWeight(900)),
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(top = 3.dp),
         )
@@ -393,21 +380,36 @@ private fun StatTile(modifier: Modifier, value: String, label: String, tint: Col
 /** 06 Quit dialog: keep playing (yellow) or quit (coral). */
 @Composable
 private fun QuitDialog(onStay: () -> Unit, onQuit: () -> Unit) {
-    Dialog(onDismissRequest = onStay) {
+    Dialog(
+        onDismissRequest = onStay,
+        properties = DialogProperties(usePlatformDefaultWidth = false),
+    ) {
+        // iOS paints its own scrim, an ink navy at 78% (Screens.swift:463).
+        // The platform default was lighter and a different hue.
+        Box(
+            Modifier
+                .fillMaxSize()
+                .background(Color(0xFF060920).copy(alpha = 0.78f))
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = onStay,
+                ),
+            contentAlignment = Alignment.Center,
+        ) {
         Column(
             Modifier
+                .padding(24.dp)
                 .fillMaxWidth()
-                .background(DesignTokens.Color.ivory, RoundedCornerShape(DesignTokens.Radius.card))
-                .border(
-                    DesignTokens.Border.heavy,
-                    DesignTokens.Color.ink,
-                    RoundedCornerShape(DesignTokens.Radius.card),
-                )
+                // iOS caps the card at 360pt so it does not span a tablet.
+                .widthIn(max = 360.dp)
+                .solidRaised(radius = DesignTokens.Radius.card, depth = 12.dp)
+                .background(DesignTokens.Color.ivory)
                 .padding(DesignTokens.Space.xl),
         ) {
             Text(
                 stringResource(R.string.quitT),
-                style = typeStyle(DesignTokens.Type.screenTitle, DesignTokens.Color.ink),
+                style = typeStyle(DesignTokens.Type.screenTitle, DesignTokens.Color.ink, 22.sp, -0.05f),
             )
             Gap(DesignTokens.Space.sm)
             Text(
@@ -415,8 +417,17 @@ private fun QuitDialog(onStay: () -> Unit, onQuit: () -> Unit) {
                 style = typeStyle(DesignTokens.Type.body, DesignTokens.Color.muted),
             )
             Gap(DesignTokens.Space.lg)
-            InkButton(stringResource(R.string.quitStay), ButtonStyle.Primary, onClick = onStay)
-            InkButton(stringResource(R.string.quitGo), ButtonStyle.Destructive, onClick = onQuit)
+            InkButton(
+                stringResource(R.string.quitStay), ButtonStyle.Primary,
+                fontSize = 17.sp, fontWeight = 900, tracking = -0.03f,
+                depth = 12.dp, radius = 20.dp, onClick = onStay,
+            )
+            InkButton(
+                stringResource(R.string.quitGo), ButtonStyle.Destructive,
+                fontSize = 15.sp, fontWeight = 800, tracking = -0.03f,
+                radius = 20.dp, onClick = onQuit,
+            )
+        }
         }
     }
 }
@@ -437,7 +448,7 @@ fun RecapScreen(
         Gap(DesignTokens.Space.xl)
         Text(
             stringResource(if (r.won) R.string.winT else R.string.loseT),
-            style = typeStyle(DesignTokens.Type.screenTitle, DesignTokens.Color.ivory),
+            style = typeStyle(DesignTokens.Type.screenTitle, DesignTokens.Color.ivory, 28.sp, -0.05f),
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center,
         )
@@ -481,12 +492,12 @@ fun RecapScreen(
         ) {
             Text(
                 "${r.points}",
-                style = typeStyle(DesignTokens.Type.year, DesignTokens.Color.ink)
-                    .copy(fontSize = 64.sp),
+                style = typeStyle(DesignTokens.Type.year, DesignTokens.Color.ink, 64.sp, null)
+                    .copy(fontFeatureSettings = "tnum"),
             )
             Text(
                 stringResource(R.string.pts).uppercase(),
-                style = typeStyle(DesignTokens.Type.label, DesignTokens.Color.muted),
+                style = typeStyle(DesignTokens.Type.label, DesignTokens.Color.muted, 12.5.sp, 0.16f),
                 modifier = Modifier.padding(top = 8.dp),
             )
             Row(
@@ -510,7 +521,9 @@ fun RecapScreen(
             }
         }
         Gap(DesignTokens.Space.lg)
-        InkButton(stringResource(R.string.again), ButtonStyle.Primary) { onPlayAgain(mode) }
+        InkButton(
+            stringResource(R.string.again), ButtonStyle.Primary, radius = 20.dp,
+        ) { onPlayAgain(mode) }
         // A full-width secondary button, not a thin text link, so it is a
         // comfortable finger target next to Play again (iOS parity: ink 35%,
         // white 18% border, radius 18, vertical padding 16).
@@ -533,8 +546,7 @@ fun RecapScreen(
         ) {
             Text(
                 stringResource(R.string.home),
-                style = typeStyle(DesignTokens.Type.answer, DesignTokens.Color.ivory)
-                    .copy(fontSize = 16.sp),
+                style = typeStyle(DesignTokens.Type.answer, DesignTokens.Color.ivory, 16.sp, -0.03f),
             )
         }
         // Display slot lives below the actions, never above the primary CTA.

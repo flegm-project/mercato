@@ -11,8 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -27,6 +25,18 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.mercato.app.AppGraph
 import com.mercato.app.R
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.graphics.Color
 import com.mercato.design.DesignTokens
 import uniffi.mercato_ffi.LabOutcome
 import uniffi.mercato_ffi.LabVerdict
@@ -56,23 +66,45 @@ fun LabScreen(graph: AppGraph, onBack: () -> Unit) {
         Gap(DesignTokens.Space.xl)
         Row(verticalAlignment = Alignment.CenterVertically) {
             val backLabel = stringResource(R.string.a11yBack)
-            Text(
-                "‹",
-                style = typeStyle(DesignTokens.Type.screenTitle, DesignTokens.Color.ivory),
-                modifier = Modifier
+            // iOS renders the chevron in the system face inside a 38x38 ink
+            // box (Lab.swift:50); a bare 30px Unbounded glyph read as text.
+            Box(
+                Modifier
                     .semantics { contentDescription = backLabel }
-                    .clickable(onClick = onBack)
-                    .padding(end = DesignTokens.Space.md, top = 6.dp, bottom = 6.dp),
-            )
+                    .size(38.dp)
+                    .background(
+                        DesignTokens.Color.ink.copy(alpha = 0.45f),
+                        RoundedCornerShape(12.dp),
+                    )
+                    .border(4.dp, DesignTokens.Color.ink, RoundedCornerShape(12.dp))
+                    .clickable(onClick = onBack),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    "‹",
+                    style = TextStyle(
+                        color = Color.White,
+                        fontFamily = FontFamily.Default,
+                        fontWeight = FontWeight(900),
+                        fontSize = 20.sp,
+                    ),
+                )
+            }
+            Gap(DesignTokens.Space.sm)
             Text(
                 stringResource(R.string.labT),
-                style = typeStyle(DesignTokens.Type.screenTitle, DesignTokens.Color.ivory),
+                style = typeStyle(DesignTokens.Type.screenTitle, DesignTokens.Color.ivory, 20.sp, -0.04f),
             )
         }
         Gap(DesignTokens.Space.xs)
         Text(
             stringResource(R.string.labN),
-            style = typeStyle(DesignTokens.Type.body, DesignTokens.Color.ivory.copy(alpha = 0.8f)),
+            style = typeStyle(
+                DesignTokens.Type.body,
+                DesignTokens.Color.ivory.copy(alpha = 0.7f),
+                13.sp,
+                null,
+            ),
         )
         Gap(DesignTokens.Space.lg)
 
@@ -119,21 +151,34 @@ fun LabScreen(graph: AppGraph, onBack: () -> Unit) {
             }
             Box(
                 Modifier
-                    .background(
-                        DesignTokens.Color.blueNight,
-                        RoundedCornerShape(DesignTokens.Radius.chip),
-                    )
-                    .padding(horizontal = DesignTokens.Space.md, vertical = 6.dp),
+                    // iOS uses ink at 40% in a capsule (Lab.swift:118), not an
+                    // opaque blueNight rounded rect.
+                    .background(DesignTokens.Color.ink.copy(alpha = 0.4f), CircleShape)
+                    .padding(horizontal = 12.dp, vertical = 6.dp),
             ) {
                 Text(
                     stringResource(verdictLabel),
-                    style = typeStyle(DesignTokens.Type.answer, verdictColor),
+                    style = typeStyle(DesignTokens.Type.answer, verdictColor, 15.sp, null),
                 )
             }
             Gap(DesignTokens.Space.xs)
             Text(
                 "${stringResource(R.string.labTh)}: ${o.threshold}",
-                style = typeStyle(DesignTokens.Type.technical, DesignTokens.Color.ivory),
+                style = typeStyle(DesignTokens.Type.technical, DesignTokens.Color.ivory, 11.sp, null),
+            )
+            Gap(DesignTokens.Space.xs)
+            // iOS prints the matched form and its edit distance (Lab.swift:125);
+            // Android showed the trace but never this line.
+            Text(
+                stringResource(R.string.kBest) + ": " +
+                    (o.bestMatch ?: stringResource(R.string.rNoneL)) +
+                    (o.distance?.let { " ($it)" } ?: ""),
+                style = typeStyle(
+                    DesignTokens.Type.technical,
+                    DesignTokens.Color.ivory.copy(alpha = 0.9f),
+                    11.sp,
+                    null,
+                ),
             )
             Gap(DesignTokens.Space.xs)
             LabPanel {
@@ -201,23 +246,31 @@ fun LabScreen(graph: AppGraph, onBack: () -> Unit) {
 
 @Composable
 private fun LabField(value: String, onChange: (String) -> Unit, placeholder: String) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = onChange,
-        singleLine = true,
-        placeholder = {
-            Text(placeholder, style = typeStyle(DesignTokens.Type.body, DesignTokens.Color.muted))
-        },
-        textStyle = typeStyle(DesignTokens.Type.body, DesignTokens.Color.ink),
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedContainerColor = DesignTokens.Color.ivory,
-            unfocusedContainerColor = DesignTokens.Color.ivory,
-            focusedBorderColor = DesignTokens.Color.ink,
-            unfocusedBorderColor = DesignTokens.Color.ink,
-        ),
-        shape = RoundedCornerShape(DesignTokens.Radius.medium),
-        modifier = Modifier.fillMaxWidth(),
-    )
+    // iOS deliberately omits a border here (Lab.swift:212): ivory fill,
+    // radius 12, Figtree 15/700.
+    val style = typeStyle(DesignTokens.Type.body, DesignTokens.Color.ink, 15.sp, null)
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .background(DesignTokens.Color.ivory, RoundedCornerShape(12.dp))
+            .padding(horizontal = 14.dp, vertical = 12.dp)
+    ) {
+        if (value.isEmpty()) {
+            Text(placeholder, style = style.copy(color = DesignTokens.Color.muted), maxLines = 1)
+        }
+        BasicTextField(
+            value = value,
+            onValueChange = onChange,
+            singleLine = true,
+            textStyle = style,
+            cursorBrush = SolidColor(DesignTokens.Color.ink),
+            keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.None,
+                autoCorrectEnabled = false,
+            ),
+            modifier = Modifier.fillMaxWidth(),
+        )
+    }
 }
 
 @Composable

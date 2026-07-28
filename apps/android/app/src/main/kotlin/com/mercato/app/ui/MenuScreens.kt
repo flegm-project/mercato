@@ -51,6 +51,10 @@ import com.mercato.app.BuildConfig
 import com.mercato.app.MenuBanner
 import com.mercato.app.Prefs
 import com.mercato.app.R
+import java.util.Locale
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import com.mercato.design.DesignTokens
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -61,12 +65,14 @@ import uniffi.mercato_ffi.GameMode
 @Composable
 fun SplashScreen(onDone: () -> Unit) {
     LaunchedEffect(Unit) {
-        delay(1300)
+        // iOS holds the full bar for 100ms before leaving; Android cut away the
+        // instant it filled, which read as a jump.
+        delay(1400)
         onDone()
     }
     ScreenColumn {
         Spacer(Modifier.weight(1f))
-        Wordmark(52.sp)
+        Wordmark(DesignTokens.Type.logo.size)
         Gap(DesignTokens.Space.xl)
         // An ink-bordered capsule that actually fills, as on iOS. It used to
         // sit frozen at two thirds, which read as a stalled load.
@@ -77,7 +83,7 @@ fun SplashScreen(onDone: () -> Unit) {
                 .align(Alignment.CenterHorizontally)
                 .width(172.dp)
                 .height(14.dp)
-                .solidRaised(7.dp, depth = 0.dp, border = 3.dp)
+                .solidRaised(7.dp, depth = 0.dp, border = 3.dp)  // iOS: 3, not 4
                 .background(DesignTokens.Color.ink.copy(alpha = 0.4f))
         ) {
             Box(
@@ -147,7 +153,12 @@ fun OnboardingScreen(onDone: () -> Unit) {
             Spacer(Modifier.weight(1f))
             Text(
                 stringResource(R.string.obSkip).uppercase(),
-                style = typeStyle(DesignTokens.Type.label, Color.White.copy(alpha = 0.68f)),
+                style = typeStyle(
+                    DesignTokens.Type.label,
+                    Color.White.copy(alpha = 0.68f),
+                    13.sp,
+                    0.06f,
+                ),
                 modifier = Modifier.clickable(onClick = onDone),
             )
         }
@@ -211,6 +222,7 @@ fun OnboardingScreen(onDone: () -> Unit) {
             stringResource(if (last) R.string.obStart else R.string.obNext),
             ButtonStyle.Primary,
             Modifier.padding(bottom = DesignTokens.Space.xl),
+            fontSize = 22.sp, fontWeight = 900, tracking = -0.03f,
         ) {
             if (last) onDone()
             else scope.launch { pager.animateScrollToPage(pager.currentPage + 1) }
@@ -239,12 +251,8 @@ fun ConsentScreen(graph: AppGraph, fromSettings: Boolean, onDone: () -> Unit) {
         Column(
             Modifier
                 .fillMaxWidth()
-                .background(DesignTokens.Color.ivory, RoundedCornerShape(DesignTokens.Radius.card))
-                .border(
-                    DesignTokens.Border.heavy,
-                    DesignTokens.Color.ink,
-                    RoundedCornerShape(DesignTokens.Radius.card),
-                )
+                .solidRaised(radius = DesignTokens.Radius.card, depth = 10.dp)
+                .background(DesignTokens.Color.ivory)
                 .padding(DesignTokens.Space.xl),
         ) {
             Text(
@@ -253,29 +261,51 @@ fun ConsentScreen(graph: AppGraph, fromSettings: Boolean, onDone: () -> Unit) {
             )
             Gap(DesignTokens.Space.sm)
             Text(
+                // iOS: Figtree 14.5/600 in muted, and the bullet text in ink.
+                // The two colours were swapped on Android.
                 stringResource(R.string.cnBody),
-                style = typeStyle(DesignTokens.Type.body, DesignTokens.Color.ink),
+                style = typeStyle(DesignTokens.Type.body, DesignTokens.Color.muted, 14.5.sp, null),
             )
             Gap(DesignTokens.Space.md)
             listOf(R.string.cnPoints_0, R.string.cnPoints_1, R.string.cnPoints_2).forEach {
-                Row(Modifier.padding(vertical = 3.dp)) {
-                    Text("• ", style = typeStyle(DesignTokens.Type.body, DesignTokens.Color.ink))
+                Row(
+                    Modifier.padding(vertical = 4.5.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    Text(
+                        "·",
+                        style = typeStyle(
+                            DesignTokens.Type.clubTo, DesignTokens.Color.blue, 14.sp, null,
+                        ),
+                    )
                     Text(
                         stringResource(it),
-                        style = typeStyle(DesignTokens.Type.body, DesignTokens.Color.muted),
+                        style = typeStyle(
+                            DesignTokens.Type.body, DesignTokens.Color.ink, 13.5.sp, null,
+                        ).copy(fontWeight = FontWeight(700)),
                     )
                 }
             }
-            Gap(DesignTokens.Space.lg)
-            InkButton(stringResource(R.string.cnAccept), ButtonStyle.Primary) { choose(true) }
-            InkButton(stringResource(R.string.cnRefuse), ButtonStyle.Secondary) { choose(false) }
-            Text(
-                stringResource(R.string.cnFoot),
-                style = typeStyle(DesignTokens.Type.body, DesignTokens.Color.muted),
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center,
-            )
         }
+        // iOS keeps only the title, body and bullets on the ivory card, and
+        // leaves the actions and the footer on the blue background
+        // (Screens.swift:381). Putting them inside turned the bottom half of
+        // the screen ivory.
+        Gap(DesignTokens.Space.lg)
+        InkButton(
+            stringResource(R.string.cnAccept), ButtonStyle.Primary,
+            fontSize = 18.sp, fontWeight = 900, tracking = -0.03f,
+        ) { choose(true) }
+        InkButton(
+            stringResource(R.string.cnRefuse), ButtonStyle.Secondary,
+            fontSize = 15.sp, fontWeight = 800, tracking = -0.03f,
+        ) { choose(false) }
+        Text(
+            stringResource(R.string.cnFoot),
+            style = typeStyle(DesignTokens.Type.body, DesignTokens.Color.ivory.copy(alpha = 0.7f)),
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center,
+        )
         Spacer(Modifier.weight(1f))
     }
 }
@@ -285,12 +315,15 @@ fun ConsentScreen(graph: AppGraph, fromSettings: Boolean, onDone: () -> Unit) {
 fun HomeScreen(graph: AppGraph, onPlay: (GameMode) -> Unit, onProfile: () -> Unit) {
     LaunchedEffect(Unit) { graph.ads.preloadInterstitial() }
     ScreenColumn {
+        // iOS treats the wordmark and both buttons as one block, with the
+        // flexible space above and below it, not between them.
         Spacer(Modifier.weight(1f))
-        Wordmark(58.sp)
-        Spacer(Modifier.weight(1f))
+        Wordmark(DesignTokens.Type.logo.size)
+        Gap(DesignTokens.Space.lg)
         ModeButton(R.string.l1, DesignTokens.Color.yellow) { onPlay(GameMode.EASY) }
         Gap(DesignTokens.Space.md)
         ModeButton(R.string.l3, DesignTokens.Color.ivory) { onPlay(GameMode.HARDCORE) }
+        Spacer(Modifier.weight(1f))
         Gap(DesignTokens.Space.lg)
         MenuBanner(graph.ads)
         Gap(DesignTokens.Space.sm)
@@ -308,14 +341,10 @@ private fun ModeButton(title: Int, fill: Color, onClick: () -> Unit) {
     Box(
         Modifier
             .fillMaxWidth()
-            .background(fill, RoundedCornerShape(DesignTokens.Radius.large))
-            .border(
-                DesignTokens.Border.heavy,
-                DesignTokens.Color.ink,
-                RoundedCornerShape(DesignTokens.Radius.large),
-            )
+            .solidRaised(radius = DesignTokens.Radius.card, depth = 10.dp)
+            .background(fill)
             .clickable(onClick = onClick)
-            .padding(vertical = DesignTokens.Space.xl, horizontal = DesignTokens.Space.lg),
+            .padding(vertical = 20.dp, horizontal = 24.dp),
         contentAlignment = Alignment.CenterStart,
     ) {
         Text(
@@ -416,13 +445,13 @@ private fun StatRow(label: Int, value: String) {
     ) {
         Text(
             stringResource(label),
-            style = typeStyle(DesignTokens.Type.body, DesignTokens.Color.ivory),
+            style = typeStyle(DesignTokens.Type.body, DesignTokens.Color.ivory)
+                .copy(fontWeight = FontWeight(800)),
         )
         Text(
             value,
             // Unbounded 26/900, per the iOS profile stats.
-            style = typeStyle(DesignTokens.Type.clubTo, DesignTokens.Color.yellow)
-                .copy(fontSize = 26.sp),
+            style = typeStyle(DesignTokens.Type.clubTo, DesignTokens.Color.yellow, 26.sp, null),
         )
     }
 }
@@ -462,7 +491,12 @@ fun SettingsScreen(
                     .clickable(onClick = onBack),
                 contentAlignment = Alignment.Center,
             ) {
-                Text("‹", style = typeStyle(DesignTokens.Type.answer, Color.White))
+                Text("‹", style = TextStyle(
+                        color = Color.White,
+                        fontFamily = FontFamily.Default,
+                        fontWeight = FontWeight(900),
+                        fontSize = 20.sp,
+                    ))
             }
             Gap(DesignTokens.Space.sm)
             Text(
@@ -477,7 +511,7 @@ fun SettingsScreen(
         val activity = androidx.compose.ui.platform.LocalContext.current as? android.app.Activity
         PurchaseRow(
             title = stringResource(R.string.shopNoAds),
-            subtitle = stringResource(R.string.shopNoAdsSub),
+            subtitle = null,
             trailing = when {
                 adsRemoved -> stringResource(R.string.owned)
                 price != null -> price ?: ""
@@ -500,7 +534,13 @@ fun SettingsScreen(
         Gap(DesignTokens.Space.md)
         LinkRow(
             stringResource(R.string.rowLang),
-            stringResource(R.string.systemV),
+            // iOS shows the resolved language next to the source, e.g.
+            // "English · System" (Screens.swift:566).
+            run {
+                val loc = Locale.getDefault()
+                val lang = loc.getDisplayLanguage(loc).replaceFirstChar { it.uppercase() }
+                lang + " · " + stringResource(R.string.systemV)
+            },
             onClick = null,
         )
         LinkRow(
@@ -512,7 +552,7 @@ fun SettingsScreen(
         )
         // Both stores require a reachable privacy policy for an app that shows
         // ads and sells an in-app purchase.
-        LinkRow(stringResource(R.string.rowPrivacy), null, onClick = onPrivacy)
+        LinkRow(stringResource(R.string.rowPrivacy), null, onClick = onPrivacy, external = true)
         LinkRow(stringResource(R.string.rowIntro), null, onClick = onReplayIntro)
         LinkRow(stringResource(R.string.rowOffline), null, onClick = onOffline)
         if (BuildConfig.DEBUG) {
@@ -526,6 +566,8 @@ fun SettingsScreen(
             style = typeStyle(
                 DesignTokens.Type.technical,
                 DesignTokens.Color.ivory.copy(alpha = 0.5f),
+                11.sp,
+                null,
             ),
             modifier = Modifier.fillMaxWidth().padding(vertical = DesignTokens.Space.lg),
             textAlign = TextAlign.Center,
@@ -537,7 +579,8 @@ fun SettingsScreen(
 @Composable
 private fun PurchaseRow(
     title: String,
-    subtitle: String,
+    /** iOS shows the title alone (Screens.swift:670); null reproduces that. */
+    subtitle: String?,
     trailing: String,
     owned: Boolean,
     enabled: Boolean,
@@ -558,21 +601,26 @@ private fun PurchaseRow(
         Column(Modifier.weight(1f).padding(end = DesignTokens.Space.md)) {
             Text(
                 title,
-                style = typeStyle(DesignTokens.Type.clubTo, DesignTokens.Color.ink)
-                    .copy(fontSize = 18.sp),
+                style = typeStyle(DesignTokens.Type.clubTo, DesignTokens.Color.ink, 18.sp, -0.04f),
             )
-            Text(
-                subtitle,
-                style = typeStyle(DesignTokens.Type.body, DesignTokens.Color.muted)
-                    .copy(fontSize = 13.sp),
-                modifier = Modifier.padding(top = 4.dp),
-            )
+            if (subtitle != null) {
+                Text(
+                    subtitle,
+                    style = typeStyle(DesignTokens.Type.body, DesignTokens.Color.muted, 13.sp, null),
+                    modifier = Modifier.padding(top = 4.dp),
+                )
+            }
         }
         Box(
             Modifier
                 .then(
                     if (owned) {
-                        Modifier.background(DesignTokens.Color.green, CircleShape)
+                        // CircleShape on a wide box drew an ellipse; iOS uses
+                        // a capsule.
+                        Modifier.background(
+                            DesignTokens.Color.green,
+                            RoundedCornerShape(percent = 50),
+                        )
                     } else {
                         Modifier
                             .padding(bottom = 6.dp)
@@ -616,7 +664,13 @@ private fun ToggleRow(label: Int, checked: Boolean, onChange: (Boolean) -> Unit)
 }
 
 @Composable
-private fun LinkRow(label: String, value: String?, onClick: (() -> Unit)?) {
+private fun LinkRow(
+    label: String,
+    value: String?,
+    // Declared before onClick so a trailing lambda still binds to onClick.
+    external: Boolean = false,
+    onClick: (() -> Unit)?,
+) {
     val shape = RoundedCornerShape(16.dp)
     Row(
         Modifier
@@ -633,14 +687,20 @@ private fun LinkRow(label: String, value: String?, onClick: (() -> Unit)?) {
         Text(label, style = typeStyle(DesignTokens.Type.body, Color.White))
         Row(verticalAlignment = Alignment.CenterVertically) {
             if (value != null) {
+                // iOS sets these values in IBM Plex Mono 11 (Screens.swift:709).
                 Text(
                     value,
-                    style = typeStyle(DesignTokens.Type.label, Color.White.copy(alpha = 0.75f)),
+                    style = typeStyle(
+                        DesignTokens.Type.technical,
+                        Color.White.copy(alpha = 0.75f),
+                        11.sp,
+                        null,
+                    ),
                 )
             }
             if (onClick != null) {
                 Text(
-                    " ›",
+                    if (external) " ↗" else " ›",
                     style = typeStyle(DesignTokens.Type.label, Color.White.copy(alpha = 0.75f)),
                 )
             }

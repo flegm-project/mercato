@@ -14,6 +14,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.mercato.app.R
+import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.layout.size
 import com.mercato.design.DesignTokens
 
 /**
@@ -25,20 +27,15 @@ import com.mercato.design.DesignTokens
 fun OfflineScreen(onRetry: () -> Unit) {
     ScreenColumn {
         Spacer(Modifier.weight(1f))
+        // iOS shows a bare 92x92 hatched square, no wordmark stamped on it
+        // (Screens.swift:772). A full-width 160dp strip read as a dead ad slot.
         Box(
             Modifier
-                .fillMaxWidth()
-                .height(160.dp)
+                .align(Alignment.CenterHorizontally)
+                .size(92.dp)
+                .solidRaised(radius = 22.dp, depth = 0.dp)
                 .adHatch()
-                .border(
-                    DesignTokens.Border.hairline,
-                    DesignTokens.Color.ink,
-                    RoundedCornerShape(DesignTokens.Radius.card),
-                ),
-            contentAlignment = Alignment.Center,
-        ) {
-            CapsLabel("MERCATO")
-        }
+        )
         Gap(DesignTokens.Space.xl)
         Text(
             stringResource(R.string.offT),
@@ -54,7 +51,11 @@ fun OfflineScreen(onRetry: () -> Unit) {
             textAlign = TextAlign.Center,
         )
         Gap(DesignTokens.Space.xl)
-        InkButton(stringResource(R.string.retry), ButtonStyle.Primary, onClick = onRetry)
+        InkButton(
+            stringResource(R.string.retry), ButtonStyle.Primary,
+            fontSize = 17.sp, fontWeight = 900, tracking = -0.03f,
+            depth = 9.dp, radius = 20.dp, onClick = onRetry,
+        )
         Spacer(Modifier.weight(1.2f))
     }
 }
