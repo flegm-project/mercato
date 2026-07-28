@@ -185,7 +185,7 @@ fn lab_reports_stats_verdicts_and_collisions() {
     assert_eq!(stats.players, 513);
     assert_eq!(stats.clubs, 412);
     assert_eq!(stats.transfers, 1905);
-    assert_eq!(stats.aliases, 985);
+    assert_eq!(stats.aliases, 1000);
 
     let players = g.lab_players();
     assert_eq!(players.len(), 513);

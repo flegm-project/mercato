@@ -90,7 +90,6 @@ pub struct Session {
     lang: Lang,
     mode: Mode,
     rng: Mulberry32,
-    pool: Vec<usize>,
     /// The round's transfers, drawn once without repeats. Easy is ordered from
     /// easiest to hardest; Hardcore keeps its random draw order.
     plan: Vec<usize>,
@@ -116,7 +115,6 @@ impl Session {
             lang,
             mode,
             rng,
-            pool,
             plan,
             asked: 0,
             current: None,
