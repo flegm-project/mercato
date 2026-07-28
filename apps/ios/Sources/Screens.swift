@@ -109,8 +109,7 @@ struct HomeView: View {
     private func modeButton(title: String, fill: Color, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(title)
-                .font(DS.unbounded(30, weight: 900))
-                .tracking(-0.05 * 30)
+                .typeStyle(TypeToken.screenTitle)
                 .foregroundStyle(DesignTokens.Color.ink)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 20)
@@ -155,8 +154,7 @@ struct RecapView: View {
             ScrollView {
                 VStack(spacing: 0) {
                     Text(stars >= 2 ? L("winT") : L("loseT"))
-                        .font(DS.unbounded(28, weight: 900))
-                        .tracking(-0.05 * 28)
+                        .typeStyle(TypeToken.recapTitle)
                         .foregroundStyle(DesignTokens.Color.ivory)
                         .padding(.top, 22)
 
@@ -179,8 +177,7 @@ struct RecapView: View {
                     VStack(spacing: 10) {
                         Button(action: onAgain) {
                             Text(L("again"))
-                                .font(DS.unbounded(18, weight: 800))
-                                .tracking(-0.045 * 18)
+                                .typeStyle(TypeToken.answer)
                                 .foregroundStyle(DesignTokens.Color.ink)
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 17)
@@ -193,8 +190,7 @@ struct RecapView: View {
                         // so it is a comfortable finger target next to Play again.
                         Button(action: onHome) {
                             Text(L("home"))
-                                .font(DS.unbounded(16, weight: 800))
-                                .tracking(-0.03 * 16)
+                                .typeStyle(TypeToken.ctaSmall)
                                 .foregroundStyle(DesignTokens.Color.ivory)
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 16)
@@ -224,11 +220,10 @@ struct RecapView: View {
     private var scoreCard: some View {
         VStack(spacing: 0) {
             Text("\(score.points)")
-                .font(DS.unbounded(64, weight: 900))
+                .typeStyle(TypeToken.scoreHero)
                 .foregroundStyle(DesignTokens.Color.ink)
             Text(L("pts").uppercased())
-                .font(DS.figtree(12.5, weight: 900))
-                .tracking(0.16 * 12.5)
+                .typeStyle(TypeToken.label)
                 .foregroundStyle(DesignTokens.Color.muted)
                 .padding(.top, 8)
 
@@ -247,10 +242,10 @@ struct RecapView: View {
     private func statTile(value: String, label: String, tint: Color) -> some View {
         VStack(spacing: 3) {
             Text(value)
-                .font(DS.unbounded(22, weight: 900))
+                .typeStyle(TypeToken.scorePill)
                 .foregroundStyle(tint)
             Text(label)
-                .font(DS.figtree(11.5, weight: 900))
+                .typeStyle(TypeToken.tileLabel)
                 .foregroundStyle(DesignTokens.Color.muted)
                 .multilineTextAlignment(.center)
         }
@@ -278,8 +273,7 @@ struct OnboardingView: View {
                 HStack {
                     Spacer()
                     Button(L("obSkip").uppercased(), action: onDone)
-                        .font(DS.figtree(13, weight: 900))
-                        .tracking(0.06 * 13)
+                        .typeStyle(TypeToken.skipLabel)
                         .foregroundStyle(Color.white.opacity(0.68))
                         .padding(8)
                 }
@@ -291,11 +285,10 @@ struct OnboardingView: View {
                     illustration
                     VStack(alignment: .leading, spacing: 12) {
                         Text(L("ob.\(step).t"))
-                            .font(DS.unbounded(30, weight: 900))
-                            .tracking(-0.05 * 30)
+                            .typeStyle(TypeToken.screenTitle)
                             .foregroundStyle(DesignTokens.Color.ivory)
                         Text(L("ob.\(step).b"))
-                            .font(DS.figtree(16, weight: 700))
+                            .typeStyle(TypeToken.bodyLarge)
                             .foregroundStyle(Color.white.opacity(0.68))
                             .fixedSize(horizontal: false, vertical: true)
                     }
@@ -317,8 +310,7 @@ struct OnboardingView: View {
                     if step + 1 < steps { step += 1 } else { onDone() }
                 } label: {
                     Text(step + 1 < steps ? L("obNext") : L("obStart"))
-                        .font(DS.unbounded(22, weight: 900))
-                        .tracking(-0.03 * 22)
+                        .typeStyle(TypeToken.ctaLarge)
                         .foregroundStyle(DesignTokens.Color.ink)
                         .frame(maxWidth: .infinity)
                         .padding(20)
@@ -354,8 +346,7 @@ struct OnboardingView: View {
                 }
             }
             Text(L("ob.\(step).a"))
-                .font(DS.mono(11))
-                .tracking(0.18 * 11)
+                .typeStyle(TypeToken.technical)
                 .foregroundStyle(DesignTokens.Color.clubGrey)
                 .multilineTextAlignment(.center)
                 .padding(20)
@@ -380,10 +371,9 @@ struct ConsentView: View {
 
                 VStack(alignment: .leading, spacing: 0) {
                     Text(L("cnTitle"))
-                        .font(DS.unbounded(24, weight: 900))
-                        .tracking(-0.05 * 24)
+                        .typeStyle(TypeToken.consentTitle)
                     Text(L("cnBody"))
-                        .font(DS.figtree(14.5, weight: 600))
+                        .typeStyle(TypeToken.consentBody)
                         .foregroundStyle(DesignTokens.Color.muted)
                         .fixedSize(horizontal: false, vertical: true)
                         .padding(.top, 12)
@@ -392,10 +382,10 @@ struct ConsentView: View {
                         ForEach(0..<3, id: \.self) { index in
                             HStack(alignment: .top, spacing: 10) {
                                 Text("\u{00B7}")
-                                    .font(DS.unbounded(14, weight: 900))
+                                    .typeStyle(TypeToken.bulletGlyph)
                                     .foregroundStyle(DesignTokens.Color.blue)
                                 Text(L("cnPoints.\(index)"))
-                                    .font(DS.figtree(13.5, weight: 700))
+                                    .typeStyle(TypeToken.labLine)
                                     .fixedSize(horizontal: false, vertical: true)
                             }
                         }
@@ -413,8 +403,7 @@ struct ConsentView: View {
                 VStack(spacing: 11) {
                     Button { onChoice(true) } label: {
                         Text(L("cnAccept"))
-                            .font(DS.unbounded(18, weight: 900))
-                            .tracking(-0.03 * 18)
+                            .typeStyle(TypeToken.sectionTitle)
                             .foregroundStyle(DesignTokens.Color.ink)
                             .frame(maxWidth: .infinity)
                             .padding(19)
@@ -425,8 +414,7 @@ struct ConsentView: View {
 
                     Button { onChoice(false) } label: {
                         Text(L("cnRefuse"))
-                            .font(DS.unbounded(15, weight: 800))
-                            .tracking(-0.03 * 15)
+                            .typeStyle(TypeToken.ctaCompact)
                             .foregroundStyle(DesignTokens.Color.ink)
                             .lineLimit(1)
                             .minimumScaleFactor(0.7)
@@ -438,7 +426,7 @@ struct ConsentView: View {
                     .buttonStyle(.plain)
 
                     Text(L("cnFoot"))
-                        .font(DS.figtree(11.5, weight: 700))
+                        .typeStyle(TypeToken.footnote)
                         .foregroundStyle(Color.white.opacity(0.56))
                         .padding(.top, 4)
                 }
@@ -466,10 +454,9 @@ struct QuitDialog: View {
 
             VStack(alignment: .leading, spacing: 0) {
                 Text(L("quitT"))
-                    .font(DS.unbounded(22, weight: 900))
-                    .tracking(-0.05 * 22)
+                    .typeStyle(TypeToken.dialogTitle)
                 Text(L("quitB"))
-                    .font(DS.figtree(14, weight: 700))
+                    .typeStyle(TypeToken.bodyMid)
                     .foregroundStyle(DesignTokens.Color.muted)
                     .padding(.top, 10)
                     .padding(.bottom, 18)
@@ -477,8 +464,7 @@ struct QuitDialog: View {
                 VStack(spacing: 10) {
                     Button(action: onStay) {
                         Text(L("quitStay"))
-                            .font(DS.unbounded(17, weight: 900))
-                            .tracking(-0.03 * 17)
+                            .typeStyle(TypeToken.ctaMedium)
                             .foregroundStyle(DesignTokens.Color.ink)
                             .frame(maxWidth: .infinity)
                             .padding(16)
@@ -489,8 +475,7 @@ struct QuitDialog: View {
 
                     Button(action: onQuit) {
                         Text(L("quitGo"))
-                            .font(DS.unbounded(15, weight: 800))
-                            .tracking(-0.03 * 15)
+                            .typeStyle(TypeToken.ctaCompact)
                             .foregroundStyle(.white)
                             .frame(maxWidth: .infinity)
                             .padding(15)
@@ -547,8 +532,7 @@ struct SettingsView: View {
                     .accessibilityLabel("Back")
 
                     Text(L("settings"))
-                        .font(DS.unbounded(20, weight: 900))
-                        .tracking(-0.04 * 20)
+                        .typeStyle(TypeToken.panelTitle)
                         .foregroundStyle(DesignTokens.Color.ivory)
                 }
                 .frame(height: 46)
@@ -588,7 +572,7 @@ struct SettingsView: View {
                     .frame(maxWidth: .infinity)
 
                 Text("\(L("version")) \(AppLinks.shortVersion)")
-                    .font(DS.mono(11))
+                    .typeStyle(TypeToken.monoPlain)
                     .foregroundStyle(Color.white.opacity(0.5))
                     .frame(maxWidth: .infinity)
                     .padding(.top, 12)
@@ -610,8 +594,7 @@ struct SettingsView: View {
             if store.adsRemoved {
                 noAdsRow {
                     Text(L("owned"))
-                        .font(DS.unbounded(12, weight: 800))
-                        .tracking(0.08 * 12)
+                        .typeStyle(TypeToken.ownedBadge)
                         .foregroundStyle(DesignTokens.Color.ink)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 7)
@@ -622,8 +605,7 @@ struct SettingsView: View {
                 Button { Task { await store.purchase() } } label: {
                     noAdsRow {
                         Text(price)
-                            .font(DS.unbounded(15, weight: 900))
-                            .tracking(-0.03 * 15)
+                            .typeStyle(TypeToken.badgeValue)
                             .foregroundStyle(DesignTokens.Color.ink)
                             .padding(.horizontal, 16)
                             .padding(.vertical, 11)
@@ -639,7 +621,7 @@ struct SettingsView: View {
                 // non-interactive label rather than a dead CTA.
                 noAdsRow {
                     Text(L("shopUnavailable"))
-                        .font(DS.figtree(13, weight: 700))
+                        .typeStyle(TypeToken.bodySmall)
                         .foregroundStyle(DesignTokens.Color.muted)
                 }
             }
@@ -647,7 +629,7 @@ struct SettingsView: View {
             if !store.adsRemoved {
                 Button { Task { await store.restore() } } label: {
                     Text(L("restore"))
-                        .font(DS.figtree(13, weight: 800))
+                        .typeStyle(TypeToken.bodySmallStrong)
                         .foregroundStyle(DesignTokens.Color.blue)
                 }
                 .buttonStyle(.plain)
@@ -672,8 +654,7 @@ struct SettingsView: View {
     private func noAdsRow<Trailing: View>(@ViewBuilder trailing: () -> Trailing) -> some View {
         HStack(alignment: .center, spacing: 12) {
             Text(L("shopNoAds"))
-                .font(DS.unbounded(18, weight: 900))
-                .tracking(-0.04 * 18)
+                .typeStyle(TypeToken.purchaseTitle)
                 .foregroundStyle(DesignTokens.Color.ink)
             Spacer(minLength: 0)
             trailing()
@@ -692,8 +673,7 @@ struct SettingsView: View {
         Button { isOn.wrappedValue.toggle() } label: {
             HStack(spacing: 14) {
                 Text(label)
-                    .font(DS.unbounded(15, weight: 800))
-                    .tracking(-0.03 * 15)
+                    .typeStyle(TypeToken.ctaCompact)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 SwitchTrack(isOn: isOn.wrappedValue)
             }
@@ -714,10 +694,10 @@ struct SettingsView: View {
         Button { action?() } label: {
             HStack(spacing: 12) {
                 Text(label)
-                    .font(DS.figtree(14.5, weight: 800))
+                    .typeStyle(TypeToken.rowValue)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 Text(value)
-                    .font(DS.mono(11))
+                    .typeStyle(TypeToken.monoPlain)
                     .foregroundStyle(Color.white.opacity(0.75))
             }
             .foregroundStyle(.white)
@@ -777,12 +757,11 @@ struct OfflineView: View {
 
                 VStack(spacing: 12) {
                     Text(L("offT"))
-                        .font(DS.unbounded(26, weight: 900))
-                        .tracking(-0.05 * 26)
+                        .typeStyle(TypeToken.offlineTitle)
                         .foregroundStyle(DesignTokens.Color.ivory)
                         .multilineTextAlignment(.center)
                     Text(L("offB"))
-                        .font(DS.figtree(15, weight: 600))
+                        .typeStyle(TypeToken.bodySoft)
                         .foregroundStyle(DesignTokens.Color.ivory.opacity(0.7))
                         .multilineTextAlignment(.center)
                         .fixedSize(horizontal: false, vertical: true)
@@ -792,8 +771,7 @@ struct OfflineView: View {
 
                 Button(action: onRetry) {
                     Text(L("retry"))
-                        .font(DS.unbounded(17, weight: 900))
-                        .tracking(-0.03 * 17)
+                        .typeStyle(TypeToken.ctaMedium)
                         .foregroundStyle(DesignTokens.Color.ink)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 17)

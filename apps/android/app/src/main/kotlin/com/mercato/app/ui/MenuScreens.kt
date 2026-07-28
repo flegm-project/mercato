@@ -264,7 +264,7 @@ fun ConsentScreen(graph: AppGraph, fromSettings: Boolean, onDone: () -> Unit) {
                 // iOS: Figtree 14.5/600 in muted, and the bullet text in ink.
                 // The two colours were swapped on Android.
                 stringResource(R.string.cnBody),
-                style = typeStyle(DesignTokens.Type.body, DesignTokens.Color.muted, 14.5.sp, null),
+                style = typeStyle(DesignTokens.Type.consentBody, DesignTokens.Color.muted),
             )
             Gap(DesignTokens.Space.md)
             listOf(R.string.cnPoints_0, R.string.cnPoints_1, R.string.cnPoints_2).forEach {
@@ -451,7 +451,7 @@ private fun StatRow(label: Int, value: String) {
         Text(
             value,
             // Unbounded 26/900, per the iOS profile stats.
-            style = typeStyle(DesignTokens.Type.clubTo, DesignTokens.Color.yellow, 26.sp, null),
+            style = typeStyle(DesignTokens.Type.statValue, DesignTokens.Color.yellow),
         )
     }
 }
@@ -601,12 +601,12 @@ private fun PurchaseRow(
         Column(Modifier.weight(1f).padding(end = DesignTokens.Space.md)) {
             Text(
                 title,
-                style = typeStyle(DesignTokens.Type.clubTo, DesignTokens.Color.ink, 18.sp, -0.04f),
+                style = typeStyle(DesignTokens.Type.purchaseTitle, DesignTokens.Color.ink),
             )
             if (subtitle != null) {
                 Text(
                     subtitle,
-                    style = typeStyle(DesignTokens.Type.body, DesignTokens.Color.muted, 13.sp, null),
+                    style = typeStyle(DesignTokens.Type.bodySmall, DesignTokens.Color.muted),
                     modifier = Modifier.padding(top = 4.dp),
                 )
             }

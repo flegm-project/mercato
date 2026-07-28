@@ -124,7 +124,7 @@ struct GameView: View {
 
             if ambiguous {
                 Text(L("rAmb"))
-                    .font(DS.figtree(13, weight: 800))
+                    .typeStyle(TypeToken.bodySmallStrong)
                     .foregroundStyle(DesignTokens.Color.yellow)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: .infinity)

@@ -4,6 +4,11 @@ import SwiftUI
 /// (reference/design-source/Mercato.dc.html) and docs/specs/components.md.
 /// Numbers come from that design or from design/tokens.json, never invented
 /// here, so a component can be diffed against its origin.
+/// The generated token namespace is `DesignTokens.Type`, and `Type` in
+/// expression position is Swift's metatype keyword, so every use would need
+/// back-ticks. Aliased once here instead.
+typealias TypeToken = DesignTokens.`Type`
+
 enum DS {
     // MARK: - Type
     //
@@ -30,6 +35,30 @@ enum DS {
 
     static func mono(_ size: CGFloat) -> Font {
         .custom("IBMPlexMono-Medium", fixedSize: size)
+    }
+
+    // MARK: - Type tokens
+
+    /// Resolve a generated type token to a Font.
+    ///
+    /// Prefer `typeStyle(_:)` wherever a View modifier will do: it applies the
+    /// tracking as well. This exists for the call sites that take a `Font`
+    /// as a parameter rather than as a modifier.
+    static func font(_ style: DesignTokens.TypeStyle) -> Font {
+        switch style.font {
+        case "display": return unbounded(style.size, weight: style.weight)
+        case "mono": return mono(style.size)
+        default: return figtree(style.size, weight: style.weight)
+        }
+    }
+
+    /// Token tracking converted to points, the unit `.tracking()` expects.
+    /// tokens.json states it in em, as CSS does.
+    static func tracking(_ style: DesignTokens.TypeStyle) -> CGFloat {
+        guard let raw = style.tracking,
+              let em = Double(raw.replacingOccurrences(of: "em", with: ""))
+        else { return 0 }
+        return CGFloat(em) * style.size
     }
 
     // MARK: - Surfaces
@@ -231,7 +260,7 @@ struct ScorePill: View {
     var body: some View {
         ZStack(alignment: .top) {
             Text("\(points)")
-                .font(DS.unbounded(22, weight: 900))
+                .typeStyle(TypeToken.scorePill)
                 .monospacedDigit()
                 .foregroundStyle(foreground)
                 .padding(.horizontal, 16)
@@ -241,7 +270,7 @@ struct ScorePill: View {
 
             if let verdict {
                 Text(verdict ? "+3" : "0")
-                    .font(DS.unbounded(30, weight: 900))
+                    .typeStyle(TypeToken.answerReveal)
                     .foregroundStyle(verdict ? DesignTokens.Color.green : DesignTokens.Color.coral)
                     .shadow(color: DesignTokens.Color.ink, radius: 0, x: 3, y: 3)
                     .offset(y: flying ? -4 : 40)
@@ -290,8 +319,7 @@ struct AnswerButton: View {
         Text(title)
             // Same metrics as the mode cards on Home, so an answer reads as
             // the same kind of object and the four of them fill the column.
-            .font(DS.unbounded(30, weight: 900))
-            .tracking(-0.05 * 30)
+            .typeStyle(TypeToken.screenTitle)
             .foregroundStyle(verdict == .correct ? DesignTokens.Color.ink : .white)
             .lineLimit(2)
             .minimumScaleFactor(0.5)
@@ -346,8 +374,7 @@ struct TransferCard: View {
     private var header: some View {
         HStack(alignment: .center, spacing: 12) {
             Text(kindLabel)
-                .font(DS.unbounded(11, weight: 800))
-                .tracking(0.14 * 11)
+                .typeStyle(TypeToken.cardKind)
                 .foregroundStyle(DesignTokens.Color.ink)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
@@ -356,7 +383,7 @@ struct TransferCard: View {
                 .clipShape(Capsule())
             Spacer(minLength: 0)
             Text(String(year))
-                .font(DS.unbounded(32, weight: 900))
+                .typeStyle(TypeToken.year)
                 .monospacedDigit()
                 .foregroundStyle(DesignTokens.Color.yellow)
         }
@@ -370,8 +397,7 @@ struct TransferCard: View {
     private var content: some View {
         VStack(spacing: 0) {
             Text(fromClub)
-                .font(DS.unbounded(16, weight: 800))
-                .tracking(-0.04 * 16)
+                .typeStyle(TypeToken.clubFrom)
                 .foregroundStyle(DesignTokens.Color.clubGrey)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
@@ -384,8 +410,7 @@ struct TransferCard: View {
                 .padding(.bottom, 8)
 
             Text(toClub)
-                .font(DS.unbounded(30, weight: 900))
-                .tracking(-0.05 * 30)
+                .typeStyle(TypeToken.screenTitle)
                 .foregroundStyle(DesignTokens.Color.ink)
                 .multilineTextAlignment(.center)
                 // Capping the lines makes a long name scale down rather than
@@ -395,8 +420,7 @@ struct TransferCard: View {
 
             if let maskedName, verdict == nil, !maskedName.isEmpty {
                 Text(maskedName)
-                    .font(DS.unbounded(18, weight: 900))
-                    .tracking(0.1 * 18)
+                    .typeStyle(TypeToken.maskedName)
                     .foregroundStyle(Color(red: 0.84, green: 0.83, blue: 0.77))
                     .lineLimit(2)
                     .minimumScaleFactor(0.5)
@@ -437,8 +461,7 @@ struct SponsorBoard: View {
             .frame(height: 44)
             .overlay(
                 Text(label)
-                    .font(DS.mono(10.5))
-                    .tracking(0.18 * 10.5)
+                    .typeStyle(TypeToken.adLabel)
                     .foregroundStyle(Color.white.opacity(0.4))
             )
             .inkOutlined(RoundedRectangle(cornerRadius: 13, style: .continuous))
@@ -461,8 +484,7 @@ struct GuessField: View {
             .autocorrectionDisabled()
             .submitLabel(.go)
             .onSubmit(onSubmit)
-            .font(DS.unbounded(30, weight: 900))
-            .tracking(-0.05 * 30)
+            .typeStyle(TypeToken.screenTitle)
             .foregroundStyle(verdict == false ? .white : DesignTokens.Color.ink)
             .minimumScaleFactor(0.5)
             .padding(.vertical, 22)
@@ -490,8 +512,7 @@ struct HintChip: View {
 
     var body: some View {
         Text(text)
-            .font(DS.unbounded(13.5, weight: 800))
-            .tracking(-0.02 * 13.5)
+            .typeStyle(TypeToken.hintChip)
             .foregroundStyle(DesignTokens.Color.ink)
             .padding(.horizontal, 15)
             .padding(.vertical, 7)
@@ -519,7 +540,7 @@ struct HardcoreControls: View {
             HStack(spacing: spacing) {
                 control(
                     title: hintLabel,
-                    font: DS.unbounded(20, weight: 800),
+                    font: DS.font(TypeToken.toastTitle),
                     tracking: -0.03 * 20,
                     fill: DesignTokens.Color.ivory,
                     enabled: hintEnabled,
@@ -529,7 +550,7 @@ struct HardcoreControls: View {
 
                 control(
                     title: submitLabel,
-                    font: DS.unbounded(24, weight: 900),
+                    font: DS.font(TypeToken.cardTitle),
                     tracking: -0.03 * 24,
                     fill: DesignTokens.Color.yellow,
                     enabled: submitEnabled,
@@ -604,5 +625,16 @@ struct FlowRow: Layout {
             x += size.width + spacing
             lineHeight = max(lineHeight, size.height)
         }
+    }
+}
+
+extension View {
+    /// Apply a type token: font and tracking together.
+    ///
+    /// The counterpart of Android's `typeStyle()`. Both platforms now read the
+    /// same nine properties from design/tokens.json instead of each restating
+    /// them at every call site, which is where the two drifted apart.
+    func typeStyle(_ style: DesignTokens.TypeStyle) -> some View {
+        self.font(DS.font(style)).tracking(DS.tracking(style))
     }
 }

@@ -93,7 +93,7 @@ fun LabScreen(graph: AppGraph, onBack: () -> Unit) {
             Gap(DesignTokens.Space.sm)
             Text(
                 stringResource(R.string.labT),
-                style = typeStyle(DesignTokens.Type.screenTitle, DesignTokens.Color.ivory, 20.sp, -0.04f),
+                style = typeStyle(DesignTokens.Type.panelTitle, DesignTokens.Color.ivory),
             )
         }
         Gap(DesignTokens.Space.xs)
@@ -158,13 +158,13 @@ fun LabScreen(graph: AppGraph, onBack: () -> Unit) {
             ) {
                 Text(
                     stringResource(verdictLabel),
-                    style = typeStyle(DesignTokens.Type.answer, verdictColor, 15.sp, null),
+                    style = typeStyle(DesignTokens.Type.verdictChip, verdictColor),
                 )
             }
             Gap(DesignTokens.Space.xs)
             Text(
                 "${stringResource(R.string.labTh)}: ${o.threshold}",
-                style = typeStyle(DesignTokens.Type.technical, DesignTokens.Color.ivory, 11.sp, null),
+                style = typeStyle(DesignTokens.Type.monoPlain, DesignTokens.Color.ivory),
             )
             Gap(DesignTokens.Space.xs)
             // iOS prints the matched form and its edit distance (Lab.swift:125);
@@ -248,7 +248,7 @@ fun LabScreen(graph: AppGraph, onBack: () -> Unit) {
 private fun LabField(value: String, onChange: (String) -> Unit, placeholder: String) {
     // iOS deliberately omits a border here (Lab.swift:212): ivory fill,
     // radius 12, Figtree 15/700.
-    val style = typeStyle(DesignTokens.Type.body, DesignTokens.Color.ink, 15.sp, null)
+    val style = typeStyle(DesignTokens.Type.body, DesignTokens.Color.ink)
     Box(
         Modifier
             .fillMaxWidth()

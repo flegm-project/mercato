@@ -105,9 +105,9 @@ struct RootView: View {
                     DS.appBackground
                     VStack(spacing: DesignTokens.Space.sm) {
                         Text("Could not load the dataset")
-                            .font(DS.unbounded(22, weight: 900))
+                            .typeStyle(TypeToken.scorePill)
                         Text(String(describing: error))
-                            .font(DS.figtree(13, weight: 600))
+                            .typeStyle(TypeToken.labNote)
                             .multilineTextAlignment(.center)
                             .opacity(0.75)
                     }

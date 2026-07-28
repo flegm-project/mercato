@@ -190,7 +190,7 @@ private fun TransferCard(ui: QuestionUi, onTap: () -> Unit) {
             // Compact card (iOS parity): year 32, from 16, to 30, masked 18.
             Text(
                 "${ui.question.year}",
-                style = typeStyle(DesignTokens.Type.year, DesignTokens.Color.yellow, 32.sp, null),
+                style = typeStyle(DesignTokens.Type.year, DesignTokens.Color.yellow),
             )
         }
         Column(
@@ -204,8 +204,7 @@ private fun TransferCard(ui: QuestionUi, onTap: () -> Unit) {
         ) {
             Text(
                 ui.question.fromClub,
-                style = typeStyle(DesignTokens.Type.clubFrom, DesignTokens.Color.clubGrey)
-                    .copy(fontSize = 16.sp),
+                style = typeStyle(DesignTokens.Type.clubFrom, DesignTokens.Color.clubGrey),
                 textAlign = TextAlign.Center,
             )
             Text(
@@ -365,11 +364,11 @@ private fun StatTile(modifier: Modifier, value: String, label: String, tint: Col
     ) {
         Text(
             value,
-            style = typeStyle(DesignTokens.Type.year, tint, 22.sp, null),
+            style = typeStyle(DesignTokens.Type.scorePill, tint),
         )
         Text(
             label,
-            style = typeStyle(DesignTokens.Type.body, DesignTokens.Color.muted, 11.5.sp, null)
+            style = typeStyle(DesignTokens.Type.tileLabel, DesignTokens.Color.muted)
                 .copy(fontWeight = FontWeight(900)),
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(top = 3.dp),
@@ -409,7 +408,7 @@ private fun QuitDialog(onStay: () -> Unit, onQuit: () -> Unit) {
         ) {
             Text(
                 stringResource(R.string.quitT),
-                style = typeStyle(DesignTokens.Type.screenTitle, DesignTokens.Color.ink, 22.sp, -0.05f),
+                style = typeStyle(DesignTokens.Type.dialogTitle, DesignTokens.Color.ink),
             )
             Gap(DesignTokens.Space.sm)
             Text(
@@ -448,7 +447,7 @@ fun RecapScreen(
         Gap(DesignTokens.Space.xl)
         Text(
             stringResource(if (r.won) R.string.winT else R.string.loseT),
-            style = typeStyle(DesignTokens.Type.screenTitle, DesignTokens.Color.ivory, 28.sp, -0.05f),
+            style = typeStyle(DesignTokens.Type.recapTitle, DesignTokens.Color.ivory),
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center,
         )
@@ -492,12 +491,12 @@ fun RecapScreen(
         ) {
             Text(
                 "${r.points}",
-                style = typeStyle(DesignTokens.Type.year, DesignTokens.Color.ink, 64.sp, null)
+                style = typeStyle(DesignTokens.Type.scoreHero, DesignTokens.Color.ink)
                     .copy(fontFeatureSettings = "tnum"),
             )
             Text(
                 stringResource(R.string.pts).uppercase(),
-                style = typeStyle(DesignTokens.Type.label, DesignTokens.Color.muted, 12.5.sp, 0.16f),
+                style = typeStyle(DesignTokens.Type.label, DesignTokens.Color.muted),
                 modifier = Modifier.padding(top = 8.dp),
             )
             Row(
@@ -546,7 +545,7 @@ fun RecapScreen(
         ) {
             Text(
                 stringResource(R.string.home),
-                style = typeStyle(DesignTokens.Type.answer, DesignTokens.Color.ivory, 16.sp, -0.03f),
+                style = typeStyle(DesignTokens.Type.ctaSmall, DesignTokens.Color.ivory),
             )
         }
         // Display slot lives below the actions, never above the primary CTA.

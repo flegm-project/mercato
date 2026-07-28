@@ -57,12 +57,11 @@ struct LabView: View {
                 }
                 .buttonStyle(.plain)
                 Text(L("labT"))
-                    .font(DS.unbounded(20, weight: 900))
-                    .tracking(-0.04 * 20)
+                    .typeStyle(TypeToken.panelTitle)
                     .foregroundStyle(DesignTokens.Color.ivory)
             }
             Text(L("labN"))
-                .font(DS.figtree(13, weight: 600))
+                .typeStyle(TypeToken.labNote)
                 .foregroundStyle(DesignTokens.Color.ivory.opacity(0.7))
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -74,7 +73,7 @@ struct LabView: View {
             labField(L("labTarget"), text: $targetFilter)
             if let targetName {
                 Text(targetName)
-                    .font(DS.figtree(14, weight: 800))
+                    .typeStyle(TypeToken.labLabel)
                     .foregroundStyle(DesignTokens.Color.yellow)
             }
             let filter = targetFilter.trimmingCharacters(in: .whitespaces)
@@ -87,7 +86,7 @@ struct LabView: View {
                         evaluate()
                     } label: {
                         Text(player.name)
-                            .font(DS.figtree(14, weight: 700))
+                            .typeStyle(TypeToken.bodyMid)
                             .foregroundStyle(DesignTokens.Color.ivory)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal, 12)
@@ -113,22 +112,22 @@ struct LabView: View {
     private func outcomeSection(_ o: LabOutcome) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(verdictLabel(o.verdict))
-                .font(DS.unbounded(15, weight: 900))
+                .typeStyle(TypeToken.verdictChip)
                 .foregroundStyle(verdictColor(o.verdict))
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
                 .background(DesignTokens.Color.ink.opacity(0.4))
                 .clipShape(Capsule())
             Text("\(L("labTh")): \(o.threshold)")
-                .font(DS.mono(11))
+                .typeStyle(TypeToken.monoPlain)
                 .foregroundStyle(DesignTokens.Color.ivory)
             Text("\(L("kBest")): \(o.bestMatch ?? L("rNoneL"))" + (o.distance.map { " (\($0))" } ?? ""))
-                .font(DS.mono(11))
+                .typeStyle(TypeToken.monoPlain)
                 .foregroundStyle(DesignTokens.Color.ivory.opacity(0.9))
             VStack(alignment: .leading, spacing: 3) {
                 ForEach(Array(o.trace.enumerated()), id: \.offset) { _, line in
                     Text(line)
-                        .font(DS.mono(11))
+                        .typeStyle(TypeToken.monoPlain)
                         .foregroundStyle(DesignTokens.Color.ivory.opacity(0.85))
                 }
             }
@@ -156,16 +155,16 @@ struct LabView: View {
         VStack(alignment: .leading, spacing: 8) {
             caps(L("ambT"))
             Text(L("ambN"))
-                .font(DS.figtree(12.5, weight: 600))
+                .typeStyle(TypeToken.labCaption)
                 .foregroundStyle(DesignTokens.Color.ivory.opacity(0.6))
                 .fixedSize(horizontal: false, vertical: true)
             ForEach(Array(collisions.prefix(30).enumerated()), id: \.offset) { _, c in
                 VStack(alignment: .leading, spacing: 2) {
                     Text(c.surname)
-                        .font(DS.figtree(13, weight: 800))
+                        .typeStyle(TypeToken.bodySmallStrong)
                         .foregroundStyle(DesignTokens.Color.yellow)
                     Text(c.players.joined(separator: ", "))
-                        .font(DS.figtree(12, weight: 600))
+                        .typeStyle(TypeToken.labFine)
                         .foregroundStyle(DesignTokens.Color.ivory.opacity(0.75))
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -204,8 +203,7 @@ struct LabView: View {
 
     private func caps(_ text: String) -> some View {
         Text(text.uppercased())
-            .font(DS.mono(10.5))
-            .tracking(0.14 * 10.5)
+            .typeStyle(TypeToken.labCaps)
             .foregroundStyle(DesignTokens.Color.ivory.opacity(0.55))
     }
 
@@ -213,7 +211,7 @@ struct LabView: View {
         TextField(placeholder, text: text)
             .textInputAutocapitalization(.never)
             .autocorrectionDisabled()
-            .font(DS.figtree(15, weight: 700))
+            .typeStyle(TypeToken.body)
             .foregroundStyle(DesignTokens.Color.ink)
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
@@ -224,11 +222,11 @@ struct LabView: View {
     private func statLine(_ label: String, _ value: UInt32) -> some View {
         HStack {
             Text(label)
-                .font(DS.figtree(13.5, weight: 700))
+                .typeStyle(TypeToken.labLine)
                 .foregroundStyle(DesignTokens.Color.ivory)
             Spacer()
             Text("\(value)")
-                .font(DS.mono(12))
+                .typeStyle(TypeToken.monoValue)
                 .foregroundStyle(DesignTokens.Color.yellow)
         }
         .padding(.horizontal, 12)

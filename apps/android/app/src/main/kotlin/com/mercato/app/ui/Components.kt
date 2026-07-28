@@ -390,7 +390,7 @@ fun ScorePill(
         ) {
             Text(
                 "$points",
-                style = typeStyle(DesignTokens.Type.year, DesignTokens.Color.ink, 22.sp, null)
+                style = typeStyle(DesignTokens.Type.scorePill, DesignTokens.Color.ink)
                     // monospacedDigit on iOS: the pill must not resize as the
                     // score climbs.
                     .copy(fontFeatureSettings = "tnum"),
@@ -582,7 +582,7 @@ fun GuessField(
     ) {
         val density = LocalDensity.current
         val measurer = rememberTextMeasurer()
-        val base = typeStyle(DesignTokens.Type.clubTo, fg, 30.sp, -0.05f)
+        val base = typeStyle(DesignTokens.Type.clubTo, fg)
         // iOS shrinks to 50% rather than scrolling (minimumScaleFactor 0.5),
         // so a long name stays readable in full.
         val availPx = with(density) { (maxWidth - 40.dp).toPx() }

@@ -12,8 +12,7 @@ struct MercatoTabBar: View {
             ForEach(Array(tabs.enumerated()), id: \.offset) { index, label in
                 Button { onSelect(index) } label: {
                     Text(label)
-                        .font(DS.unbounded(14, weight: 900))
-                        .tracking(-0.02 * 14)
+                        .typeStyle(TypeToken.tabLabel)
                         .foregroundStyle(
                             index == selected
                                 ? DesignTokens.Color.ink
@@ -49,8 +48,7 @@ struct ProfileView: View {
             DS.appBackground
             VStack(spacing: 0) {
                 Text(L("profile"))
-                    .font(DS.unbounded(20, weight: 900))
-                    .tracking(-0.04 * 20)
+                    .typeStyle(TypeToken.panelTitle)
                     .foregroundStyle(DesignTokens.Color.ivory)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.top, 8)
@@ -79,8 +77,7 @@ struct ProfileView: View {
 
                 Button(action: onSettings) {
                     Text(L("settings"))
-                        .font(DS.unbounded(16, weight: 900))
-                        .tracking(-0.03 * 16)
+                        .typeStyle(TypeToken.linkTitle)
                         .foregroundStyle(DesignTokens.Color.ink)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
@@ -108,12 +105,11 @@ struct ProfileView: View {
     private var emptyStats: some View {
         VStack(spacing: 10) {
             Text(L("statsEmptyTitle"))
-                .font(DS.unbounded(18, weight: 900))
-                .tracking(-0.03 * 18)
+                .typeStyle(TypeToken.sectionTitle)
                 .foregroundStyle(DesignTokens.Color.ivory)
                 .multilineTextAlignment(.center)
             Text(L("statsEmptyBody"))
-                .font(DS.figtree(14, weight: 700))
+                .typeStyle(TypeToken.bodyMid)
                 // muted is far too dark on this ink card; a soft ivory keeps the
                 // body clearly legible while staying secondary to the title.
                 .foregroundStyle(DesignTokens.Color.ivory.opacity(0.72))
@@ -134,11 +130,11 @@ struct ProfileView: View {
     private func statRow(_ label: String, _ value: String) -> some View {
         HStack(spacing: 12) {
             Text(label)
-                .font(DS.figtree(15, weight: 800))
+                .typeStyle(TypeToken.bodyStrong)
                 .foregroundStyle(DesignTokens.Color.ivory)
             Spacer(minLength: 0)
             Text(value)
-                .font(DS.unbounded(26, weight: 900))
+                .typeStyle(TypeToken.statValue)
                 .foregroundStyle(DesignTokens.Color.yellow)
         }
         .padding(.horizontal, 18)

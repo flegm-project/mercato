@@ -117,6 +117,27 @@ const IOS_MATCHERS = [
   },
 ];
 
+// iOS now reads the same type tokens as Android, through the TypeToken alias.
+// Expanded the same way, so the two inventories stay comparable.
+const expandType = (name) => {
+  const t = TYPE[name];
+  if (!t) return [];
+  const out = [
+    { kind: "fontSize", value: t.size },
+    { kind: "fontWeight", value: t.weight },
+  ];
+  if (t.tracking != null) {
+    const em = typeof t.tracking === "string" ? parseFloat(t.tracking) : t.tracking;
+    if (Number.isFinite(em)) out.push({ kind: "tracking", value: em });
+  }
+  return out;
+};
+
+const IOS_TOKEN_TYPE = {
+  re: /TypeToken\.(\w+)/g,
+  expand: (m) => expandType(m[1]),
+};
+
 const KT_MATCHERS = [
   // typeStyle(token, colour, 30.sp, -0.05f)  -- the explicit overload
   {
@@ -146,21 +167,8 @@ const KT_MATCHERS = [
 // token's size, weight and tracking. Expanded here so those values count as
 // stated, exactly as the iOS literals do.
 const KT_TOKEN_TYPE = {
-  kind: null,
   re: /typeStyle\(\s*DesignTokens\.Type\.(\w+)\s*,[^)]*\)(?!\s*\.copy\s*\(\s*fontSize)/g,
-  expand: (m) => {
-    const t = TYPE[m[1]];
-    if (!t) return [];
-    const out = [
-      { kind: "fontSize", value: t.size },
-      { kind: "fontWeight", value: t.weight },
-    ];
-    if (t.tracking != null) {
-      const em = typeof t.tracking === "string" ? parseFloat(t.tracking) : t.tracking;
-      if (Number.isFinite(em)) out.push({ kind: "tracking", value: em });
-    }
-    return out;
-  },
+  expand: (m) => expandType(m[1]),
 };
 
 // Values that carry no visual meaning on their own, or that one platform
@@ -199,7 +207,7 @@ function inventory(src, matchers) {
 const KINDS = ["fontSize", "fontWeight", "tracking", "radius", "depth", "opacity"];
 
 function compare() {
-  const ios = inventory(readAll(IOS, IOS_FILES), IOS_MATCHERS);
+  const ios = inventory(readAll(IOS, IOS_FILES), [...IOS_MATCHERS, IOS_TOKEN_TYPE]);
   const and = inventory(readAll(AND, AND_FILES), [...KT_MATCHERS, KT_TOKEN_TYPE]);
   const findings = [];
   for (const kind of KINDS) {
