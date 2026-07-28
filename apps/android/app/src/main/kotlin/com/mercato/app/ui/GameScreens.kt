@@ -36,12 +36,12 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.mercato.app.AppGraph
 import com.mercato.app.GameViewModel
 import com.mercato.app.QuestionUi
 import com.mercato.app.R
 import com.mercato.app.RecapUi
-import com.mercato.app.SponsorBoard
 import com.mercato.app.RecapRectangle
 import com.mercato.design.DesignTokens
 import uniffi.mercato_ffi.GameMode
@@ -50,7 +50,7 @@ import uniffi.mercato_ffi.MoveKind
 import uniffi.mercato_ffi.PlayerPosition
 import uniffi.mercato_ffi.RejectionReason
 
-/** 05 Game: top bar, transfer card, sponsor board, answers. Both modes. */
+/** 05 Game: top bar, transfer card, centered answers. Both modes, no ads. */
 @Composable
 fun GameScreen(
     graph: AppGraph,
@@ -108,11 +108,11 @@ fun GameScreen(
         }
         Gap(DesignTokens.Space.md)
         TransferCard(q, onTap = vm::advance)
-        Gap(DesignTokens.Space.sm)
-        SponsorBoard(graph.ads)
-        Gap(DesignTokens.Space.md)
+        // No ad slot during a question (parity with iOS): the answers zone
+        // floats centered between the card and the bottom edge.
+        Spacer(Modifier.weight(1f))
         if (mode == GameMode.EASY) EasyAnswers(q, vm) else HardcoreAnswers(q, vm)
-        Gap(DesignTokens.Space.md)
+        Spacer(Modifier.weight(1f))
     }
 
     if (quitAsked) {
@@ -153,23 +153,34 @@ private fun TransferCard(ui: QuestionUi, onTap: () -> Unit) {
                         topEnd = DesignTokens.Radius.card,
                     ),
                 )
-                .padding(DesignTokens.Space.md),
+                .padding(
+                    horizontal = DesignTokens.Space.md,
+                    vertical = DesignTokens.Space.sm,
+                ),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
             KindChip(ui.question.kind)
+            // Compact card (iOS parity): year 32, from 16, to 30, masked 18.
             Text(
                 "${ui.question.year}",
-                style = typeStyle(DesignTokens.Type.year, DesignTokens.Color.ivory),
+                style = typeStyle(DesignTokens.Type.year, DesignTokens.Color.ivory)
+                    .copy(fontSize = 32.sp),
             )
         }
         Column(
-            Modifier.fillMaxWidth().padding(DesignTokens.Space.xl),
+            Modifier
+                .fillMaxWidth()
+                .padding(
+                    horizontal = DesignTokens.Space.lg,
+                    vertical = DesignTokens.Space.md,
+                ),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
                 ui.question.fromClub,
-                style = typeStyle(DesignTokens.Type.clubFrom, DesignTokens.Color.clubGrey),
+                style = typeStyle(DesignTokens.Type.clubFrom, DesignTokens.Color.clubGrey)
+                    .copy(fontSize = 16.sp),
                 textAlign = TextAlign.Center,
             )
             Text(
@@ -182,7 +193,7 @@ private fun TransferCard(ui: QuestionUi, onTap: () -> Unit) {
                 textAlign = TextAlign.Center,
             )
             if (ui.question.maskedName.isNotEmpty()) {
-                Gap(DesignTokens.Space.md)
+                Gap(DesignTokens.Space.sm)
                 Text(
                     ui.revealedName ?: ui.question.maskedName,
                     style = typeStyle(
@@ -192,7 +203,7 @@ private fun TransferCard(ui: QuestionUi, onTap: () -> Unit) {
                             false -> DesignTokens.Color.coralDeep
                             null -> DesignTokens.Color.muted
                         },
-                    ),
+                    ).copy(fontSize = if (ui.revealedName != null) 42.sp else 18.sp),
                     textAlign = TextAlign.Center,
                 )
             }
@@ -394,8 +405,6 @@ fun RecapScreen(
             RecapStat("${r.correct}/${r.total}", stringResource(R.string.rGood))
             RecapStat("${r.bestStreak}", stringResource(R.string.rStreak))
         }
-        Gap(DesignTokens.Space.lg)
-        RecapRectangle(graph.ads)
         if (r.missed.isNotEmpty()) {
             Gap(DesignTokens.Space.lg)
             CapsLabel(stringResource(R.string.rMissed))
@@ -429,6 +438,9 @@ fun RecapScreen(
         Gap(DesignTokens.Space.lg)
         InkButton(stringResource(R.string.again), ButtonStyle.Primary) { onPlayAgain(mode) }
         InkButton(stringResource(R.string.home), ButtonStyle.Ghost, onClick = onHome)
+        // Display slot lives below the actions, never above the primary CTA.
+        Gap(DesignTokens.Space.md)
+        RecapRectangle(graph.ads)
         Gap(DesignTokens.Space.xl)
     }
 }

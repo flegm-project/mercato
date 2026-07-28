@@ -241,9 +241,9 @@ fun HomeScreen(graph: AppGraph, onPlay: (GameMode) -> Unit, onProfile: () -> Uni
             textAlign = TextAlign.Center,
         )
         Spacer(Modifier.weight(1f))
-        ModeButton(R.string.l1, R.string.c1) { onPlay(GameMode.EASY) }
+        ModeButton(R.string.l1) { onPlay(GameMode.EASY) }
         Gap(DesignTokens.Space.md)
-        ModeButton(R.string.l3, R.string.c3) { onPlay(GameMode.HARDCORE) }
+        ModeButton(R.string.l3) { onPlay(GameMode.HARDCORE) }
         Gap(DesignTokens.Space.lg)
         MenuBanner(graph.ads)
         Gap(DesignTokens.Space.sm)
@@ -255,9 +255,10 @@ fun HomeScreen(graph: AppGraph, onPlay: (GameMode) -> Unit, onProfile: () -> Uni
     }
 }
 
+/** Mode buttons carry only the mode name (iOS parity, no chips). */
 @Composable
-private fun ModeButton(title: Int, subtitle: Int, onClick: () -> Unit) {
-    Column(
+private fun ModeButton(title: Int, onClick: () -> Unit) {
+    Box(
         Modifier
             .fillMaxWidth()
             .background(DesignTokens.Color.blueNight, RoundedCornerShape(DesignTokens.Radius.large))
@@ -267,16 +268,12 @@ private fun ModeButton(title: Int, subtitle: Int, onClick: () -> Unit) {
                 RoundedCornerShape(DesignTokens.Radius.large),
             )
             .clickable(onClick = onClick)
-            .padding(DesignTokens.Space.lg),
+            .padding(vertical = DesignTokens.Space.xl, horizontal = DesignTokens.Space.lg),
+        contentAlignment = Alignment.Center,
     ) {
         Text(
             stringResource(title),
-            style = typeStyle(DesignTokens.Type.clubTo, DesignTokens.Color.yellow)
-                .copy(fontSize = 24.sp),
-        )
-        Text(
-            stringResource(subtitle),
-            style = typeStyle(DesignTokens.Type.body, DesignTokens.Color.ivory.copy(alpha = 0.8f)),
+            style = typeStyle(DesignTokens.Type.clubTo, DesignTokens.Color.yellow),
         )
     }
 }
@@ -291,7 +288,11 @@ fun ProfileScreen(graph: AppGraph, onPlayTab: () -> Unit, onSettings: () -> Unit
             stringResource(R.string.profile),
             style = typeStyle(DesignTokens.Type.screenTitle, DesignTokens.Color.ivory),
         )
-        Gap(DesignTokens.Space.lg)
+        // Banner at the top, far from the tab bar, so a mistap near the
+        // bottom never lands on an ad (iOS parity).
+        Gap(DesignTokens.Space.md)
+        MenuBanner(graph.ads)
+        Spacer(Modifier.weight(1f))
         val accuracy =
             if (stats.answered == 0) "-"
             else "${(stats.correct * 100) / stats.answered}%"
@@ -302,8 +303,6 @@ fun ProfileScreen(graph: AppGraph, onPlayTab: () -> Unit, onSettings: () -> Unit
         Gap(DesignTokens.Space.lg)
         InkButton(stringResource(R.string.settings), ButtonStyle.Secondary, onClick = onSettings)
         Spacer(Modifier.weight(1f))
-        MenuBanner(graph.ads)
-        Gap(DesignTokens.Space.sm)
         MercatoTabBar(
             tabs = listOf(stringResource(R.string.tPlay), stringResource(R.string.tProfile)),
             selected = 1,
@@ -329,7 +328,9 @@ private fun StatRow(label: Int, value: String) {
         )
         Text(
             value,
-            style = typeStyle(DesignTokens.Type.answer, DesignTokens.Color.yellow),
+            // Unbounded 26/900, per the iOS profile stats.
+            style = typeStyle(DesignTokens.Type.clubTo, DesignTokens.Color.yellow)
+                .copy(fontSize = 26.sp),
         )
     }
 }
@@ -407,7 +408,9 @@ fun SettingsScreen(
         if (BuildConfig.DEBUG) {
             LinkRow(stringResource(R.string.rowLab), null, onClick = onLab)
         }
-        Spacer(Modifier.weight(1f))
+        // Fixed gap: weighted spacers are illegal inside a scrollable column.
+        Gap(DesignTokens.Space.xl)
+        MenuBanner(graph.ads)
         Text(
             "MERCATO ${BuildConfig.VERSION_NAME}",
             style = typeStyle(

@@ -75,24 +75,26 @@ guard asked == Int(game.questionsPerRound()) else {
     exit(1)
 }
 
-// Hardcore: a deliberately wrong guess must cost an attempt, and the hint
-// ladder must hand back a nationality first.
+// Hardcore, per-round lives: the hint ladder answers while the question is
+// open (nationality first), one wrong guess settles the question, costs one
+// of the round's lives, and reveals the name.
 game.startRound(lang: .en, mode: .hardcore, seed: 99)
 guard let hq = game.nextQuestion() else {
     FileHandle.standardError.write("hardcore produced no question\n".data(using: .utf8)!)
     exit(1)
 }
-print("hardcore: \(hq.fromClub) -> \(hq.toClub) (\(hq.year)), \(hq.attemptsLeft) attempts")
-let wrong = try game.submitGuess(text: "zzzzzzzzzz")
-print("  wrong guess -> correct=\(wrong.correct) attemptsLeft=\(wrong.attemptsLeft)")
-guard !wrong.correct, wrong.attemptsLeft == hq.attemptsLeft - 1 else {
-    FileHandle.standardError.write("a wrong guess did not cost exactly one attempt\n".data(using: .utf8)!)
-    exit(1)
-}
+print("hardcore: \(hq.fromClub) -> \(hq.toClub) (\(hq.year)), \(hq.attemptsLeft) lives")
 if let hint = game.nextHint(), let nat = hint.nationality {
     print("  first hint (nationality): \(nat)")
 } else {
     FileHandle.standardError.write("first hint was not a nationality\n".data(using: .utf8)!)
+    exit(1)
+}
+let wrong = try game.submitGuess(text: "zzzzzzzzzz")
+print("  wrong guess -> correct=\(wrong.correct) finished=\(wrong.finished) livesLeft=\(wrong.attemptsLeft)")
+guard !wrong.correct, wrong.finished, wrong.attemptsLeft == hq.attemptsLeft - 1,
+      wrong.revealedName != nil else {
+    FileHandle.standardError.write("a wrong guess must settle the question, cost one life and reveal the name\n".data(using: .utf8)!)
     exit(1)
 }
 

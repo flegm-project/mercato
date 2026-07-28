@@ -25,6 +25,7 @@ data class QuestionUi(
     val correctOption: Int? = null,
     val verdict: Boolean? = null,
     val revealedName: String? = null,
+    /** Hardcore: lives left for the WHOLE round (core owns the rule). */
     val attemptsLeft: Int,
     val hints: List<HintView> = emptyList(),
     /** Transient rejection feedback (wrong guess / ambiguous surname). */
@@ -103,7 +104,11 @@ class GameViewModel(private val graph: AppGraph) : ViewModel() {
         )
     }
 
-    /** Hardcore mode: typed guesses; the question ends when `finished`. */
+    /**
+     * Hardcore mode: one typed guess settles the question (a wrong answer
+     * costs one of the round's lives and reveals the name). Only an
+     * ambiguous surname leaves the question open, at no cost.
+     */
     fun submitGuess(text: String) {
         val ui = _question.value ?: return
         if (ui.verdict != null || text.isBlank()) return
@@ -119,8 +124,7 @@ class GameViewModel(private val graph: AppGraph) : ViewModel() {
                 answer.correct,
             )
         } else {
-            // A wrong guess auto-unlocks nothing; hints stay player-driven
-            // (the HINT button), per the free hint ladder.
+            // Ambiguous surname: ask for the first name, no life spent.
             _question.value = ui.copy(
                 attemptsLeft = answer.attemptsLeft.toInt(),
                 rejection = answer.rejection,
