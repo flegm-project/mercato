@@ -13,6 +13,10 @@
 #   curl -O https://www.apple.com/certificateauthority/AppleWWDRCAG3.cer
 #   security import AppleWWDRCAG3.cer -k ~/Library/Keychains/login.keychain-db
 #
+# The iPhone also needs Developer Mode on: Settings > Privacy & Security >
+# Developer Mode, then restart the phone. Without it xcodebuild reports
+# "Timed out waiting for all destinations", which does not mention the phone.
+#
 # Android needs USB debugging on and the phone authorised for this Mac.
 set -uo pipefail
 
