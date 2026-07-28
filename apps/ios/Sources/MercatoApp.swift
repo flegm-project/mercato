@@ -80,7 +80,12 @@ struct RootView: View {
                             return
                         }
                         #endif
-                        ads.bootstrap(game: game)
+                        // Only once the player has answered the app's own ad
+                        // consent screen: the system tracking prompt must not
+                        // land on top of onboarding.
+                        if consentAnswered {
+                            ads.bootstrap(game: game)
+                        }
                     }
                     .onChange(of: store.adsRemoved) { _, removed in
                         game.setAdsRemoved(removed: removed)
@@ -126,6 +131,9 @@ struct RootView: View {
                 UserDefaults.standard.set(personalised, forKey: "adsPersonalised")
                 game.setAdConsent(consent: personalised ? .personalized : .nonPersonalized)
                 consentAnswered = true
+                // The player has just been told the app is ad-funded, which is
+                // the moment the system tracking prompt makes sense.
+                ads.bootstrap(game: game)
                 route = .home
             }
 

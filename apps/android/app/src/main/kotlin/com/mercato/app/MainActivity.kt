@@ -162,6 +162,16 @@ fun MercatoNav(graph: AppGraph) {
                 onReplayIntro = {
                     nav.navigate(Routes.ONBOARDING) { popUpTo(Routes.HOME) }
                 },
+                onPrivacy = {
+                    // The nav graph is not the Activity, so open through the
+                    // context this composable already holds.
+                    activity?.startActivity(
+                        android.content.Intent(
+                            android.content.Intent.ACTION_VIEW,
+                            android.net.Uri.parse(AppLinks.PRIVACY_POLICY),
+                        )
+                    )
+                },
                 onOffline = { nav.navigate(Routes.OFFLINE) },
                 onLab = { nav.navigate(Routes.LAB) })
         }

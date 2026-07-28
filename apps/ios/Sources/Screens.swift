@@ -569,6 +569,11 @@ struct SettingsView: View {
                         value: adsPersonalised ? L("consentOn") : L("consentOff"),
                         action: onConsent
                     )
+                    linkRow(L("rowPrivacy"), value: "\u{2197}") {
+                        if let url = URL(string: AppLinks.privacyPolicy) {
+                            UIApplication.shared.open(url)
+                        }
+                    }
                     linkRow(L("rowIntro"), value: "\u{203A}", action: onReplayIntro)
                     linkRow(L("rowOffline"), value: "\u{203A}", action: onOffline)
                     #if DEBUG
@@ -582,7 +587,7 @@ struct SettingsView: View {
                 BannerSlot(game: game)
                     .frame(maxWidth: .infinity)
 
-                Text(L("version"))
+                Text("\(L("version")) \(AppLinks.shortVersion)")
                     .font(DS.mono(11))
                     .foregroundStyle(Color.white.opacity(0.5))
                     .frame(maxWidth: .infinity)
@@ -698,7 +703,11 @@ struct SettingsView: View {
         .buttonStyle(.plain)
     }
 
-    private func linkRow(_ label: String, value: String, action: (() -> Void)?) -> some View {
+    private func linkRow(
+        _ label: String,
+        value: String,
+        action: (() -> Void)? = nil
+    ) -> some View {
         Button { action?() } label: {
             HStack(spacing: 12) {
                 Text(label)

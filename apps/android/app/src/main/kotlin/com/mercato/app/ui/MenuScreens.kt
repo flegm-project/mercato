@@ -373,6 +373,7 @@ fun SettingsScreen(
     onBack: () -> Unit,
     onConsent: () -> Unit,
     onReplayIntro: () -> Unit,
+    onPrivacy: () -> Unit,
     onOffline: () -> Unit,
     onLab: () -> Unit,
 ) {
@@ -451,6 +452,9 @@ fun SettingsScreen(
             ),
             onClick = onConsent,
         )
+        // Both stores require a reachable privacy policy for an app that shows
+        // ads and sells an in-app purchase.
+        LinkRow(stringResource(R.string.rowPrivacy), null, onClick = onPrivacy)
         LinkRow(stringResource(R.string.rowIntro), null, onClick = onReplayIntro)
         LinkRow(stringResource(R.string.rowOffline), null, onClick = onOffline)
         if (BuildConfig.DEBUG) {

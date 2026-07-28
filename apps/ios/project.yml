@@ -45,6 +45,13 @@ targets:
         group: Generated
         buildPhase: resources
       # The dataset ships with the app; the core reads these CSVs at startup.
+      # Generated from the design tokens by scripts/gen-app-icon.mjs.
+      - path: ../../build/icons/ios/Assets.xcassets
+        group: Generated
+      # Apple requires this for the required-reason APIs the app touches.
+      - path: Support/PrivacyInfo.xcprivacy
+        group: Resources
+        buildPhase: resources
       - path: Support/Products.storekit
         group: Support
         buildPhase: none

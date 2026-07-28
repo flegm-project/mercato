@@ -32,8 +32,14 @@ final class AdsManager: NSObject, ObservableObject {
     /// Runs once the interstitial is dismissed, to hand control to the recap.
     private var pendingCompletion: (() -> Void)?
 
-    /// Called once the game has loaded: starts the SDK, asks for tracking
-    /// permission, then warms the first interstitial.
+    /// Starts the SDK, asks for tracking permission, then warms the first
+    /// interstitial.
+    ///
+    /// Call this only once the player has answered the app's own ad-consent
+    /// screen. Starting earlier put the system tracking prompt on top of the
+    /// first onboarding pane, before the player knew what the app was or that
+    /// it was ad-funded, and immediately before the app asked a similar
+    /// question itself.
     func bootstrap(game: Game) {
         self.game = game
         guard !started else { return }

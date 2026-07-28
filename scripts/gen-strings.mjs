@@ -26,6 +26,7 @@
 //   build/strings/ios/en.lproj/Localizable.strings
 //   build/strings/ios/fr.lproj/Localizable.strings
 //   build/strings/ios/es.lproj/Localizable.strings
+//   build/strings/ios/<lang>.lproj/InfoPlist.strings  (the tracking prompt)
 //   build/strings/android/values/strings.xml      (English, the default)
 //   build/strings/android/values-fr/strings.xml
 //   build/strings/android/values-es/strings.xml
@@ -206,6 +207,17 @@ function writeAppleStrings(lang) {
     return `"${appleEscape(key)}" = "${appleEscape(value)}";`;
   });
   fs.writeFileSync(path.join(dir, "Localizable.strings"), `${header}\n${lines.join("\n")}\n`);
+
+  // The tracking prompt is rendered by the system from Info.plist, which does
+  // not read Localizable.strings. Without a per-locale InfoPlist.strings the
+  // prompt shows English copy inside a French or Spanish system dialog.
+  const attUsage = flattened[lang].get("attUsage");
+  if (attUsage) {
+    fs.writeFileSync(
+      path.join(dir, "InfoPlist.strings"),
+      `${header}\n"NSUserTrackingUsageDescription" = "${appleEscape(attUsage)}";\n`
+    );
+  }
   return path.join(dir, "Localizable.strings");
 }
 

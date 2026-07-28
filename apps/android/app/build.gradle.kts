@@ -113,3 +113,10 @@ dependencies {
 
     testImplementation("junit:junit:4.13.2")
 }
+
+// Pin the JDK the build runs on. Gradle 8.9 rejects anything newer than 22,
+// and a machine whose only JDK is newer fails with a bare version number that
+// says nothing about the cause.
+kotlin {
+    jvmToolchain(21)
+}

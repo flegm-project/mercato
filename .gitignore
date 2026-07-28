@@ -51,3 +51,7 @@ Pods/
 .env.local
 google-services.json
 GoogleService-Info.plist
+
+# Generated app icons (scripts/gen-app-icon.mjs); the Android copies under
+# apps/android/app/src/main/res are committed because Gradle needs them in the
+# source tree.

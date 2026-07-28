@@ -92,7 +92,6 @@
     "owned": "ACQUIS",
     "restore": "Restaurer mes achats",
     "restoreToast": "Aucun achat à restaurer",
-    "buyToast": "Achat simulé · démo",
     "adsOffToast": "Publicités désactivées",
     "noBalls": "Pas assez de ballons",
     "soundS": "Son",
@@ -106,7 +105,7 @@
     "consentOn": "Personnalisées",
     "consentOff": "Non personnalisées",
     "systemV": "Système",
-    "version": "MERCATO 1.0 · démo",
+    "version": "MERCATO",
     "quitT": "Quitter la manche ?",
     "quitB": "Ta progression sera perdue.",
     "quitStay": "CONTINUER",
@@ -142,7 +141,9 @@
     "ambT": "Collisions de noms de famille",
     "ambN": "Cas réels extraits des données. Le niveau hardcore doit refuser le nom de famille seul pour chacun.",
     "a11yBack": "Retour",
-    "a11yClose": "Fermer"
+    "a11yClose": "Fermer",
+    "rowPrivacy": "Politique de confidentialité",
+    "attUsage": "Nous utilisons votre identifiant publicitaire pour rendre les publicités plus pertinentes. Vous pouvez jouer sans l'autoriser."
   },
   "en": {
     "l1": "EASY",
@@ -237,7 +238,6 @@
     "owned": "OWNED",
     "restore": "Restore purchases",
     "restoreToast": "Nothing to restore",
-    "buyToast": "Simulated purchase · demo",
     "adsOffToast": "Ads disabled",
     "noBalls": "Not enough balls",
     "soundS": "Sound",
@@ -251,7 +251,7 @@
     "consentOn": "Personalised",
     "consentOff": "Non-personalised",
     "systemV": "System",
-    "version": "MERCATO 1.0 · demo",
+    "version": "MERCATO",
     "quitT": "Quit the round?",
     "quitB": "Your progress will be lost.",
     "quitStay": "KEEP PLAYING",
@@ -287,7 +287,9 @@
     "ambT": "Surname collisions",
     "ambN": "Real cases from the data. Hardcore must reject the bare surname for each.",
     "a11yBack": "Back",
-    "a11yClose": "Close"
+    "a11yClose": "Close",
+    "rowPrivacy": "Privacy policy",
+    "attUsage": "We use your advertising identifier to make the ads you see more relevant. You can play without allowing it."
   },
   "es": {
     "l1": "FÁCIL",
@@ -382,7 +384,6 @@
     "owned": "ADQUIRIDO",
     "restore": "Restaurar compras",
     "restoreToast": "Nada que restaurar",
-    "buyToast": "Compra simulada · demo",
     "adsOffToast": "Publicidad desactivada",
     "noBalls": "No hay suficientes balones",
     "soundS": "Sonido",
@@ -396,7 +397,7 @@
     "consentOn": "Personalizados",
     "consentOff": "No personalizados",
     "systemV": "Sistema",
-    "version": "MERCATO 1.0 · demo",
+    "version": "MERCATO",
     "quitT": "¿Salir de la ronda?",
     "quitB": "Perderás tu progreso.",
     "quitStay": "SEGUIR",
@@ -432,6 +433,8 @@
     "ambT": "Colisiones de apellidos",
     "ambN": "Casos reales de los datos. El nivel hardcore debe rechazar el apellido solo en cada uno.",
     "a11yBack": "Atrás",
-    "a11yClose": "Cerrar"
+    "a11yClose": "Cerrar",
+    "rowPrivacy": "Política de privacidad",
+    "attUsage": "Usamos tu identificador de publicidad para mostrarte anuncios más relevantes. Puedes jugar sin permitirlo."
   }
 }
