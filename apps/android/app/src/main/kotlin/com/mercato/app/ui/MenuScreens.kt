@@ -168,7 +168,6 @@ fun OnboardingScreen(onDone: () -> Unit) {
                     Modifier
                         .fillMaxWidth()
                         .height(200.dp)
-                        .padding(bottom = 10.dp)
                         .solidRaised(DesignTokens.Radius.card, depth = 10.dp)
                         .paperHatch(),
                     contentAlignment = Alignment.Center,
@@ -295,10 +294,13 @@ fun ConsentScreen(graph: AppGraph, fromSettings: Boolean, onDone: () -> Unit) {
             stringResource(R.string.cnAccept), ButtonStyle.Primary,
             fontSize = 18.sp, fontWeight = 900, tracking = -0.03f,
         ) { choose(true) }
+        // iOS spaces the actions and the footnote by 11 (Screens.swift:403).
+        Gap(11.dp)
         InkButton(
             stringResource(R.string.cnRefuse), ButtonStyle.Secondary,
             fontSize = 15.sp, fontWeight = 800, tracking = -0.03f,
         ) { choose(false) }
+        Gap(11.dp)
         Text(
             stringResource(R.string.cnFoot),
             style = typeStyle(DesignTokens.Type.body, Color.White.dim(DesignTokens.Opacity.textFootnote)),
@@ -519,15 +521,19 @@ fun SettingsScreen(
             enabled = !adsRemoved && price != null && activity != null,
         ) { activity?.let { graph.billing.launchPurchase(it) } }
         if (!adsRemoved) {
+            Gap(DesignTokens.Space.sm)
             LinkRow(stringResource(R.string.restore), null) {
                 scope.launch { graph.billing.restore() }
             }
         }
         Gap(DesignTokens.Space.md)
-        ToggleRow(R.string.soundS, sound) { scope.launch { graph.prefs.setSound(it) } }
-        ToggleRow(R.string.vibrateS, vibration) { scope.launch { graph.prefs.setVibration(it) } }
-        ToggleRow(R.string.notifS, notifications) {
-            scope.launch { graph.prefs.setNotifications(it) }
+        // iOS spaces the three switches by 10 (Screens.swift:540).
+        Column(verticalArrangement = Arrangement.spacedBy(DesignTokens.Space.sm)) {
+            ToggleRow(R.string.soundS, sound) { scope.launch { graph.prefs.setSound(it) } }
+            ToggleRow(R.string.vibrateS, vibration) { scope.launch { graph.prefs.setVibration(it) } }
+            ToggleRow(R.string.notifS, notifications) {
+                scope.launch { graph.prefs.setNotifications(it) }
+            }
         }
         Gap(DesignTokens.Space.md)
         LinkRow(
@@ -589,7 +595,6 @@ private fun PurchaseRow(
     Row(
         Modifier
             .fillMaxWidth()
-            .padding(bottom = 6.dp)
             .solidRaised(DesignTokens.Radius.medium, depth = 6.dp, border = 4.dp)
             .background(DesignTokens.Color.ivory)
             .padding(18.dp),
@@ -621,7 +626,6 @@ private fun PurchaseRow(
                         )
                     } else {
                         Modifier
-                            .padding(bottom = 6.dp)
                             .solidRaised(DesignTokens.Radius.row, depth = 6.dp, border = 4.dp)
                             .background(DesignTokens.Color.yellow)
                     }
@@ -647,7 +651,6 @@ private fun ToggleRow(label: Int, checked: Boolean, onChange: (Boolean) -> Unit)
     Row(
         Modifier
             .fillMaxWidth()
-            .padding(bottom = 6.dp)
             .solidRaised(DesignTokens.Radius.medium, depth = 6.dp, border = 4.dp)
             .background(DesignTokens.Color.ivory)
             .padding(horizontal = 16.dp, vertical = 15.dp),

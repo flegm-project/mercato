@@ -258,7 +258,10 @@ fun InkButton(
 
     // iOS dims a disabled button to 40% (DesignSystem.swift:562). Gating only
     // the click handler left a spent Hint looking fully active.
-    Box(modifier.padding(bottom = drop).alpha(if (enabled) 1f else 0.4f)) {
+    // No room reserved for the drop shadow: iOS draws it as an offset copy
+    // behind the button, which costs no layout, and the spacing between two
+    // stacked buttons is wide enough to clear it.
+    Box(modifier.alpha(if (enabled) 1f else 0.4f)) {
         if (style != ButtonStyle.Ghost) {
             Box(
                 Modifier
@@ -320,7 +323,6 @@ fun AnswerButton(
     Box(
         modifier
             .fillMaxWidth()
-            .padding(bottom = 10.dp)
             .solidRaised(DesignTokens.Radius.large, depth = 10.dp, pressed = pressed)
             .background(fill)
             .clickable(
@@ -400,7 +402,6 @@ fun ScorePill(
         // number rather than part of the top bar.
         Box(
             Modifier
-                .padding(bottom = 6.dp)
                 .solidRaisedCapsule(depth = 6.dp)
                 .background(color)
                 .padding(horizontal = 16.dp, vertical = 6.dp),

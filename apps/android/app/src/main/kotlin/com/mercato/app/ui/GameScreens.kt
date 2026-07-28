@@ -170,7 +170,6 @@ private fun TransferCard(ui: QuestionUi, onTap: () -> Unit) {
     Column(
         Modifier
             .fillMaxWidth()
-            .padding(bottom = 11.dp)
             .solidRaised(DesignTokens.Radius.card, depth = 11.dp, outline = borderColor)
             .background(DesignTokens.Color.ivory)
             .clickable(onClick = onTap),
@@ -259,7 +258,8 @@ private fun KindChip(kind: MoveKind) {
 
 @Composable
 private fun EasyAnswers(ui: QuestionUi, vm: GameViewModel) {
-    Column(verticalArrangement = Arrangement.spacedBy(DesignTokens.Space.sm)) {
+    // iOS spaces the four answers by 14 (GameView.swift:210).
+    Column(verticalArrangement = Arrangement.spacedBy(DesignTokens.Space.md)) {
         ui.question.options.forEachIndexed { i, option ->
             val state = when {
                 ui.verdict == null -> AnswerState.Idle
@@ -483,7 +483,6 @@ fun RecapScreen(
         Column(
             Modifier
                 .fillMaxWidth()
-                .padding(bottom = 10.dp)
                 .solidRaised(DesignTokens.Radius.card, depth = 10.dp)
                 .background(DesignTokens.Color.ivory)
                 .padding(22.dp),
@@ -523,6 +522,8 @@ fun RecapScreen(
         InkButton(
             stringResource(R.string.again), ButtonStyle.Primary, radius = DesignTokens.Radius.button,
         ) { onPlayAgain(mode) }
+        // iOS spaces the two CTAs by 10 (Screens.swift:177).
+        Gap(DesignTokens.Space.sm)
         // A full-width secondary button, not a thin text link, so it is a
         // comfortable finger target next to Play again (iOS parity: ink 35%,
         // white 18% border, radius 18, vertical padding 16).
