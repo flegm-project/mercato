@@ -149,16 +149,13 @@ impl Session {
 
     pub fn is_over(&self) -> bool {
         (self.mode == Mode::Hardcore && self.lives == 0)
-            || (self.asked >= self.plan.len()
-                && self.current.as_ref().is_none_or(|c| c.finished))
+            || (self.asked >= self.plan.len() && self.current.as_ref().is_none_or(|c| c.finished))
     }
 
     /// Advance to the next question, or `None` when the round is over. A
     /// Hardcore round also ends the moment the last life is lost.
     pub fn next_question(&mut self) -> Option<Question> {
-        if self.asked >= self.plan.len()
-            || (self.mode == Mode::Hardcore && self.lives == 0)
-        {
+        if self.asked >= self.plan.len() || (self.mode == Mode::Hardcore && self.lives == 0) {
             self.current = None;
             return None;
         }

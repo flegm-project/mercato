@@ -49,7 +49,7 @@ fn short_forms_still_match() {
 fn first_plus_surname_short_forms_match() {
     let c = load_corpus(&data_dir()).expect("dataset loads");
     let cases = [
-        ("Q151034", "Kevin Boateng"),   // Kevin-Prince Boateng
+        ("Q151034", "Kevin Boateng"),    // Kevin-Prince Boateng
         ("Q44977", "Pierre Aubameyang"), // Pierre-Emerick Aubameyang
         ("Q26069", "Klaas Huntelaar"),   // Klaas-Jan Huntelaar
         ("Q13494", "Jean Papin"),        // Jean-Pierre Papin
