@@ -189,12 +189,21 @@ struct RecapView: View {
                         }
                         .buttonStyle(.plain)
 
+                        // A full-width secondary button, not a thin text link,
+                        // so it is a comfortable finger target next to Play again.
                         Button(action: onHome) {
                             Text(L("home"))
-                                .font(DS.figtree(15, weight: 800))
-                                .foregroundStyle(DesignTokens.Color.ivory.opacity(0.75))
+                                .font(DS.unbounded(16, weight: 800))
+                                .tracking(-0.03 * 16)
+                                .foregroundStyle(DesignTokens.Color.ivory)
                                 .frame(maxWidth: .infinity)
-                                .padding(.vertical, 12)
+                                .padding(.vertical, 16)
+                                .background(DesignTokens.Color.ink.opacity(0.35))
+                                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                        .strokeBorder(Color.white.opacity(0.18), lineWidth: 2)
+                                )
                         }
                         .buttonStyle(.plain)
                     }
