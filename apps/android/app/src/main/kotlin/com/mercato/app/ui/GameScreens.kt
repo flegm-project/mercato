@@ -443,6 +443,8 @@ fun RecapScreen(
     val mode by vm.mode.collectAsState()
     val r: RecapUi = recap ?: return
 
+    // iOS: 22 above the title, 18 above the stars, 22 above the card, 22 above
+    // the CTAs, 24 above the rectangle, 20 at the foot (Screens.swift:155).
     ScreenColumn(Modifier.verticalScroll(rememberScrollState())) {
         Gap(DesignTokens.Space.xl)
         Text(
@@ -451,7 +453,7 @@ fun RecapScreen(
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center,
         )
-        Gap(DesignTokens.Space.md)
+        Gap(DesignTokens.Space.lg)
         // Three separately shadowed 46sp stars, dimmed when unearned, rather
         // than one small line of glyphs.
         Row(
@@ -477,7 +479,7 @@ fun RecapScreen(
                 }
             }
         }
-        Gap(DesignTokens.Space.lg)
+        Gap(DesignTokens.Space.xl)
         // The score lives in a raised ivory card, as on iOS: the numbers were
         // sitting bare on the background with no hierarchy between them.
         Column(
@@ -518,9 +520,11 @@ fun RecapScreen(
                 )
             }
         }
-        Gap(DesignTokens.Space.lg)
+        Gap(DesignTokens.Space.xl)
         InkButton(
-            stringResource(R.string.again), ButtonStyle.Primary, radius = DesignTokens.Radius.button,
+            stringResource(R.string.again), ButtonStyle.Primary,
+            fontSize = 18.sp, fontWeight = 800, tracking = -0.045f,
+            radius = DesignTokens.Radius.button, verticalPadding = 17.dp,
         ) { onPlayAgain(mode) }
         // iOS spaces the two CTAs by 10 (Screens.swift:177).
         Gap(DesignTokens.Space.sm)
@@ -550,9 +554,9 @@ fun RecapScreen(
             )
         }
         // Display slot lives below the actions, never above the primary CTA.
-        Gap(DesignTokens.Space.md)
+        Gap(24.dp)
         RecapRectangle(graph.ads)
-        Gap(DesignTokens.Space.xl)
+        Gap(20.dp)
     }
 }
 
