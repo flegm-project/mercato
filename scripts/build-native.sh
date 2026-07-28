@@ -46,6 +46,37 @@ bindings() {
       generate --library "$lib" --language swift --out-dir "$OUT/bindings/swift" )
   ( cd "$CORE" && cargo run -q --bin uniffi-bindgen -- \
       generate --library "$lib" --language kotlin --out-dir "$OUT/bindings/kotlin" )
+
+  # uniffi picks its cleaner at runtime: it probes for java.lang.ref.Cleaner
+  # with Class.forName and falls back to a JNA cleaner when the class is
+  # missing, so JavaLangRefCleaner is only ever constructed on API 33 and up.
+  # Android lint cannot follow a reflective probe, so it reports three NewApi
+  # errors against a minSdk of 26 and fails the build. Annotating the two
+  # declarations states the guarantee the probe already provides.
+  kt="$OUT/bindings/kotlin/uniffi/mercato_ffi/mercato_ffi.kt"
+  if [ -f "$kt" ] && ! grep -q "android.annotation.SuppressLint" "$kt"; then
+    python3 - "$kt" <<'PYEOF'
+import sys
+p = sys.argv[1]
+lines = open(p, encoding="utf-8").read().split("\n")
+# The import has to land after the package declaration, not at the top of the
+# file: uniffi opens with comments and a @file: annotation.
+for i, l in enumerate(lines):
+    if l.startswith("package "):
+        lines[i + 1 : i + 1] = ["", "import android.annotation.SuppressLint"]
+        break
+src = "\n".join(lines)
+for decl in (
+    "private fun UniffiCleaner.Companion.create",
+    "private class JavaLangRefCleaner",
+    "private class JavaLangRefCleanable",
+):
+    src = src.replace("\n" + decl, '\n@SuppressLint("NewApi")\n' + decl, 1)
+open(p, "w", encoding="utf-8").write(src)
+PYEOF
+    echo "    -> annotated the uniffi cleaner for lint"
+  fi
+
   echo "    -> $OUT/bindings"
 }
 
