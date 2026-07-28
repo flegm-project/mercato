@@ -155,8 +155,13 @@ fun MenuBanner(ads: AdsController, modifier: Modifier = Modifier) {
         // iOS BannerSlot draws a bare 320x50 and lets the blue gradient show
         // through on wider screens. A full-width ink bar was the loudest
         // difference on Home, and worst before the ad had loaded.
+        //
+        // The slot is full width and the banner centres inside it, which is
+        // what `.frame(maxWidth: .infinity)` does around every iOS call site.
+        // Sizing the slot itself to 320 left it ranged against the gutter,
+        // because a Column aligns its children to the start.
         modifier
-            .width(320.dp)
+            .fillMaxWidth()
             .height(50.dp),
     )
 }
