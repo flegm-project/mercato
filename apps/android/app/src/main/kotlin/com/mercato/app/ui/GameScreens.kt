@@ -95,7 +95,8 @@ fun GameScreen(
 
     val q = question ?: return
     ScreenColumn {
-        Gap(DesignTokens.Space.lg)
+        // iOS pads the column by the gutter top and bottom (GameView.swift:56).
+        Gap(DesignTokens.Space.gutter)
         Row(
             Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -121,10 +122,11 @@ fun GameScreen(
                         fontSize = 16.sp,
                     ))
             }
-            Gap(DesignTokens.Space.md)
+            // The row's own 12 is the whole spacing on iOS; the extra gap and
+            // the two start paddings here added 42dp of it (GameView.swift:88).
             ProgressPips(pips, liveIndex = q.question.index.toInt() - 1, Modifier.weight(1f))
             if (mode == GameMode.HARDCORE) {
-                LivesRow(q.attemptsLeft, Modifier.padding(start = DesignTokens.Space.md))
+                LivesRow(q.attemptsLeft)
             }
             ScorePill(
                 score?.points ?: 0,
@@ -133,16 +135,19 @@ fun GameScreen(
                 // pill green or coral from the first answer onwards.
                 q.verdict,
                 bumpToken,
-                Modifier.padding(start = DesignTokens.Space.md),
             )
         }
         Gap(DesignTokens.Space.md)
         TransferCard(q, onTap = vm::advance)
         // No ad slot during a question (parity with iOS): the answers zone
-        // floats centered between the card and the bottom edge.
+        // floats centered between the card and the bottom edge. iOS holds at
+        // least 12 either side of it (GameView.swift:47).
+        Gap(12.dp)
         Spacer(Modifier.weight(1f))
         if (mode == GameMode.EASY) EasyAnswers(q, vm) else HardcoreAnswers(q, vm)
         Spacer(Modifier.weight(1f))
+        Gap(12.dp)
+        Gap(DesignTokens.Space.gutter)
     }
 
     if (quitAsked) {
@@ -178,10 +183,8 @@ private fun TransferCard(ui: QuestionUi, onTap: () -> Unit) {
             Modifier
                 .fillMaxWidth()
                 .background(DesignTokens.Color.ink)
-                .padding(
-                    horizontal = DesignTokens.Space.md,
-                    vertical = DesignTokens.Space.sm,
-                ),
+                // iOS: 18 horizontal, 10 top and bottom (DesignSystem.swift:397).
+                .padding(horizontal = 18.dp, vertical = 10.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -195,10 +198,8 @@ private fun TransferCard(ui: QuestionUi, onTap: () -> Unit) {
         Column(
             Modifier
                 .fillMaxWidth()
-                .padding(
-                    horizontal = DesignTokens.Space.lg,
-                    vertical = DesignTokens.Space.md,
-                ),
+                // iOS: 18 horizontal, 14 top, 16 bottom (DesignSystem.swift:441).
+                .padding(start = 18.dp, end = 18.dp, top = 14.dp, bottom = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
@@ -247,7 +248,8 @@ private fun KindChip(kind: MoveKind) {
     Box(
         Modifier
             .background(fill, RoundedCornerShape(DesignTokens.Radius.chip))
-            .padding(horizontal = DesignTokens.Space.sm, vertical = 4.dp),
+            // iOS: 12 by 6 (DesignSystem.swift:386).
+            .padding(horizontal = 12.dp, vertical = 6.dp),
     ) {
         Text(
             stringResource(label),
@@ -275,11 +277,13 @@ private fun EasyAnswers(ui: QuestionUi, vm: GameViewModel) {
 @Composable
 private fun HardcoreAnswers(ui: QuestionUi, vm: GameViewModel) {
     var text by remember(ui.question.index) { mutableStateOf("") }
-    Column {
+    // iOS spaces the hints, the warning, the field and the controls by 12
+    // (GameView.swift:115).
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         if (ui.hints.isNotEmpty()) {
             Row(
-                Modifier.fillMaxWidth().padding(bottom = DesignTokens.Space.sm),
-                horizontalArrangement = Arrangement.spacedBy(DesignTokens.Space.xs),
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 ui.hints.forEach { HintChip(it) }
             }
@@ -289,8 +293,9 @@ private fun HardcoreAnswers(ui: QuestionUi, vm: GameViewModel) {
                 stringResource(
                     if (it == RejectionReason.AMBIGUOUS_SURNAME) R.string.rAmb else R.string.rNone
                 ),
-                style = typeStyle(DesignTokens.Type.body, DesignTokens.Color.coral),
-                modifier = Modifier.padding(bottom = DesignTokens.Space.xs),
+                style = typeStyle(DesignTokens.Type.bodySmallStrong, DesignTokens.Color.yellow),
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center,
             )
         }
         GuessField(
@@ -300,20 +305,28 @@ private fun HardcoreAnswers(ui: QuestionUi, vm: GameViewModel) {
             verdict = ui.verdict,
             onSubmit = { vm.submitGuess(text) },
         )
-        Gap(DesignTokens.Space.sm)
-        Row(horizontalArrangement = Arrangement.spacedBy(DesignTokens.Space.sm)) {
+        // iOS pads both controls by 22 like the guess field above them, so the
+        // row is 78 tall, and splits the width 38/62 either side of an 11dp
+        // gap (DesignSystem.swift:533). Android left them at the default 56.
+        Row(horizontalArrangement = Arrangement.spacedBy(11.dp)) {
             Box(Modifier.weight(0.38f)) {
                 InkButton(
                     "${stringResource(R.string.hint)} (${3 - ui.hints.size})",
                     ButtonStyle.Secondary,
                     enabled = ui.verdict == null && ui.hints.size < 3,
+                    fontSize = 20.sp, fontWeight = 800, tracking = -0.03f,
+                    depth = 10.dp, radius = DesignTokens.Radius.card,
+                    verticalPadding = 22.dp,
                 ) { vm.requestHint() }
             }
             Box(Modifier.weight(0.62f)) {
                 InkButton(
                     stringResource(R.string.go),
                     ButtonStyle.Primary,
-                    enabled = ui.verdict == null,
+                    enabled = ui.verdict == null && text.isNotBlank(),
+                    fontSize = 24.sp, fontWeight = 900, tracking = -0.03f,
+                    depth = 10.dp, radius = DesignTokens.Radius.card,
+                    verticalPadding = 22.dp,
                 ) { vm.submitGuess(text) }
             }
         }

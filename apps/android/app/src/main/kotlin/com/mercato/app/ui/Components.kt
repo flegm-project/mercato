@@ -334,7 +334,9 @@ fun AnswerButton(
     Box(
         modifier
             .fillMaxWidth()
-            .solidRaised(DesignTokens.Radius.large, depth = 10.dp, pressed = pressed)
+            // iOS uses the card radius here, as on the Home modes, not large
+            // (DesignSystem.swift:337).
+            .solidRaised(DesignTokens.Radius.card, depth = 10.dp, pressed = pressed)
             .background(fill)
             .clickable(
                 interactionSource = interaction,
