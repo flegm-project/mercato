@@ -30,6 +30,28 @@ fi
 
 mkdir -p "$OUT/ios" "$OUT/android"
 
+# Screenshot once the screen has stopped changing, rather than after a fixed
+# wait. A cold start here can take well over the 5s this used to sleep: the
+# core has to load the dataset and build the round before the screen has
+# anything on it, and a capture taken too early is a bare background. That then
+# reads as a screen with no bands at all, which is indistinguishable from a
+# real layout difference. Screens that settle sooner also stop costing 5s each.
+#
+# $1 shot path, $2 a command that writes a capture to $1.
+settle() {
+  local out="$1" grab="$2" prev="" cur="" i
+  for i in $(seq 1 20); do
+    sleep 1
+    eval "$grab" >/dev/null 2>&1
+    cur=$(md5 -q "$out" 2>/dev/null || echo none)
+    # Two identical frames, and never before 3s: an animation can hold still
+    # between two of its own frames.
+    if [ "$i" -ge 3 ] && [ "$cur" = "$prev" ]; then return 0; fi
+    prev="$cur"
+  done
+  return 1
+}
+
 echo "==> iOS"
 APP="$ROOT/apps/ios/build/DerivedData/Build/Products/Debug-iphonesimulator/Mercato.app"
 BID=$(/usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$APP/Info.plist")
@@ -41,9 +63,9 @@ for r in "${ROUTES[@]}"; do
   # A fresh container per route keeps a stored streak or consent choice from
   # one capture leaking into the next.
   xcrun simctl launch "$IOS_SIM" "$BID" -MercatoRoute "$r" >/dev/null 2>&1
-  sleep 5
-  xcrun simctl io "$IOS_SIM" screenshot "$OUT/ios/$r.png" >/dev/null 2>&1
-  printf '    %-12s %s\n' "$r" "$([ -f "$OUT/ios/$r.png" ] && echo ok || echo FAILED)"
+  settle "$OUT/ios/$r.png" \
+    "xcrun simctl io '$IOS_SIM' screenshot '$OUT/ios/$r.png'" && ok=ok || ok=UNSETTLED
+  printf '    %-12s %s\n' "$r" "$([ -f "$OUT/ios/$r.png" ] && echo "$ok" || echo FAILED)"
 done
 
 echo "==> Android"
@@ -55,13 +77,17 @@ adb install -r "$APK" >/dev/null 2>&1 || { echo "    install failed" >&2; exit 1
 # Match the iPhone's logical size, not the emulator's own.
 adb shell wm size 1055x2294 >/dev/null 2>&1
 adb shell wm density 420 >/dev/null 2>&1
+# The first launch after an install pays for dexopt on top of everything else,
+# and the very first route otherwise comes back showing the system splash.
+adb shell am start -n "$AND_PKG/$AND_ACT" --es route home >/dev/null 2>&1
+sleep 10
 for r in "${ROUTES[@]}"; do
   adb shell am force-stop "$AND_PKG" >/dev/null 2>&1
   adb shell am start -n "$AND_PKG/$AND_ACT" --es route "$r" >/dev/null 2>&1
-  sleep 5
-  adb exec-out screencap -p > "$OUT/android/$r.png" 2>/dev/null
+  settle "$OUT/android/$r.png" \
+    "adb exec-out screencap -p > '$OUT/android/$r.png'" && ok=ok || ok=UNSETTLED
   size=$(stat -f%z "$OUT/android/$r.png" 2>/dev/null || echo 0)
-  printf '    %-12s %s\n' "$r" "$([ "$size" -gt 10000 ] && echo ok || echo FAILED)"
+  printf '    %-12s %s\n' "$r" "$([ "$size" -gt 10000 ] && echo "$ok" || echo FAILED)"
 done
 
 echo "==> side by side"
