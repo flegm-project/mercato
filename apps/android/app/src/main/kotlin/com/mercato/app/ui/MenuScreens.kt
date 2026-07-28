@@ -410,27 +410,29 @@ fun ProfileScreen(graph: AppGraph, onPlayTab: () -> Unit, onSettings: () -> Unit
                     .fillMaxWidth()
                     .background(
                         DesignTokens.Color.ink.dim(DesignTokens.Opacity.row),
-                        RoundedCornerShape(DesignTokens.Radius.medium),
+                        RoundedCornerShape(DesignTokens.Radius.row),
                     )
                     .border(
                         2.dp,
                         Color.White.dim(DesignTokens.Opacity.borderFaint),
-                        RoundedCornerShape(DesignTokens.Radius.medium),
+                        RoundedCornerShape(DesignTokens.Radius.row),
                     )
-                    .padding(DesignTokens.Space.xl),
+                    // iOS: 18 horizontal, 34 vertical (Profile.swift:120). A
+                    // flat 22 collapsed the card by 24dp.
+                    .padding(horizontal = 18.dp, vertical = 34.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
                     stringResource(R.string.statsEmptyTitle),
-                    style = typeStyle(DesignTokens.Type.answer, DesignTokens.Color.ivory),
+                    style = typeStyle(DesignTokens.Type.sectionTitle, DesignTokens.Color.ivory),
                     textAlign = TextAlign.Center,
                 )
-                Gap(DesignTokens.Space.xs)
+                Gap(DesignTokens.Space.sm)
                 Text(
                     stringResource(R.string.statsEmptyBody),
                     // Soft ivory at 72%, readable on the dark card (iOS parity).
                     style = typeStyle(
-                        DesignTokens.Type.body,
+                        DesignTokens.Type.bodyMid,
                         DesignTokens.Color.ivory.dim(DesignTokens.Opacity.textSubtle),
                     ),
                     textAlign = TextAlign.Center,
@@ -440,19 +442,27 @@ fun ProfileScreen(graph: AppGraph, onPlayTab: () -> Unit, onSettings: () -> Unit
             val accuracy =
                 if (stats.answered == 0) "-"
                 else "${(stats.correct * 100) / stats.answered}%"
-            StatRow(R.string.stPlayed, "${stats.roundsPlayed}")
-            StatRow(R.string.stBest, "${stats.bestScore}")
-            StatRow(R.string.stStreak, "${stats.bestStreak}")
-            StatRow(R.string.stAcc, accuracy)
+            // iOS spaces the four rows by 12 (Profile.swift:70).
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                StatRow(R.string.stPlayed, "${stats.roundsPlayed}")
+                StatRow(R.string.stBest, "${stats.bestScore}")
+                StatRow(R.string.stStreak, "${stats.bestStreak}")
+                StatRow(R.string.stAcc, accuracy)
+            }
         }
-        Gap(DesignTokens.Space.lg)
-        InkButton(stringResource(R.string.settings), ButtonStyle.Secondary, onClick = onSettings)
+        Gap(20.dp)
+        InkButton(
+            stringResource(R.string.settings), ButtonStyle.Secondary,
+            fontSize = 16.sp, fontWeight = 900, tracking = -0.03f,
+            depth = 6.dp, radius = DesignTokens.Radius.medium,
+            verticalPadding = 16.dp, onClick = onSettings,
+        )
         Spacer(Modifier.weight(1f))
         MercatoTabBar(
             tabs = listOf(stringResource(R.string.tPlay), stringResource(R.string.tProfile)),
             selected = 1,
         ) { if (it == 0) onPlayTab() }
-        Gap(DesignTokens.Space.md)
+        Gap(DesignTokens.Space.gutter)
     }
 }
 
@@ -461,24 +471,23 @@ private fun StatRow(label: Int, value: String) {
     Row(
         Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
             .background(
                 DesignTokens.Color.ink.dim(DesignTokens.Opacity.row),
-                RoundedCornerShape(DesignTokens.Radius.medium),
+                RoundedCornerShape(DesignTokens.Radius.row),
             )
             .border(
                 2.dp,
                 Color.White.dim(DesignTokens.Opacity.borderFaint),
-                RoundedCornerShape(DesignTokens.Radius.medium),
+                RoundedCornerShape(DesignTokens.Radius.row),
             )
-            .padding(DesignTokens.Space.md),
+            // iOS: 18 horizontal, 20 vertical (Profile.swift:140).
+            .padding(horizontal = 18.dp, vertical = 20.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             stringResource(label),
-            style = typeStyle(DesignTokens.Type.body, DesignTokens.Color.ivory)
-                .copy(fontWeight = FontWeight(800)),
+            style = typeStyle(DesignTokens.Type.bodyStrong, DesignTokens.Color.ivory),
         )
         Text(
             value,
