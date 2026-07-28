@@ -31,6 +31,36 @@ it reads declarations, not positions. It will stay green throughout this work.
 Measured on 2026-07-28, at an identical logical size of 402x874: **83
 differences over 11 screens**.
 
+### Where this stands
+
+A first pass took that to **56**, and the number understates it: what is left is
+mostly the tool splitting a band, not a screen that reads wrong. Every screen
+below except Profile and Lab is now within 8dp of iOS on every matched band.
+
+Three root causes accounted for most of it, and are fixed:
+
+- A raised surface grew by its own border. iOS `SolidRaised` only clips and
+  paints, so the border eats into the surface; Compose reserved it as padding,
+  making every card and row 2x`border` taller and compounding down each stack.
+- The drop shadow was reserved as layout. iOS draws it as an offset copy that
+  costs nothing, and lets the stack spacing hold it.
+- Screens improvised their spacing from the nearest space token instead of the
+  number iOS states, and three of them (Settings, Consent, Offline) put their
+  flexible space in the wrong place entirely.
+
+What is still open:
+
+- **Settings** sits 8dp low as a block. Android's `systemBars` top inset is
+  wider than the iPhone's safe area, and every other screen hides it in a
+  weighted spacer. Nothing in the layout is wrong; the column simply starts
+  lower.
+- **Profile** reads correctly but measures badly whenever the Android banner
+  fails to fill: the empty slot moves every band under it. Compare the image,
+  not the numbers.
+- **Lab** is untouched, per its own priority note below.
+- The **game screens draw a random question each run**, so their band splits and
+  the total move between two runs of the same code. Trust the matched pairs.
+
 ## How to measure
 
 Both apps carry a debug route so any screen can be reached directly, without
