@@ -66,6 +66,41 @@ Missing intermediate move noted, deliberately NOT invented into the data:
 Inter → Parma (Jan 2002, Sukur). Rows are only added when a source confirms
 both clubs, the year and the type.
 
+### Pass 2 (2026-07-28, 40 highest-notoriety players, 132 rows, `kind` focus)
+
+Scope: the full move history of the 40 highest-notoriety players. Every
+end-of-contract or free-agent move was checked against public sources (ESPN,
+Sky Sports, BBC, club announcements). 17 moves recorded as paid `transfer`
+were in fact contract-expiry frees and were relabelled `free`. The remaining
+rows were left unchanged (consistent with sources as paid moves, or already
+labelled `loan`). This lifted the corpus `free` count from 10 to 27.
+
+| Row | Claim | Verdict | Action |
+| --- | --- | --- | --- |
+| 1402 | Beckham, Real Madrid → LA Galaxy 2007 | contract expiry, joined free | `kind` → `free` |
+| 981 | Lewandowski, Dortmund → Bayern 2014 | Bosman / free at contract end | `kind` → `free` |
+| 51 | Klose, Bayern → Lazio 2011 | contract expiry, joined free | `kind` → `free` |
+| 297 | Kaka, Real Madrid → AC Milan 2013 | released on a free | `kind` → `free` |
+| 1378 | Casillas, Real Madrid → Porto 2015 | left on a free | `kind` → `free` |
+| 8 | Buffon, Juventus → PSG 2018 | free at contract end | `kind` → `free` |
+| 9 | Buffon, PSG → Juventus 2019 | free after PSG exit | `kind` → `free` |
+| 1717 | Iniesta, Barcelona → Vissel Kobe 2018 | free at contract end | `kind` → `free` |
+| 1275 | Gerrard, Liverpool → LA Galaxy 2015 | released on a free | `kind` → `free` |
+| 1763 | Henry, Barcelona → NY Red Bulls 2010 | free move | `kind` → `free` |
+| 1701 | Ronaldinho, AC Milan → Flamengo 2011 | contract ended, free to Brazil | `kind` → `free` |
+| 1779 | Ibrahimovic, PSG → Man Utd 2016 | free at contract end | `kind` → `free` |
+| 1780 | Ibrahimovic, Man Utd → LA Galaxy 2018 | released, joined free | `kind` → `free` |
+| 1781 | Ibrahimovic, LA Galaxy → AC Milan 2020 | free agent | `kind` → `free` |
+| 62 | Ozil, Arsenal → Fenerbahce 2021 | contract terminated, free | `kind` → `free` |
+| 1259 | Modric, Real Madrid → AC Milan 2025 | free after Real exit | `kind` → `free` |
+| 1716 | Muller, Bayern → Vancouver Whitecaps 2025 | free after Bayern exit | `kind` → `free` |
+
+Left as `transfer` after review (ambiguous fee, no confirmation of a free):
+Xavi, Barcelona → Al Sadd 2015 (row 1595).
+
+The tier-1 rows for players outside this famous set were verified in a
+parallel pass (see `verification-pass2-bot.md`).
+
 ## To do before shipping
 
 - [ ] Record the exact Wikidata query/snapshot date used to build the dataset.
