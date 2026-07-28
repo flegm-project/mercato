@@ -22,7 +22,12 @@ Difficulty comes from the **answer mode**, not only transfer rarity. `tier`:
 
 ## Game loop
 
-1. Pick a random transfer from the mode's pool.
+0. At the start of a round the ten transfers are drawn **once, without repeats**,
+   from the mode's pool (each game uses a fresh random seed, so no two rounds
+   share the same series in the same order). **Easy** then orders the round from
+   easiest to hardest (by tier, then player notoriety) so difficulty ramps up
+   across the ten questions; **Hardcore** keeps the random draw order.
+1. Take the next transfer from the round's plan.
 2. Show the card: kind + year in the header band; origin club dimmed; arrow;
    destination club large. Hardcore adds a masked name.
 3. Player answers (tap an option, or type + submit).

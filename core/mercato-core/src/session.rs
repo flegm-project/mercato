@@ -11,7 +11,7 @@ use crate::distance::BASE;
 use crate::matching::Route;
 use crate::model::{Kind, Lang, Position, Transfer};
 use crate::rng::Mulberry32;
-use crate::round::{pick_index, pool_indices, Mode};
+use crate::round::{pool_indices, Mode};
 use crate::scoring::Score;
 use crate::Corpus;
 
@@ -91,6 +91,9 @@ pub struct Session {
     mode: Mode,
     rng: Mulberry32,
     pool: Vec<usize>,
+    /// The round's transfers, drawn once without repeats. Easy is ordered from
+    /// easiest to hardest; Hardcore keeps its random draw order.
+    plan: Vec<usize>,
     asked: usize,
     current: Option<Current>,
     score: Score,
@@ -103,12 +106,18 @@ pub struct Session {
 impl Session {
     /// Start a session. `seed` makes the whole session reproducible.
     pub fn new(corpus: Arc<Corpus>, lang: Lang, mode: Mode, seed: u32) -> Self {
+        let mut rng = Mulberry32::new(seed);
+        let pool = pool_indices(&corpus.transfers, mode);
+        // The whole round is drawn up front, without repeats, so a series never
+        // asks the same transfer twice; Easy is then ordered easiest-first.
+        let plan = plan_round(&corpus, &pool, mode, &mut rng);
         Self {
-            pool: pool_indices(&corpus.transfers, mode),
             corpus,
             lang,
             mode,
-            rng: Mulberry32::new(seed),
+            rng,
+            pool,
+            plan,
             asked: 0,
             current: None,
             score: Score::new(),
@@ -140,23 +149,21 @@ impl Session {
 
     pub fn is_over(&self) -> bool {
         (self.mode == Mode::Hardcore && self.lives == 0)
-            || (self.asked >= QUESTIONS_PER_ROUND
+            || (self.asked >= self.plan.len()
                 && self.current.as_ref().is_none_or(|c| c.finished))
     }
 
     /// Advance to the next question, or `None` when the round is over. A
     /// Hardcore round also ends the moment the last life is lost.
     pub fn next_question(&mut self) -> Option<Question> {
-        if self.asked >= QUESTIONS_PER_ROUND
-            || self.pool.is_empty()
+        if self.asked >= self.plan.len()
             || (self.mode == Mode::Hardcore && self.lives == 0)
         {
             self.current = None;
             return None;
         }
 
-        let pick = pick_index(self.pool.len(), &mut self.rng)?;
-        let transfer_index = self.pool[pick];
+        let transfer_index = self.plan[self.asked];
         let transfer = &self.corpus.transfers[transfer_index];
         let player_index = self.corpus.player_index(&transfer.player_id)?;
 
@@ -332,6 +339,48 @@ fn mask_name(name: &str) -> String {
         .join("  ")
 }
 
+/// Draw a whole round from the eligible pool, without repeats, then order it.
+///
+/// A round never asks the same transfer twice: transfers are sampled without
+/// replacement. In Easy the round is then sorted from easiest to hardest so the
+/// difficulty ramps up across the ten questions; Hardcore keeps its draw order.
+/// If the pool is smaller than a full round (only tiny fixtures), the remainder
+/// is topped up with repeats so a round still has [`QUESTIONS_PER_ROUND`] items.
+fn plan_round(corpus: &Corpus, pool: &[usize], mode: Mode, rng: &mut Mulberry32) -> Vec<usize> {
+    let mut avail: Vec<usize> = pool.to_vec();
+    let mut chosen: Vec<usize> = Vec::with_capacity(QUESTIONS_PER_ROUND);
+    while chosen.len() < QUESTIONS_PER_ROUND && !avail.is_empty() {
+        let k = (rng.next_f64() * avail.len() as f64) as usize;
+        chosen.push(avail.swap_remove(k));
+    }
+    while chosen.len() < QUESTIONS_PER_ROUND && !pool.is_empty() {
+        let k = (rng.next_f64() * pool.len() as f64) as usize;
+        chosen.push(pool[k]);
+    }
+    if mode == Mode::Easy {
+        // Stable sort keeps the random order within a difficulty band, so the
+        // set still varies from one game to the next.
+        chosen.sort_by(|&a, &b| {
+            difficulty(corpus, a)
+                .partial_cmp(&difficulty(corpus, b))
+                .unwrap_or(std::cmp::Ordering::Equal)
+        });
+    }
+    chosen
+}
+
+/// A transfer's difficulty as an Easy-mode ordering key: lower is easier. The
+/// tier dominates (1 is easiest), and within a tier a more famous player (higher
+/// notoriety) is easier to place.
+fn difficulty(corpus: &Corpus, transfer_index: usize) -> f64 {
+    let t = &corpus.transfers[transfer_index];
+    let notoriety = corpus
+        .player_index(&t.player_id)
+        .map(|pi| corpus.players[pi].notoriety as f64)
+        .unwrap_or(0.0);
+    t.tier as f64 * 1000.0 - notoriety
+}
+
 /// Fisher-Yates using the seeded RNG, matching the reference `shuffle`.
 fn shuffle(v: &mut [usize], rng: &mut Mulberry32) {
     if v.is_empty() {
@@ -499,5 +548,34 @@ mod tests {
         };
         assert_eq!(run(42), run(42));
         assert_ne!(run(42), run(43));
+    }
+
+    #[test]
+    fn easy_round_has_no_repeats_and_ramps_difficulty() {
+        let c = corpus();
+        let pool = pool_indices(&c.transfers, Mode::Easy);
+        let mut rng = Mulberry32::new(7);
+        let plan = plan_round(&c, &pool, Mode::Easy, &mut rng);
+        assert_eq!(plan.len(), QUESTIONS_PER_ROUND);
+        // No transfer is asked twice in a round.
+        let mut sorted = plan.clone();
+        sorted.sort_unstable();
+        sorted.dedup();
+        assert_eq!(sorted.len(), plan.len());
+        // Difficulty is non-decreasing from the first to the last question.
+        let d: Vec<f64> = plan.iter().map(|&i| difficulty(&c, i)).collect();
+        assert!(d.windows(2).all(|w| w[0] <= w[1]));
+    }
+
+    #[test]
+    fn hardcore_round_has_no_repeats() {
+        let c = corpus();
+        let pool = pool_indices(&c.transfers, Mode::Hardcore);
+        let mut rng = Mulberry32::new(3);
+        let plan = plan_round(&c, &pool, Mode::Hardcore, &mut rng);
+        let mut sorted = plan.clone();
+        sorted.sort_unstable();
+        sorted.dedup();
+        assert_eq!(sorted.len(), plan.len());
     }
 }
