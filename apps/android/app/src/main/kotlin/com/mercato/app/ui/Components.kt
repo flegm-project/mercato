@@ -42,8 +42,10 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.RoundRect
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
@@ -178,27 +180,33 @@ fun Modifier.solidRaised(
     val drop = (depth - sink).coerceAtLeast(0.dp)
     this
         .offset(y = sink)
-        // Outside the clip below: the drop shadow sits proud of the surface.
-        .drawBehind {
+        .drawWithContent {
+            val r = radius?.toPx() ?: (size.height / 2f)
+            val b = border.toPx()
+            // The drop shadow, proud of the surface and behind everything.
             drawRoundRect(
                 color = outline,
                 topLeft = Offset(0f, drop.toPx()),
                 size = size,
-                cornerRadius = CornerRadius((radius?.toPx() ?: (size.height / 2f))),
+                cornerRadius = CornerRadius(r),
             )
-        }
-        .clip(shape)
-        .drawWithContent {
-            drawContent()
-            val b = border.toPx()
-            val r = radius?.toPx() ?: (size.height / 2f)
-            drawRoundRect(
-                color = outline,
-                topLeft = Offset(b / 2f, b / 2f),
-                size = Size(size.width - b, size.height - b),
-                cornerRadius = CornerRadius((r - b / 2f).coerceAtLeast(0f)),
-                style = Stroke(width = b),
-            )
+            // A solid fill of the whole shape, then the content clipped to the
+            // shape pulled in by the border width: the ring left over IS the
+            // border, and the content's antialiased edge falls on opaque
+            // outline rather than on the background. Stroking the ring over
+            // the content instead leaves that edge pixel half content and half
+            // stroke, and neither hides the other, which traced a pale ivory
+            // hairline around every card, pill and field.
+            drawRoundRect(color = outline, size = size, cornerRadius = CornerRadius(r))
+            val inner = Path().apply {
+                addRoundRect(
+                    RoundRect(
+                        Rect(b, b, size.width - b, size.height - b),
+                        CornerRadius((r - b).coerceAtLeast(0f)),
+                    )
+                )
+            }
+            clipPath(inner) { this@drawWithContent.drawContent() }
         }
 }
 
