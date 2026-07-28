@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.draw.clip
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -436,7 +437,32 @@ fun RecapScreen(
         }
         Gap(DesignTokens.Space.lg)
         InkButton(stringResource(R.string.again), ButtonStyle.Primary) { onPlayAgain(mode) }
-        InkButton(stringResource(R.string.home), ButtonStyle.Ghost, onClick = onHome)
+        // A full-width secondary button, not a thin text link, so it is a
+        // comfortable finger target next to Play again (iOS parity: ink 35%,
+        // white 18% border, radius 18, vertical padding 16).
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .background(
+                    DesignTokens.Color.ink.copy(alpha = 0.35f),
+                    RoundedCornerShape(DesignTokens.Radius.medium),
+                )
+                .border(
+                    2.dp,
+                    androidx.compose.ui.graphics.Color.White.copy(alpha = 0.18f),
+                    RoundedCornerShape(DesignTokens.Radius.medium),
+                )
+                .clip(RoundedCornerShape(DesignTokens.Radius.medium))
+                .clickable(onClick = onHome)
+                .padding(vertical = 16.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                stringResource(R.string.home),
+                style = typeStyle(DesignTokens.Type.answer, DesignTokens.Color.ivory)
+                    .copy(fontSize = 16.sp),
+            )
+        }
         // Display slot lives below the actions, never above the primary CTA.
         Gap(DesignTokens.Space.md)
         RecapRectangle(graph.ads)
