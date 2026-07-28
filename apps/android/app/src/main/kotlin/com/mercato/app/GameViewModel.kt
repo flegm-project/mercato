@@ -60,6 +60,19 @@ class GameViewModel(private val graph: AppGraph) : ViewModel() {
     private val _recap = MutableStateFlow<RecapUi?>(null)
     val recap: StateFlow<RecapUi?> = _recap.asStateFlow()
 
+    /**
+     * Seed a recap without playing a round, for the debug route that drives
+     * deterministic screenshots. Mirrors the iOS QA affordance, and matches
+     * its numbers so the two captures are comparable.
+     */
+    fun debugSeedRecap(won: Boolean) {
+        _recap.value = if (won) {
+            RecapUi(won = true, points = 21, correct = 7, total = 10, bestStreak = 5, stars = 3, missed = emptyList())
+        } else {
+            RecapUi(won = false, points = 6, correct = 2, total = 10, bestStreak = 1, stars = 0, missed = emptyList())
+        }
+    }
+
     /** Counts settled answers, so the score pill can replay its fly-up. */
     private val _bumpToken = MutableStateFlow(0)
     val bumpToken: StateFlow<Int> = _bumpToken.asStateFlow()

@@ -59,7 +59,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             CompositionLocalProvider(LocalFonts provides rememberFonts()) {
                 Box(Modifier.fillMaxSize().appBackground()) {
-                    MercatoNav(graph)
+                    MercatoNav(graph, debugRoute(intent))
                 }
             }
         }
@@ -72,6 +72,31 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+/**
+ * The QA screen to jump to, from an intent extra. Mirrors the iOS launch
+ * argument (-MercatoRoute <name>) so the same screen can be captured on both
+ * platforms without walking the flow by hand, which is neither deterministic
+ * nor free of the UMP form. Debug builds only.
+ *
+ *   adb shell am start -n <pkg>/com.mercato.app.MainActivity --es route easy
+ */
+private fun debugRoute(intent: android.content.Intent?): String? {
+    if (!BuildConfig.DEBUG) return null
+    return when (intent?.getStringExtra("route")) {
+        "home" -> Routes.HOME
+        "profile" -> Routes.PROFILE
+        "settings" -> Routes.SETTINGS
+        "offline" -> Routes.OFFLINE
+        "lab" -> Routes.LAB
+        "onboarding" -> Routes.ONBOARDING
+        "consent" -> Routes.CONSENT
+        "easy" -> Routes.GAME_EASY
+        "hardcore" -> Routes.GAME_HARDCORE
+        "recap", "recaplose" -> Routes.RECAP
+        else -> null
+    }
+}
+
 /** One ViewModel for the whole round/recap flow, scoped to the activity. */
 private class GameVmFactory(private val graph: AppGraph) : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
@@ -79,14 +104,21 @@ private class GameVmFactory(private val graph: AppGraph) : ViewModelProvider.Fac
 }
 
 @Composable
-fun MercatoNav(graph: AppGraph) {
+fun MercatoNav(graph: AppGraph, startRoute: String? = null) {
     val nav = rememberNavController()
     val vm: GameViewModel = viewModel(factory = GameVmFactory(graph))
     val onboarded by graph.prefs.onboarded.collectAsState(initial = null)
     val activity = androidx.compose.ui.platform.LocalContext.current as? android.app.Activity
     // Once per process, on the way to Home rather than at launch.
+    // A debug route must never trigger the UMP form: it would land on top of
+    // the capture. Marking consent as already gathered short-circuits it.
     val consentGathered = androidx.compose.runtime.remember {
-        androidx.compose.runtime.mutableStateOf(false)
+        androidx.compose.runtime.mutableStateOf(startRoute != null)
+    }
+    androidx.compose.runtime.LaunchedEffect(startRoute) {
+        if (startRoute == Routes.RECAP) {
+            vm.debugSeedRecap(won = activity?.intent?.getStringExtra("route") != "recaplose")
+        }
     }
     val gatherConsent = { onDone: () -> Unit ->
         if (!consentGathered.value && activity != null) {
@@ -97,7 +129,7 @@ fun MercatoNav(graph: AppGraph) {
         }
     }
 
-    NavHost(nav, startDestination = Routes.SPLASH) {
+    NavHost(nav, startDestination = startRoute ?: Routes.SPLASH) {
         composable(Routes.SPLASH) {
             SplashScreen {
                 if (onboarded == true) {
