@@ -187,7 +187,9 @@ fun LabScreen(graph: AppGraph, onBack: () -> Unit) {
                         line,
                         style = typeStyle(
                             DesignTokens.Type.technical,
-                            DesignTokens.Color.ivory.dim(DesignTokens.Opacity.textNearly),
+                            // iOS sets the trace one step quieter than the line
+                            // above it, at 85% (Lab.swift:131).
+                            DesignTokens.Color.ivory.dim(DesignTokens.Opacity.textNear),
                         ),
                         modifier = Modifier.padding(vertical = 2.dp),
                     )
