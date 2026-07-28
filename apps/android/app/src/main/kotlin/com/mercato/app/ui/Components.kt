@@ -1,5 +1,8 @@
 package com.mercato.app.ui
 
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -99,15 +102,23 @@ fun Modifier.adHatch(): Modifier = drawBehind {
  * rather than a stroke over a clipped fill, for the same reason as on iOS: a
  * stroke leaves the fill's antialiased edge showing past it as a pale seam.
  */
+fun Modifier.solidRaisedCapsule(
+    depth: Dp,
+    border: Dp = 4.dp,
+    outline: Color = DesignTokens.Color.ink,
+): Modifier = solidRaised(radius = null, depth = depth, border = border, outline = outline)
+
+/** @param radius null for a capsule, which a fixed radius cannot express. */
 fun Modifier.solidRaised(
-    radius: Dp,
+    radius: Dp?,
     depth: Dp,
     border: Dp = DesignTokens.Border.heavy,
     outline: Color = DesignTokens.Color.ink,
     pressed: Boolean = false,
 ): Modifier = composed {
-    val shape = RoundedCornerShape(radius)
-    val inner = RoundedCornerShape((radius - border).coerceAtLeast(0.dp))
+    val shape = if (radius == null) CircleShape else RoundedCornerShape(radius)
+    val inner = if (radius == null) CircleShape
+                else RoundedCornerShape((radius - border).coerceAtLeast(0.dp))
     // Pressing sinks the surface onto its shadow, as motion.press describes.
     val sink = if (pressed) 5.dp else 0.dp
     val drop = (depth - sink).coerceAtLeast(0.dp)
@@ -118,7 +129,7 @@ fun Modifier.solidRaised(
                 color = outline,
                 topLeft = Offset(0f, drop.toPx()),
                 size = size,
-                cornerRadius = CornerRadius(radius.toPx()),
+                cornerRadius = CornerRadius((radius?.toPx() ?: (size.height / 2f))),
             )
         }
         .background(outline, shape)
@@ -303,9 +314,9 @@ fun ScorePill(points: Long, lastCorrect: Boolean?, modifier: Modifier = Modifier
     Box(
         modifier
             .padding(bottom = 6.dp)
-            .solidRaised(15.dp, depth = 6.dp, border = 4.dp)
+            .solidRaisedCapsule(depth = 6.dp)
             .background(color)
-            .padding(horizontal = 14.dp, vertical = 4.dp),
+            .padding(horizontal = 16.dp, vertical = 6.dp),
         contentAlignment = Alignment.Center,
     ) {
         Text(
@@ -399,6 +410,10 @@ fun ScreenColumn(
             modifier
                 .widthIn(max = DesignTokens.Layout.columnMax)
                 .fillMaxSize()
+                // iOS gets the safe area for free; without this the top bar
+                // sat under the status bar and the tab bar under the gesture
+                // handle.
+                .windowInsetsPadding(WindowInsets.systemBars)
                 .padding(horizontal = DesignTokens.Space.gutter),
             content = content,
         )

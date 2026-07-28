@@ -90,7 +90,11 @@ fun GameScreen(
     val q = question ?: return
     ScreenColumn {
         Gap(DesignTokens.Space.lg)
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             val closeLabel = stringResource(R.string.a11yClose)
             Box(
                 Modifier

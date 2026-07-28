@@ -333,7 +333,8 @@ fun ProfileScreen(graph: AppGraph, onPlayTab: () -> Unit, onSettings: () -> Unit
         Gap(DesignTokens.Space.xl)
         Text(
             stringResource(R.string.profile),
-            style = typeStyle(DesignTokens.Type.screenTitle, DesignTokens.Color.ivory),
+            style = typeStyle(DesignTokens.Type.clubTo, DesignTokens.Color.ivory)
+                .copy(fontSize = 20.sp, letterSpacing = (-0.04 * 20).sp),
         )
         // Banner at the top, far from the tab bar, so a mistap near the
         // bottom never lands on an ad (iOS parity).
@@ -347,7 +348,12 @@ fun ProfileScreen(graph: AppGraph, onPlayTab: () -> Unit, onSettings: () -> Unit
                 Modifier
                     .fillMaxWidth()
                     .background(
-                        DesignTokens.Color.blueNight,
+                        DesignTokens.Color.ink.copy(alpha = 0.35f),
+                        RoundedCornerShape(DesignTokens.Radius.medium),
+                    )
+                    .border(
+                        2.dp,
+                        Color.White.copy(alpha = 0.12f),
                         RoundedCornerShape(DesignTokens.Radius.medium),
                     )
                     .padding(DesignTokens.Space.xl),
@@ -395,7 +401,15 @@ private fun StatRow(label: Int, value: String) {
         Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
-            .background(DesignTokens.Color.blueNight, RoundedCornerShape(DesignTokens.Radius.medium))
+            .background(
+                DesignTokens.Color.ink.copy(alpha = 0.35f),
+                RoundedCornerShape(DesignTokens.Radius.medium),
+            )
+            .border(
+                2.dp,
+                Color.White.copy(alpha = 0.12f),
+                RoundedCornerShape(DesignTokens.Radius.medium),
+            )
             .padding(DesignTokens.Space.md),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
@@ -436,14 +450,21 @@ fun SettingsScreen(
         Gap(DesignTokens.Space.xl)
         Row(verticalAlignment = Alignment.CenterVertically) {
             val backLabel = stringResource(R.string.a11yBack)
-            Text(
-                "‹",
-                style = typeStyle(DesignTokens.Type.screenTitle, DesignTokens.Color.ivory),
-                modifier = Modifier
+            Box(
+                Modifier
                     .semantics { contentDescription = backLabel }
-                    .clickable(onClick = onBack)
-                    .padding(end = DesignTokens.Space.md, top = 6.dp, bottom = 6.dp),
-            )
+                    .size(38.dp)
+                    .background(
+                        DesignTokens.Color.ink.copy(alpha = 0.45f),
+                        RoundedCornerShape(12.dp),
+                    )
+                    .border(4.dp, DesignTokens.Color.ink, RoundedCornerShape(12.dp))
+                    .clickable(onClick = onBack),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text("‹", style = typeStyle(DesignTokens.Type.answer, Color.White))
+            }
+            Gap(DesignTokens.Space.sm)
             Text(
                 stringResource(R.string.settings),
                 style = typeStyle(DesignTokens.Type.screenTitle, DesignTokens.Color.ivory),
@@ -454,27 +475,17 @@ fun SettingsScreen(
         // Without a loaded store price there is nothing to sell: show a
         // discreet, non-clickable note instead of a dead CTA (iOS parity).
         val activity = androidx.compose.ui.platform.LocalContext.current as? android.app.Activity
-        when {
-            adsRemoved -> PurchaseRow(
-                title = stringResource(R.string.shopNoAds),
-                trailing = stringResource(R.string.owned),
-                enabled = false,
-            ) {}
-            price != null -> PurchaseRow(
-                title = stringResource(R.string.shopNoAds),
-                trailing = price,
-                enabled = activity != null,
-            ) { activity?.let { graph.billing.launchPurchase(it) } }
-            else -> Text(
-                stringResource(R.string.shopUnavailable),
-                style = typeStyle(
-                    DesignTokens.Type.body,
-                    DesignTokens.Color.ivory.copy(alpha = 0.5f),
-                ),
-                modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
-                textAlign = TextAlign.Center,
-            )
-        }
+        PurchaseRow(
+            title = stringResource(R.string.shopNoAds),
+            subtitle = stringResource(R.string.shopNoAdsSub),
+            trailing = when {
+                adsRemoved -> stringResource(R.string.owned)
+                price != null -> price ?: ""
+                else -> stringResource(R.string.shopUnavailable)
+            },
+            owned = adsRemoved,
+            enabled = !adsRemoved && price != null && activity != null,
+        ) { activity?.let { graph.billing.launchPurchase(it) } }
         if (!adsRemoved) {
             LinkRow(stringResource(R.string.restore), null) {
                 scope.launch { graph.billing.restore() }
@@ -526,31 +537,58 @@ fun SettingsScreen(
 @Composable
 private fun PurchaseRow(
     title: String,
-    trailing: String?,
+    subtitle: String,
+    trailing: String,
+    owned: Boolean,
     enabled: Boolean,
     onClick: () -> Unit,
 ) {
+    // A raised ivory card, as on iOS. It was a dark navy row, and when the
+    // store had no price the whole card vanished for a grey line of text.
     Row(
         Modifier
             .fillMaxWidth()
-            .background(DesignTokens.Color.blueNight, RoundedCornerShape(DesignTokens.Radius.medium))
-            .border(
-                DesignTokens.Border.hairline,
-                DesignTokens.Color.ink,
-                RoundedCornerShape(DesignTokens.Radius.medium),
-            )
-            .clickable(enabled = enabled, onClick = onClick)
-            .padding(DesignTokens.Space.md),
+            .padding(bottom = 6.dp)
+            .solidRaised(18.dp, depth = 6.dp, border = 4.dp)
+            .background(DesignTokens.Color.ivory)
+            .padding(18.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(
-            title,
-            style = typeStyle(DesignTokens.Type.body, DesignTokens.Color.ivory),
-            modifier = Modifier.padding(end = DesignTokens.Space.md),
-        )
-        if (trailing != null) {
-            Text(trailing, style = typeStyle(DesignTokens.Type.answer, DesignTokens.Color.yellow))
+        Column(Modifier.weight(1f).padding(end = DesignTokens.Space.md)) {
+            Text(
+                title,
+                style = typeStyle(DesignTokens.Type.clubTo, DesignTokens.Color.ink)
+                    .copy(fontSize = 18.sp),
+            )
+            Text(
+                subtitle,
+                style = typeStyle(DesignTokens.Type.body, DesignTokens.Color.muted)
+                    .copy(fontSize = 13.sp),
+                modifier = Modifier.padding(top = 4.dp),
+            )
+        }
+        Box(
+            Modifier
+                .then(
+                    if (owned) {
+                        Modifier.background(DesignTokens.Color.green, CircleShape)
+                    } else {
+                        Modifier
+                            .padding(bottom = 6.dp)
+                            .solidRaised(16.dp, depth = 6.dp, border = 4.dp)
+                            .background(DesignTokens.Color.yellow)
+                    }
+                )
+                .clickable(enabled = enabled, onClick = onClick)
+                .padding(horizontal = 14.dp, vertical = 9.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                trailing,
+                style = typeStyle(DesignTokens.Type.clubTo, DesignTokens.Color.ink)
+                    .copy(fontSize = 15.sp),
+            )
         }
     }
 }

@@ -162,18 +162,21 @@ class GameViewModel(private val graph: AppGraph) : ViewModel() {
         val s = game.score()
         val total = game.questionsPerRound().toInt()
         val ratio = if (total == 0) 0f else correctCount.toFloat() / total
+        val stars = when {
+            ratio >= 0.9f -> 3
+            ratio >= 0.6f -> 2
+            ratio > 0f -> 1
+            else -> 0
+        }
         _recap.value = RecapUi(
-            won = correctCount > 0,
+            // Two stars is the win, as on iOS. Calling a single star a win
+            // meant one right answer out of ten reported "round won".
+            won = stars >= 2,
             points = s.points,
             correct = correctCount,
             total = total,
             bestStreak = s.bestStreak.toInt(),
-            stars = when {
-                ratio >= 0.9f -> 3
-                ratio >= 0.6f -> 2
-                ratio > 0f -> 1
-                else -> 0
-            },
+            stars = stars,
             missed = game.missed(),
         )
         _question.value = null
