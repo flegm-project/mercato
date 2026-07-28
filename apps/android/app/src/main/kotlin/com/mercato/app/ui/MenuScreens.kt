@@ -84,7 +84,7 @@ fun SplashScreen(onDone: () -> Unit) {
                 .width(172.dp)
                 .height(14.dp)
                 .solidRaised(7.dp, depth = 0.dp, border = 3.dp)  // iOS: 3, not 4
-                .background(DesignTokens.Color.ink.copy(alpha = 0.4f))
+                .background(DesignTokens.Color.ink.dim(DesignTokens.Opacity.splashTrack))
         ) {
             Box(
                 Modifier
@@ -153,7 +153,7 @@ fun OnboardingScreen(onDone: () -> Unit) {
             Spacer(Modifier.weight(1f))
             Text(
                 stringResource(R.string.obSkip).uppercase(),
-                style = typeStyle(DesignTokens.Type.skipLabel, Color.White.copy(alpha = 0.68f)),
+                style = typeStyle(DesignTokens.Type.skipLabel, Color.White.dim(DesignTokens.Opacity.textSoft)),
                 modifier = Modifier.clickable(onClick = onDone),
             )
         }
@@ -192,7 +192,7 @@ fun OnboardingScreen(onDone: () -> Unit) {
                     stringResource(body),
                     style = typeStyle(
                         DesignTokens.Type.body,
-                        DesignTokens.Color.ivory.copy(alpha = 0.85f),
+                        DesignTokens.Color.ivory.dim(DesignTokens.Opacity.textNear),
                     ),
                     textAlign = TextAlign.Center,
                 )
@@ -210,7 +210,7 @@ fun OnboardingScreen(onDone: () -> Unit) {
                         .height(10.dp)
                         .background(
                             if (i == pager.currentPage) DesignTokens.Color.yellow
-                            else Color.White.copy(alpha = 0.25f),
+                            else Color.White.dim(DesignTokens.Opacity.trackOff),
                             CircleShape,
                         )
                 )
@@ -301,7 +301,7 @@ fun ConsentScreen(graph: AppGraph, fromSettings: Boolean, onDone: () -> Unit) {
         ) { choose(false) }
         Text(
             stringResource(R.string.cnFoot),
-            style = typeStyle(DesignTokens.Type.body, DesignTokens.Color.ivory.copy(alpha = 0.7f)),
+            style = typeStyle(DesignTokens.Type.body, Color.White.dim(DesignTokens.Opacity.textFootnote)),
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center,
         )
@@ -375,12 +375,12 @@ fun ProfileScreen(graph: AppGraph, onPlayTab: () -> Unit, onSettings: () -> Unit
                 Modifier
                     .fillMaxWidth()
                     .background(
-                        DesignTokens.Color.ink.copy(alpha = 0.35f),
+                        DesignTokens.Color.ink.dim(DesignTokens.Opacity.row),
                         RoundedCornerShape(DesignTokens.Radius.medium),
                     )
                     .border(
                         2.dp,
-                        Color.White.copy(alpha = 0.12f),
+                        Color.White.dim(DesignTokens.Opacity.borderFaint),
                         RoundedCornerShape(DesignTokens.Radius.medium),
                     )
                     .padding(DesignTokens.Space.xl),
@@ -397,7 +397,7 @@ fun ProfileScreen(graph: AppGraph, onPlayTab: () -> Unit, onSettings: () -> Unit
                     // Soft ivory at 72%, readable on the dark card (iOS parity).
                     style = typeStyle(
                         DesignTokens.Type.body,
-                        DesignTokens.Color.ivory.copy(alpha = 0.72f),
+                        DesignTokens.Color.ivory.dim(DesignTokens.Opacity.textSubtle),
                     ),
                     textAlign = TextAlign.Center,
                 )
@@ -429,12 +429,12 @@ private fun StatRow(label: Int, value: String) {
             .fillMaxWidth()
             .padding(vertical = 4.dp)
             .background(
-                DesignTokens.Color.ink.copy(alpha = 0.35f),
+                DesignTokens.Color.ink.dim(DesignTokens.Opacity.row),
                 RoundedCornerShape(DesignTokens.Radius.medium),
             )
             .border(
                 2.dp,
-                Color.White.copy(alpha = 0.12f),
+                Color.White.dim(DesignTokens.Opacity.borderFaint),
                 RoundedCornerShape(DesignTokens.Radius.medium),
             )
             .padding(DesignTokens.Space.md),
@@ -482,10 +482,10 @@ fun SettingsScreen(
                     .semantics { contentDescription = backLabel }
                     .size(38.dp)
                     .background(
-                        DesignTokens.Color.ink.copy(alpha = 0.45f),
-                        RoundedCornerShape(12.dp),
+                        DesignTokens.Color.ink.dim(DesignTokens.Opacity.control),
+                        RoundedCornerShape(DesignTokens.Radius.control),
                     )
-                    .border(4.dp, DesignTokens.Color.ink, RoundedCornerShape(12.dp))
+                    .border(4.dp, DesignTokens.Color.ink, RoundedCornerShape(DesignTokens.Radius.control))
                     .clickable(onClick = onBack),
                 contentAlignment = Alignment.Center,
             ) {
@@ -563,7 +563,7 @@ fun SettingsScreen(
             "MERCATO ${BuildConfig.VERSION_NAME}",
             style = typeStyle(
                 DesignTokens.Type.technical,
-                DesignTokens.Color.ivory.copy(alpha = 0.5f),
+                DesignTokens.Color.ivory.dim(DesignTokens.Opacity.textFaintest),
                 11.sp,
                 null,
             ),
@@ -590,7 +590,7 @@ private fun PurchaseRow(
         Modifier
             .fillMaxWidth()
             .padding(bottom = 6.dp)
-            .solidRaised(18.dp, depth = 6.dp, border = 4.dp)
+            .solidRaised(DesignTokens.Radius.medium, depth = 6.dp, border = 4.dp)
             .background(DesignTokens.Color.ivory)
             .padding(18.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -622,7 +622,7 @@ private fun PurchaseRow(
                     } else {
                         Modifier
                             .padding(bottom = 6.dp)
-                            .solidRaised(16.dp, depth = 6.dp, border = 4.dp)
+                            .solidRaised(DesignTokens.Radius.row, depth = 6.dp, border = 4.dp)
                             .background(DesignTokens.Color.yellow)
                     }
                 )
@@ -648,7 +648,7 @@ private fun ToggleRow(label: Int, checked: Boolean, onChange: (Boolean) -> Unit)
         Modifier
             .fillMaxWidth()
             .padding(bottom = 6.dp)
-            .solidRaised(18.dp, depth = 6.dp, border = 4.dp)
+            .solidRaised(DesignTokens.Radius.medium, depth = 6.dp, border = 4.dp)
             .background(DesignTokens.Color.ivory)
             .padding(horizontal = 16.dp, vertical = 15.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -670,13 +670,13 @@ private fun LinkRow(
     external: Boolean = false,
     onClick: (() -> Unit)?,
 ) {
-    val shape = RoundedCornerShape(16.dp)
+    val shape = RoundedCornerShape(DesignTokens.Radius.row)
     Row(
         Modifier
             .fillMaxWidth()
             .padding(bottom = 9.dp)
-            .background(DesignTokens.Color.ink.copy(alpha = 0.35f), shape)
-            .border(3.dp, Color.White.copy(alpha = 0.16f), shape)
+            .background(DesignTokens.Color.ink.dim(DesignTokens.Opacity.row), shape)
+            .border(3.dp, Color.White.dim(DesignTokens.Opacity.borderRow), shape)
             .clip(shape)
             .let { if (onClick != null) it.clickable(onClick = onClick) else it }
             .padding(horizontal = 16.dp, vertical = 14.dp),
@@ -691,7 +691,7 @@ private fun LinkRow(
                     value,
                     style = typeStyle(
                         DesignTokens.Type.technical,
-                        Color.White.copy(alpha = 0.75f),
+                        Color.White.dim(DesignTokens.Opacity.textQuiet),
                         11.sp,
                         null,
                     ),
@@ -700,7 +700,7 @@ private fun LinkRow(
             if (onClick != null) {
                 Text(
                     if (external) " ↗" else " ›",
-                    style = typeStyle(DesignTokens.Type.label, Color.White.copy(alpha = 0.75f)),
+                    style = typeStyle(DesignTokens.Type.label, Color.White.dim(DesignTokens.Opacity.textQuiet)),
                 )
             }
         }

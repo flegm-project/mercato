@@ -33,7 +33,7 @@ fun OfflineScreen(onRetry: () -> Unit) {
             Modifier
                 .align(Alignment.CenterHorizontally)
                 .size(92.dp)
-                .solidRaised(radius = 22.dp, depth = 0.dp)
+                .solidRaised(radius = DesignTokens.Radius.large, depth = 0.dp)
                 .adHatch()
         )
         Gap(DesignTokens.Space.xl)
@@ -46,7 +46,7 @@ fun OfflineScreen(onRetry: () -> Unit) {
         Gap(DesignTokens.Space.sm)
         Text(
             stringResource(R.string.offB),
-            style = typeStyle(DesignTokens.Type.body, DesignTokens.Color.ivory.copy(alpha = 0.85f)),
+            style = typeStyle(DesignTokens.Type.body, DesignTokens.Color.ivory.dim(DesignTokens.Opacity.textNear)),
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center,
         )
@@ -54,7 +54,7 @@ fun OfflineScreen(onRetry: () -> Unit) {
         InkButton(
             stringResource(R.string.retry), ButtonStyle.Primary,
             fontSize = 17.sp, fontWeight = 900, tracking = -0.03f,
-            depth = 9.dp, radius = 20.dp, onClick = onRetry,
+            depth = 9.dp, radius = DesignTokens.Radius.button, onClick = onRetry,
         )
         Spacer(Modifier.weight(1.2f))
     }

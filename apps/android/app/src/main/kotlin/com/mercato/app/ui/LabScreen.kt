@@ -73,10 +73,10 @@ fun LabScreen(graph: AppGraph, onBack: () -> Unit) {
                     .semantics { contentDescription = backLabel }
                     .size(38.dp)
                     .background(
-                        DesignTokens.Color.ink.copy(alpha = 0.45f),
-                        RoundedCornerShape(12.dp),
+                        DesignTokens.Color.ink.dim(DesignTokens.Opacity.control),
+                        RoundedCornerShape(DesignTokens.Radius.control),
                     )
-                    .border(4.dp, DesignTokens.Color.ink, RoundedCornerShape(12.dp))
+                    .border(4.dp, DesignTokens.Color.ink, RoundedCornerShape(DesignTokens.Radius.control))
                     .clickable(onClick = onBack),
                 contentAlignment = Alignment.Center,
             ) {
@@ -101,7 +101,7 @@ fun LabScreen(graph: AppGraph, onBack: () -> Unit) {
             stringResource(R.string.labN),
             style = typeStyle(
                 DesignTokens.Type.body,
-                DesignTokens.Color.ivory.copy(alpha = 0.7f),
+                DesignTokens.Color.ivory.dim(DesignTokens.Opacity.textMuted),
                 13.sp,
                 null,
             ),
@@ -153,7 +153,7 @@ fun LabScreen(graph: AppGraph, onBack: () -> Unit) {
                 Modifier
                     // iOS uses ink at 40% in a capsule (Lab.swift:118), not an
                     // opaque blueNight rounded rect.
-                    .background(DesignTokens.Color.ink.copy(alpha = 0.4f), CircleShape)
+                    .background(DesignTokens.Color.ink.dim(DesignTokens.Opacity.chip), CircleShape)
                     .padding(horizontal = 12.dp, vertical = 6.dp),
             ) {
                 Text(
@@ -175,7 +175,7 @@ fun LabScreen(graph: AppGraph, onBack: () -> Unit) {
                     (o.distance?.let { " ($it)" } ?: ""),
                 style = typeStyle(
                     DesignTokens.Type.technical,
-                    DesignTokens.Color.ivory.copy(alpha = 0.9f),
+                    DesignTokens.Color.ivory.dim(DesignTokens.Opacity.textNearly),
                     11.sp,
                     null,
                 ),
@@ -187,7 +187,7 @@ fun LabScreen(graph: AppGraph, onBack: () -> Unit) {
                         line,
                         style = typeStyle(
                             DesignTokens.Type.technical,
-                            DesignTokens.Color.ivory.copy(alpha = 0.9f),
+                            DesignTokens.Color.ivory.dim(DesignTokens.Opacity.textNearly),
                         ),
                         modifier = Modifier.padding(vertical = 2.dp),
                     )
@@ -213,7 +213,7 @@ fun LabScreen(graph: AppGraph, onBack: () -> Unit) {
             stringResource(R.string.ambN),
             style = typeStyle(
                 DesignTokens.Type.labCaption,
-                DesignTokens.Color.ivory.copy(alpha = 0.6f),
+                DesignTokens.Color.ivory.dim(DesignTokens.Opacity.textFaint),
             ),
         )
         Gap(DesignTokens.Space.xs)
@@ -224,7 +224,7 @@ fun LabScreen(graph: AppGraph, onBack: () -> Unit) {
                     .padding(vertical = 3.dp)
                     .background(
                         DesignTokens.Color.blueNight,
-                        RoundedCornerShape(DesignTokens.Radius.small),
+                        RoundedCornerShape(DesignTokens.Radius.xsmall),
                     )
                     .padding(DesignTokens.Space.sm),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -237,7 +237,7 @@ fun LabScreen(graph: AppGraph, onBack: () -> Unit) {
                     c.players.joinToString(", "),
                     style = typeStyle(
                         DesignTokens.Type.body,
-                        DesignTokens.Color.ivory.copy(alpha = 0.8f),
+                        DesignTokens.Color.ivory.dim(DesignTokens.Opacity.textQuiet),
                     ),
                     modifier = Modifier.padding(start = DesignTokens.Space.md),
                 )
@@ -255,7 +255,7 @@ private fun LabField(value: String, onChange: (String) -> Unit, placeholder: Str
     Box(
         Modifier
             .fillMaxWidth()
-            .background(DesignTokens.Color.ivory, RoundedCornerShape(12.dp))
+            .background(DesignTokens.Color.ivory, RoundedCornerShape(DesignTokens.Radius.control))
             .padding(horizontal = 14.dp, vertical = 12.dp)
     ) {
         if (value.isEmpty()) {
@@ -281,7 +281,10 @@ private fun LabPanel(content: @Composable androidx.compose.foundation.layout.Col
     Column(
         Modifier
             .fillMaxWidth()
-            .background(DesignTokens.Color.blueNight, RoundedCornerShape(DesignTokens.Radius.medium))
+            .background(
+                DesignTokens.Color.ink.dim(DesignTokens.Opacity.panel),
+                RoundedCornerShape(DesignTokens.Radius.xsmall),
+            )
             .padding(DesignTokens.Space.md),
         content = content,
     )

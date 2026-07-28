@@ -235,7 +235,7 @@ fun InkButton(
         ButtonStyle.Ghost -> Color.Transparent to Color.White
     }
     val borderColor =
-        if (style == ButtonStyle.Ghost) Color.White.copy(alpha = 0.24f) else DesignTokens.Color.ink
+        if (style == ButtonStyle.Ghost) Color.White.dim(DesignTokens.Opacity.borderRow) else DesignTokens.Color.ink
     val borderWidth = if (style == ButtonStyle.Ghost) 3.dp else DesignTokens.Border.heavy
 
     // iOS dims a disabled button to 40% (DesignSystem.swift:562). Gating only
@@ -294,8 +294,8 @@ fun AnswerButton(
         AnswerState.Idle -> DesignTokens.Color.blueNight to Color.White
         AnswerState.Correct -> DesignTokens.Color.green to DesignTokens.Color.ink
         AnswerState.Wrong -> DesignTokens.Color.coral to Color.White
-        AnswerState.Dimmed -> DesignTokens.Color.blueNight.copy(alpha = 0.4f) to
-            Color.White.copy(alpha = 0.4f)
+        AnswerState.Dimmed -> DesignTokens.Color.blueNight.dim(DesignTokens.Opacity.chip) to
+            Color.White.dim(DesignTokens.Opacity.chip)
     }
     // Same metrics as the Home mode cards, matching iOS: an answer reads as the
     // same kind of object as a mode.
@@ -332,7 +332,7 @@ fun ProgressPips(results: List<Boolean?>, liveIndex: Int, modifier: Modifier = M
                 r == true -> DesignTokens.Color.green
                 r == false -> DesignTokens.Color.coral
                 i == liveIndex -> DesignTokens.Color.yellow
-                else -> DesignTokens.Color.ink.copy(alpha = 0.45f)
+                else -> DesignTokens.Color.ink.dim(DesignTokens.Opacity.control)
             }
             Box(
                 Modifier
@@ -355,7 +355,7 @@ fun LivesRow(livesLeft: Int, modifier: Modifier = Modifier, total: Int = 3) {
                     .size(13.dp)
                     .background(
                         if (i < livesLeft) DesignTokens.Color.coral
-                        else DesignTokens.Color.ink.copy(alpha = 0.45f),
+                        else DesignTokens.Color.ink.dim(DesignTokens.Opacity.control),
                         CircleShape,
                     )
                     .border(3.dp, DesignTokens.Color.ink, CircleShape)
@@ -443,12 +443,12 @@ private fun ScoreBump(correct: Boolean, bumpToken: Int) = key(bumpToken) {
 @Composable
 fun MercatoToggle(checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
     val track =
-        if (checked) DesignTokens.Color.green else DesignTokens.Color.ink.copy(alpha = 0.25f)
+        if (checked) DesignTokens.Color.green else DesignTokens.Color.ink.dim(DesignTokens.Opacity.trackOff)
     Box(
         Modifier
             .size(width = 52.dp, height = 30.dp)
-            .background(track, RoundedCornerShape(15.dp))
-            .border(3.dp, DesignTokens.Color.ink, RoundedCornerShape(15.dp))
+            .background(track, RoundedCornerShape(DesignTokens.Radius.tile))
+            .border(3.dp, DesignTokens.Color.ink, RoundedCornerShape(DesignTokens.Radius.tile))
             .toggleable(
                 value = checked,
                 role = Role.Switch,
@@ -496,7 +496,7 @@ fun MercatoTabBar(
 
 @Composable
 private fun RowScope.TabCell(label: String, active: Boolean, onClick: () -> Unit) {
-    val shape = RoundedCornerShape(14.dp)
+    val shape = RoundedCornerShape(DesignTokens.Radius.small)
     Box(
         Modifier
             .weight(1f)
@@ -511,7 +511,7 @@ private fun RowScope.TabCell(label: String, active: Boolean, onClick: () -> Unit
             style = typeStyle(
                 DesignTokens.Type.tabLabel,
                 if (active) DesignTokens.Color.ink
-                else DesignTokens.Color.ivory.copy(alpha = 0.7f),
+                else DesignTokens.Color.ivory.dim(DesignTokens.Opacity.textMuted),
             ),
         )
     }
@@ -543,11 +543,18 @@ fun ScreenColumn(
 fun CapsLabel(
     text: String,
     modifier: Modifier = Modifier,
-    color: Color = Color.White.copy(alpha = 0.6f),
+    color: Color = DesignTokens.Color.ivory.dim(DesignTokens.Opacity.textCaps),
     style: DesignTokens.TypeStyle = DesignTokens.Type.label,
 ) {
     Text(text.uppercase(), style = typeStyle(style, color), modifier = modifier)
 }
+
+/**
+ * Apply an opacity token. The generated Kotlin states them as Double, since
+ * tokens.json does, while Compose alpha is a Float; this keeps the conversion
+ * in one place instead of a .toFloat() at every call site.
+ */
+fun Color.dim(opacity: Double): Color = copy(alpha = opacity.toFloat())
 
 /** Vertical spacer shorthand. */
 @Composable

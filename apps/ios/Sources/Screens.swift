@@ -35,7 +35,7 @@ struct SplashView: View {
             VStack(spacing: 34) {
                 Wordmark()
                 ZStack(alignment: .leading) {
-                    Capsule().fill(DesignTokens.Color.ink.opacity(0.4))
+                    Capsule().fill(DesignTokens.Color.ink.opacity(DesignTokens.Opacity.chip))
                     GeometryReader { geo in
                         Capsule()
                             .fill(DesignTokens.Color.yellow)
@@ -165,7 +165,7 @@ struct RecapView: View {
                                 .foregroundStyle(
                                     index < stars
                                         ? DesignTokens.Color.yellow
-                                        : Color.white.opacity(0.15)
+                                        : Color.white.opacity(DesignTokens.Opacity.starOff)
                                 )
                                 .shadow(color: DesignTokens.Color.ink, radius: 0, x: 4, y: 4)
                         }
@@ -182,7 +182,7 @@ struct RecapView: View {
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 17)
                                 .background(DesignTokens.Color.yellow)
-                                .solidRaised(radius: 20, depth: 8)
+                                .solidRaised(radius: DesignTokens.Radius.button, depth: 8)
                         }
                         .buttonStyle(.plain)
 
@@ -194,11 +194,11 @@ struct RecapView: View {
                                 .foregroundStyle(DesignTokens.Color.ivory)
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 16)
-                                .background(DesignTokens.Color.ink.opacity(0.35))
-                                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                                .background(DesignTokens.Color.ink.opacity(DesignTokens.Opacity.row))
+                                .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.medium, style: .continuous))
                                 .overlay(
-                                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                        .strokeBorder(Color.white.opacity(0.18), lineWidth: 2)
+                                    RoundedRectangle(cornerRadius: DesignTokens.Radius.medium, style: .continuous)
+                                        .strokeBorder(Color.white.opacity(DesignTokens.Opacity.borderPanel), lineWidth: 2)
                                 )
                         }
                         .buttonStyle(.plain)
@@ -251,8 +251,8 @@ struct RecapView: View {
         }
         .padding(13)
         .frame(maxWidth: .infinity)
-        .background(DesignTokens.Color.ink.opacity(0.07))
-        .clipShape(RoundedRectangle(cornerRadius: 15, style: .continuous))
+        .background(DesignTokens.Color.ink.opacity(DesignTokens.Opacity.surfaceTint))
+        .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.tile, style: .continuous))
     }
 
 }
@@ -274,7 +274,7 @@ struct OnboardingView: View {
                     Spacer()
                     Button(L("obSkip").uppercased(), action: onDone)
                         .typeStyle(TypeToken.skipLabel)
-                        .foregroundStyle(Color.white.opacity(0.68))
+                        .foregroundStyle(Color.white.opacity(DesignTokens.Opacity.textSoft))
                         .padding(8)
                 }
                 .frame(height: 38)
@@ -289,7 +289,7 @@ struct OnboardingView: View {
                             .foregroundStyle(DesignTokens.Color.ivory)
                         Text(L("ob.\(step).b"))
                             .typeStyle(TypeToken.bodyLarge)
-                            .foregroundStyle(Color.white.opacity(0.68))
+                            .foregroundStyle(Color.white.opacity(DesignTokens.Opacity.textSoft))
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -300,7 +300,7 @@ struct OnboardingView: View {
                 HStack(spacing: 8) {
                     ForEach(0..<steps, id: \.self) { index in
                         Capsule()
-                            .fill(index == step ? DesignTokens.Color.yellow : Color.white.opacity(0.25))
+                            .fill(index == step ? DesignTokens.Color.yellow : Color.white.opacity(DesignTokens.Opacity.trackOff))
                             .frame(width: index == step ? 26 : 10, height: 10)
                     }
                 }
@@ -315,7 +315,7 @@ struct OnboardingView: View {
                         .frame(maxWidth: .infinity)
                         .padding(20)
                         .background(DesignTokens.Color.yellow)
-                        .solidRaised(radius: 22, depth: 9)
+                        .solidRaised(radius: DesignTokens.Radius.large, depth: 9)
                 }
                 .buttonStyle(.plain)
             }
@@ -408,7 +408,7 @@ struct ConsentView: View {
                             .frame(maxWidth: .infinity)
                             .padding(19)
                             .background(DesignTokens.Color.yellow)
-                            .solidRaised(radius: 22, depth: 9)
+                            .solidRaised(radius: DesignTokens.Radius.large, depth: 9)
                     }
                     .buttonStyle(.plain)
 
@@ -421,13 +421,13 @@ struct ConsentView: View {
                             .frame(maxWidth: .infinity)
                             .padding(17)
                             .background(DesignTokens.Color.ivory)
-                            .solidRaised(radius: 22, depth: 9)
+                            .solidRaised(radius: DesignTokens.Radius.large, depth: 9)
                     }
                     .buttonStyle(.plain)
 
                     Text(L("cnFoot"))
                         .typeStyle(TypeToken.footnote)
-                        .foregroundStyle(Color.white.opacity(0.56))
+                        .foregroundStyle(Color.white.opacity(DesignTokens.Opacity.textFootnote))
                         .padding(.top, 4)
                 }
             }
@@ -448,7 +448,7 @@ struct QuitDialog: View {
 
     var body: some View {
         ZStack {
-            Color(red: 0.024, green: 0.035, blue: 0.118).opacity(0.78)
+            Color(red: 0.024, green: 0.035, blue: 0.118).opacity(DesignTokens.Opacity.scrim)
                 .ignoresSafeArea()
                 .onTapGesture(perform: onStay)
 
@@ -469,7 +469,7 @@ struct QuitDialog: View {
                             .frame(maxWidth: .infinity)
                             .padding(16)
                             .background(DesignTokens.Color.yellow)
-                            .solidRaised(radius: 20, depth: 8)
+                            .solidRaised(radius: DesignTokens.Radius.button, depth: 8)
                     }
                     .buttonStyle(.plain)
 
@@ -480,7 +480,7 @@ struct QuitDialog: View {
                             .frame(maxWidth: .infinity)
                             .padding(15)
                             .background(DesignTokens.Color.coral)
-                            .solidRaised(radius: 20, depth: 8)
+                            .solidRaised(radius: DesignTokens.Radius.button, depth: 8)
                     }
                     .buttonStyle(.plain)
                 }
@@ -525,8 +525,8 @@ struct SettingsView: View {
                             .font(.system(size: 20, weight: .black))
                             .foregroundStyle(.white)
                             .frame(width: 38, height: 38)
-                            .background(DesignTokens.Color.ink.opacity(0.45))
-                            .inkOutlined(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                            .background(DesignTokens.Color.ink.opacity(DesignTokens.Opacity.control))
+                            .inkOutlined(RoundedRectangle(cornerRadius: DesignTokens.Radius.control, style: .continuous))
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Back")
@@ -573,7 +573,7 @@ struct SettingsView: View {
 
                 Text("\(L("version")) \(AppLinks.shortVersion)")
                     .typeStyle(TypeToken.monoPlain)
-                    .foregroundStyle(Color.white.opacity(0.5))
+                    .foregroundStyle(Color.white.opacity(DesignTokens.Opacity.textFaintest))
                     .frame(maxWidth: .infinity)
                     .padding(.top, 12)
             }
@@ -610,7 +610,7 @@ struct SettingsView: View {
                             .padding(.horizontal, 16)
                             .padding(.vertical, 11)
                             .background(DesignTokens.Color.yellow)
-                            .solidRaised(radius: 16, border: 4, depth: 6)
+                            .solidRaised(radius: DesignTokens.Radius.row, border: 4, depth: 6)
                     }
                     .contentShape(Rectangle())
                 }
@@ -640,7 +640,7 @@ struct SettingsView: View {
         .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(DesignTokens.Color.ivory)
-        .solidRaised(radius: 18, border: 4, depth: 6)
+        .solidRaised(radius: DesignTokens.Radius.medium, border: 4, depth: 6)
         .alert(L("restoreToast"), isPresented: $store.restoreFoundNothing) {
             Button("OK", role: .cancel) {}
         }
@@ -681,7 +681,7 @@ struct SettingsView: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 15)
             .background(DesignTokens.Color.ivory)
-            .solidRaised(radius: 18, border: 4, depth: 6)
+            .solidRaised(radius: DesignTokens.Radius.medium, border: 4, depth: 6)
         }
         .buttonStyle(.plain)
     }
@@ -698,16 +698,16 @@ struct SettingsView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                 Text(value)
                     .typeStyle(TypeToken.monoPlain)
-                    .foregroundStyle(Color.white.opacity(0.75))
+                    .foregroundStyle(Color.white.opacity(DesignTokens.Opacity.textQuiet))
             }
             .foregroundStyle(.white)
             .padding(.horizontal, 16)
             .padding(.vertical, 14)
-            .background(DesignTokens.Color.ink.opacity(0.35))
-            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .background(DesignTokens.Color.ink.opacity(DesignTokens.Opacity.row))
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.row, style: .continuous))
             .overlay(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .strokeBorder(Color.white.opacity(0.16), lineWidth: 3)
+                RoundedRectangle(cornerRadius: DesignTokens.Radius.row, style: .continuous)
+                    .strokeBorder(Color.white.opacity(DesignTokens.Opacity.borderRow), lineWidth: 3)
             )
         }
         .buttonStyle(.plain)
@@ -724,7 +724,7 @@ struct SwitchTrack: View {
     var body: some View {
         ZStack(alignment: isOn ? .trailing : .leading) {
             Capsule()
-                .fill(isOn ? DesignTokens.Color.green : DesignTokens.Color.ink.opacity(0.25))
+                .fill(isOn ? DesignTokens.Color.green : DesignTokens.Color.ink.opacity(DesignTokens.Opacity.trackOff))
             Circle()
                 .fill(DesignTokens.Color.ivory)
                 .overlay(Circle().strokeBorder(DesignTokens.Color.ink, lineWidth: 3))
@@ -752,8 +752,8 @@ struct OfflineView: View {
                 Spacer()
                 DS.adHatch
                     .frame(width: 92, height: 92)
-                    .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-                    .inkOutlined(RoundedRectangle(cornerRadius: 22, style: .continuous))
+                    .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.large, style: .continuous))
+                    .inkOutlined(RoundedRectangle(cornerRadius: DesignTokens.Radius.large, style: .continuous))
 
                 VStack(spacing: 12) {
                     Text(L("offT"))
@@ -762,7 +762,7 @@ struct OfflineView: View {
                         .multilineTextAlignment(.center)
                     Text(L("offB"))
                         .typeStyle(TypeToken.bodySoft)
-                        .foregroundStyle(DesignTokens.Color.ivory.opacity(0.7))
+                        .foregroundStyle(DesignTokens.Color.ivory.opacity(DesignTokens.Opacity.textMuted))
                         .multilineTextAlignment(.center)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -776,7 +776,7 @@ struct OfflineView: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 17)
                         .background(DesignTokens.Color.yellow)
-                        .solidRaised(radius: 20, depth: 8)
+                        .solidRaised(radius: DesignTokens.Radius.button, depth: 8)
                 }
                 .buttonStyle(.plain)
             }

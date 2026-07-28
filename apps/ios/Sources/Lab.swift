@@ -52,8 +52,8 @@ struct LabView: View {
                         .font(.system(size: 20, weight: .black))
                         .foregroundStyle(.white)
                         .frame(width: 38, height: 38)
-                        .background(DesignTokens.Color.ink.opacity(0.45))
-                        .inkOutlined(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                        .background(DesignTokens.Color.ink.opacity(DesignTokens.Opacity.control))
+                        .inkOutlined(RoundedRectangle(cornerRadius: DesignTokens.Radius.control, style: .continuous))
                 }
                 .buttonStyle(.plain)
                 Text(L("labT"))
@@ -62,7 +62,7 @@ struct LabView: View {
             }
             Text(L("labN"))
                 .typeStyle(TypeToken.labNote)
-                .foregroundStyle(DesignTokens.Color.ivory.opacity(0.7))
+                .foregroundStyle(DesignTokens.Color.ivory.opacity(DesignTokens.Opacity.textMuted))
                 .fixedSize(horizontal: false, vertical: true)
         }
     }
@@ -91,8 +91,8 @@ struct LabView: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 10)
-                            .background(DesignTokens.Color.ink.opacity(0.3))
-                            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                            .background(DesignTokens.Color.ink.opacity(DesignTokens.Opacity.panel))
+                            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.xsmall, style: .continuous))
                     }
                     .buttonStyle(.plain)
                 }
@@ -116,25 +116,25 @@ struct LabView: View {
                 .foregroundStyle(verdictColor(o.verdict))
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
-                .background(DesignTokens.Color.ink.opacity(0.4))
+                .background(DesignTokens.Color.ink.opacity(DesignTokens.Opacity.chip))
                 .clipShape(Capsule())
             Text("\(L("labTh")): \(o.threshold)")
                 .typeStyle(TypeToken.monoPlain)
                 .foregroundStyle(DesignTokens.Color.ivory)
             Text("\(L("kBest")): \(o.bestMatch ?? L("rNoneL"))" + (o.distance.map { " (\($0))" } ?? ""))
                 .typeStyle(TypeToken.monoPlain)
-                .foregroundStyle(DesignTokens.Color.ivory.opacity(0.9))
+                .foregroundStyle(DesignTokens.Color.ivory.opacity(DesignTokens.Opacity.textNearly))
             VStack(alignment: .leading, spacing: 3) {
                 ForEach(Array(o.trace.enumerated()), id: \.offset) { _, line in
                     Text(line)
                         .typeStyle(TypeToken.monoPlain)
-                        .foregroundStyle(DesignTokens.Color.ivory.opacity(0.85))
+                        .foregroundStyle(DesignTokens.Color.ivory.opacity(DesignTokens.Opacity.textNear))
                 }
             }
             .padding(12)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(DesignTokens.Color.ink.opacity(0.3))
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .background(DesignTokens.Color.ink.opacity(DesignTokens.Opacity.panel))
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.control, style: .continuous))
         }
     }
 
@@ -156,7 +156,7 @@ struct LabView: View {
             caps(L("ambT"))
             Text(L("ambN"))
                 .typeStyle(TypeToken.labCaption)
-                .foregroundStyle(DesignTokens.Color.ivory.opacity(0.6))
+                .foregroundStyle(DesignTokens.Color.ivory.opacity(DesignTokens.Opacity.textFaint))
                 .fixedSize(horizontal: false, vertical: true)
             ForEach(Array(collisions.prefix(30).enumerated()), id: \.offset) { _, c in
                 VStack(alignment: .leading, spacing: 2) {
@@ -165,12 +165,12 @@ struct LabView: View {
                         .foregroundStyle(DesignTokens.Color.yellow)
                     Text(c.players.joined(separator: ", "))
                         .typeStyle(TypeToken.labFine)
-                        .foregroundStyle(DesignTokens.Color.ivory.opacity(0.75))
+                        .foregroundStyle(DesignTokens.Color.ivory.opacity(DesignTokens.Opacity.textQuiet))
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(10)
-                .background(DesignTokens.Color.ink.opacity(0.3))
-                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                .background(DesignTokens.Color.ink.opacity(DesignTokens.Opacity.panel))
+                .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.xsmall, style: .continuous))
             }
         }
     }
@@ -204,7 +204,7 @@ struct LabView: View {
     private func caps(_ text: String) -> some View {
         Text(text.uppercased())
             .typeStyle(TypeToken.labCaps)
-            .foregroundStyle(DesignTokens.Color.ivory.opacity(0.55))
+            .foregroundStyle(DesignTokens.Color.ivory.opacity(DesignTokens.Opacity.textCaps))
     }
 
     private func labField(_ placeholder: String, text: Binding<String>) -> some View {
@@ -216,7 +216,7 @@ struct LabView: View {
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
             .background(DesignTokens.Color.ivory)
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.control, style: .continuous))
     }
 
     private func statLine(_ label: String, _ value: UInt32) -> some View {
@@ -231,8 +231,8 @@ struct LabView: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 9)
-        .background(DesignTokens.Color.ink.opacity(0.3))
-        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .background(DesignTokens.Color.ink.opacity(DesignTokens.Opacity.panel))
+        .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.xsmall, style: .continuous))
     }
 }
 #endif

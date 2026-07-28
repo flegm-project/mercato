@@ -44,7 +44,9 @@ const AND_FILES = [
 // inherits from a token reads as "missing on Android" and buries the real
 // drift under a hundred false positives.
 const TOKENS = JSON.parse(fs.readFileSync(path.join(ROOT, "design/tokens.json"), "utf8"));
+const OPACITY = TOKENS.opacity;
 const camel = (k) => k.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+const unCamel = (k) => k.replace(/[A-Z]/g, (c) => "-" + c.toLowerCase());
 const TYPE = Object.fromEntries(Object.entries(TOKENS.type).map(([k, v]) => [camel(k), v]));
 const RADIUS = TOKENS.radius;
 
@@ -109,6 +111,7 @@ const IOS_MATCHERS = [
   { kind: "radius", re: /solidRaised\(radius:\s*([\d.]+)/g, map: (m) => +m[1] },
   { kind: "depth", re: /solidRaised(?:Capsule)?\((?:radius:[^,]+,\s*)?depth:\s*([\d.]+)/g, map: (m) => +m[1] },
   { kind: "opacity", re: /\.opacity\(\s*([\d.]+)\s*\)/g, map: (m) => +m[1] },
+  { kind: "opacity", re: /DesignTokens\.Opacity\.(\w+)/g, map: (m) => OPACITY[unCamel(m[1])] ?? null },
   // DesignTokens.Radius.card -> 26
   {
     kind: "radius",
@@ -160,6 +163,7 @@ const KT_MATCHERS = [
   { kind: "radius", re: /radius\s*=\s*([\d.]+)\.dp/g, map: (m) => +m[1] },
   { kind: "depth", re: /depth(?:\s*:\s*Dp)?\s*=\s*([\d.]+)\.dp/g, map: (m) => +m[1] },
   { kind: "opacity", re: /alpha\s*=\s*([\d.]+)f/g, map: (m) => +m[1] },
+  { kind: "opacity", re: /DesignTokens\.Opacity\.(\w+)/g, map: (m) => OPACITY[unCamel(m[1])] ?? null },
   { kind: "radius", re: /DesignTokens\.Radius\.(\w+)/g, map: (m) => RADIUS[m[1]] ?? null },
 ];
 

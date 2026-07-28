@@ -16,11 +16,11 @@ struct MercatoTabBar: View {
                         .foregroundStyle(
                             index == selected
                                 ? DesignTokens.Color.ink
-                                : DesignTokens.Color.ivory.opacity(0.7)
+                                : DesignTokens.Color.ivory.opacity(DesignTokens.Opacity.textMuted)
                         )
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .background(index == selected ? DesignTokens.Color.yellow : Color.clear)
-                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                        .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.small, style: .continuous))
                 }
                 .buttonStyle(.plain)
             }
@@ -82,7 +82,7 @@ struct ProfileView: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
                         .background(DesignTokens.Color.ivory)
-                        .solidRaised(radius: 18, border: 4, depth: 6)
+                        .solidRaised(radius: DesignTokens.Radius.medium, border: 4, depth: 6)
                 }
                 .buttonStyle(.plain)
                 .padding(.top, 20)
@@ -112,18 +112,18 @@ struct ProfileView: View {
                 .typeStyle(TypeToken.bodyMid)
                 // muted is far too dark on this ink card; a soft ivory keeps the
                 // body clearly legible while staying secondary to the title.
-                .foregroundStyle(DesignTokens.Color.ivory.opacity(0.72))
+                .foregroundStyle(DesignTokens.Color.ivory.opacity(DesignTokens.Opacity.textSubtle))
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 18)
         .padding(.vertical, 34)
-        .background(DesignTokens.Color.ink.opacity(0.35))
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .background(DesignTokens.Color.ink.opacity(DesignTokens.Opacity.row))
+        .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.row, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .strokeBorder(Color.white.opacity(0.12), lineWidth: 2)
+            RoundedRectangle(cornerRadius: DesignTokens.Radius.row, style: .continuous)
+                .strokeBorder(Color.white.opacity(DesignTokens.Opacity.borderFaint), lineWidth: 2)
         )
     }
 
@@ -139,11 +139,11 @@ struct ProfileView: View {
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 20)
-        .background(DesignTokens.Color.ink.opacity(0.35))
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .background(DesignTokens.Color.ink.opacity(DesignTokens.Opacity.row))
+        .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.row, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .strokeBorder(Color.white.opacity(0.12), lineWidth: 2)
+            RoundedRectangle(cornerRadius: DesignTokens.Radius.row, style: .continuous)
+                .strokeBorder(Color.white.opacity(DesignTokens.Opacity.borderFaint), lineWidth: 2)
         )
     }
 }

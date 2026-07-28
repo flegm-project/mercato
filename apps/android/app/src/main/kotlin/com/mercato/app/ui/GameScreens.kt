@@ -107,10 +107,10 @@ fun GameScreen(
                     .semantics { contentDescription = closeLabel }
                     .size(38.dp)
                     .background(
-                        DesignTokens.Color.ink.copy(alpha = 0.45f),
-                        RoundedCornerShape(12.dp),
+                        DesignTokens.Color.ink.dim(DesignTokens.Opacity.control),
+                        RoundedCornerShape(DesignTokens.Radius.control),
                     )
-                    .border(4.dp, DesignTokens.Color.ink, RoundedCornerShape(12.dp))
+                    .border(4.dp, DesignTokens.Color.ink, RoundedCornerShape(DesignTokens.Radius.control))
                     .clickable { quitAsked = true },
                 contentAlignment = Alignment.Center,
             ) {
@@ -210,7 +210,9 @@ private fun TransferCard(ui: QuestionUi, onTap: () -> Unit) {
             Text(
                 "▼",
                 style = TextStyle(
-                    color = DesignTokens.Color.ink,
+                    color = if (ui.verdict == null) {
+                        DesignTokens.Color.ink.dim(DesignTokens.Opacity.arrowIdle)
+                    } else DesignTokens.Color.ink,
                     fontFamily = FontFamily.Default,
                     fontSize = 13.sp,
                 ),
@@ -354,8 +356,8 @@ private fun StatTile(modifier: Modifier, value: String, label: String, tint: Col
     Column(
         modifier
             .background(
-                DesignTokens.Color.ink.copy(alpha = 0.07f),
-                RoundedCornerShape(15.dp),
+                DesignTokens.Color.ink.dim(DesignTokens.Opacity.surfaceTint),
+                RoundedCornerShape(DesignTokens.Radius.tile),
             )
             .padding(13.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -386,7 +388,7 @@ private fun QuitDialog(onStay: () -> Unit, onQuit: () -> Unit) {
         Box(
             Modifier
                 .fillMaxSize()
-                .background(Color(0xFF060920).copy(alpha = 0.78f))
+                .background(Color(0xFF060920).dim(DesignTokens.Opacity.scrim))
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,
@@ -417,12 +419,12 @@ private fun QuitDialog(onStay: () -> Unit, onQuit: () -> Unit) {
             InkButton(
                 stringResource(R.string.quitStay), ButtonStyle.Primary,
                 fontSize = 17.sp, fontWeight = 900, tracking = -0.03f,
-                depth = 12.dp, radius = 20.dp, onClick = onStay,
+                depth = 12.dp, radius = DesignTokens.Radius.button, onClick = onStay,
             )
             InkButton(
                 stringResource(R.string.quitGo), ButtonStyle.Destructive,
                 fontSize = 15.sp, fontWeight = 800, tracking = -0.03f,
-                radius = 20.dp, onClick = onQuit,
+                radius = DesignTokens.Radius.button, onClick = onQuit,
             )
         }
         }
@@ -469,7 +471,7 @@ fun RecapScreen(
                         style = typeStyle(
                             DesignTokens.Type.screenTitle,
                             if (i < r.stars) DesignTokens.Color.yellow
-                            else Color.White.copy(alpha = 0.15f),
+                            else Color.White.dim(DesignTokens.Opacity.starOff),
                         ).copy(fontSize = 46.sp),
                     )
                 }
@@ -519,7 +521,7 @@ fun RecapScreen(
         }
         Gap(DesignTokens.Space.lg)
         InkButton(
-            stringResource(R.string.again), ButtonStyle.Primary, radius = 20.dp,
+            stringResource(R.string.again), ButtonStyle.Primary, radius = DesignTokens.Radius.button,
         ) { onPlayAgain(mode) }
         // A full-width secondary button, not a thin text link, so it is a
         // comfortable finger target next to Play again (iOS parity: ink 35%,
@@ -528,12 +530,12 @@ fun RecapScreen(
             Modifier
                 .fillMaxWidth()
                 .background(
-                    DesignTokens.Color.ink.copy(alpha = 0.35f),
+                    DesignTokens.Color.ink.dim(DesignTokens.Opacity.row),
                     RoundedCornerShape(DesignTokens.Radius.medium),
                 )
                 .border(
                     2.dp,
-                    androidx.compose.ui.graphics.Color.White.copy(alpha = 0.18f),
+                    androidx.compose.ui.graphics.Color.White.dim(DesignTokens.Opacity.borderPanel),
                     RoundedCornerShape(DesignTokens.Radius.medium),
                 )
                 .clip(RoundedCornerShape(DesignTokens.Radius.medium))
@@ -557,6 +559,10 @@ fun RecapScreen(
 private fun RecapStat(value: String, label: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(value, style = typeStyle(DesignTokens.Type.year, DesignTokens.Color.ivory))
-        CapsLabel(label, style = DesignTokens.Type.adLabel)
+        CapsLabel(
+            label,
+            color = Color.White.dim(DesignTokens.Opacity.chip),
+            style = DesignTokens.Type.adLabel,
+        )
     }
 }

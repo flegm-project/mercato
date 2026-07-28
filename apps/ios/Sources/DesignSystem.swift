@@ -145,7 +145,7 @@ struct SolidRaised<S: InsettableShape>: ViewModifier {
             .background(
                 ambient
                     ? shape
-                        .fill(Color(red: 0.016, green: 0.031, blue: 0.196).opacity(0.42))
+                        .fill(Color(red: 0.016, green: 0.031, blue: 0.196).opacity(DesignTokens.Opacity.splashTrack))
                         .blur(radius: 22)
                         .offset(y: 22)
                     : nil
@@ -201,8 +201,8 @@ struct CloseButton: View {
                 .font(.system(size: 16, weight: .black))
                 .foregroundStyle(.white)
                 .frame(width: 38, height: 38)
-                .background(DesignTokens.Color.ink.opacity(0.45))
-                .inkOutlined(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .background(DesignTokens.Color.ink.opacity(DesignTokens.Opacity.control))
+                .inkOutlined(RoundedRectangle(cornerRadius: DesignTokens.Radius.control, style: .continuous))
         }
         .buttonStyle(.plain)
         .accessibilityLabel("Quit")
@@ -231,7 +231,7 @@ struct ProgressPips: View {
         case .correct: return DesignTokens.Color.green
         case .wrong: return DesignTokens.Color.coral
         case .live: return DesignTokens.Color.yellow
-        case .pending: return DesignTokens.Color.ink.opacity(0.45)
+        case .pending: return DesignTokens.Color.ink.opacity(DesignTokens.Opacity.control)
         }
     }
 }
@@ -245,7 +245,7 @@ struct Hearts: View {
         HStack(spacing: 5) {
             ForEach(0..<total, id: \.self) { index in
                 Circle()
-                    .fill(index < remaining ? DesignTokens.Color.coral : DesignTokens.Color.ink.opacity(0.45))
+                    .fill(index < remaining ? DesignTokens.Color.coral : DesignTokens.Color.ink.opacity(DesignTokens.Opacity.control))
                     .overlay(Circle().strokeBorder(DesignTokens.Color.ink, lineWidth: DesignTokens.Border.hairline))
                     .frame(width: 13, height: 13)
             }
@@ -454,7 +454,7 @@ struct TransferCard: View {
     }
 
     private var arrowColor: Color {
-        verdict == nil ? DesignTokens.Color.ink.opacity(0.28) : edge
+        verdict == nil ? DesignTokens.Color.ink.opacity(DesignTokens.Opacity.arrowIdle) : edge
     }
 }
 
@@ -469,9 +469,9 @@ struct SponsorBoard: View {
             .overlay(
                 Text(label)
                     .typeStyle(TypeToken.adLabel)
-                    .foregroundStyle(Color.white.opacity(0.4))
+                    .foregroundStyle(Color.white.opacity(DesignTokens.Opacity.chip))
             )
-            .inkOutlined(RoundedRectangle(cornerRadius: 13, style: .continuous))
+            .inkOutlined(RoundedRectangle(cornerRadius: DesignTokens.Radius.adSlot, style: .continuous))
             .accessibilityHidden(true)
     }
 }

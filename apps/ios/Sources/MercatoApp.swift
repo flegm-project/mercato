@@ -109,7 +109,7 @@ struct RootView: View {
                         Text(String(describing: error))
                             .typeStyle(TypeToken.labNote)
                             .multilineTextAlignment(.center)
-                            .opacity(0.75)
+                            .opacity(DesignTokens.Opacity.textQuiet)
                     }
                     .foregroundStyle(DesignTokens.Color.ivory)
                     .padding(DesignTokens.Space.gutter)
