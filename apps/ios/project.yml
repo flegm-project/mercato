@@ -16,6 +16,11 @@ settings:
     SWIFT_VERSION: "5.9"
     # The Rust core is linked as a static library from the xcframework.
     OTHER_LDFLAGS: "-ObjC"
+    # Signing, so the app can be put on a real device and not only a simulator.
+    # The project is generated, so this has to live here: setting it by hand in
+    # Xcode is thrown away by the next ./scripts/gen-ios-project.sh.
+    DEVELOPMENT_TEAM: 53S7ZRPGM9
+    CODE_SIGN_STYLE: Automatic
 
 packages:
   # AdMob. See docs/specs/ads.md and Sources/AdsManager.swift.
