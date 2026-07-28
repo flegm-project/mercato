@@ -55,6 +55,12 @@ struct ProfileView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.top, 8)
 
+                // Kept at the top, away from the tab bar and the Settings
+                // button, so it cannot be mis-tapped.
+                BannerSlot(game: game)
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 16)
+
                 Spacer(minLength: 0)
 
                 VStack(spacing: 12) {
@@ -78,10 +84,6 @@ struct ProfileView: View {
                 .padding(.top, 20)
 
                 Spacer(minLength: 0)
-
-                BannerSlot(game: game)
-                    .frame(maxWidth: .infinity)
-                    .padding(.bottom, 8)
 
                 MercatoTabBar(tabs: [L("tPlay"), L("tProfile")], selected: 1) { index in
                     if index == 0 { onPlayTab() }
