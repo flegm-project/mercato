@@ -516,9 +516,19 @@ fun SettingsScreen(
     val adsRemoved by graph.billing.adsRemoved.collectAsState()
     val price by graph.billing.formattedPrice.collectAsState()
 
-    ScreenColumn(Modifier.verticalScroll(rememberScrollState())) {
-        Gap(DesignTokens.Space.xl)
-        Row(verticalAlignment = Alignment.CenterVertically) {
+    // iOS lays this out as a plain column with a real spacer before the banner,
+    // so the footer sits on the bottom edge whatever the content above adds up
+    // to (Screens.swift:521). Android scrolled instead, which forbids a
+    // weighted spacer, so it used a fixed gap and left 96dp of slack where iOS
+    // leaves 335, and the footer floated in the middle of the screen.
+    ScreenColumn {
+        // iOS pads the column by the gutter on both axes and gives the header
+        // row a fixed 46.
+        Gap(DesignTokens.Space.gutter)
+        Row(
+            Modifier.height(46.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             val backLabel = stringResource(R.string.a11yBack)
             Box(
                 Modifier
@@ -539,35 +549,16 @@ fun SettingsScreen(
                         fontSize = 20.sp,
                     ))
             }
-            Gap(DesignTokens.Space.sm)
+            Gap(12.dp)
             Text(
                 stringResource(R.string.settings),
-                style = typeStyle(DesignTokens.Type.screenTitle, DesignTokens.Color.ivory),
+                style = typeStyle(DesignTokens.Type.panelTitle, DesignTokens.Color.ivory),
             )
         }
-        Gap(DesignTokens.Space.lg)
-        // The one purchase: the remove-ads entitlement (no shop screen).
-        // Without a loaded store price there is nothing to sell: show a
-        // discreet, non-clickable note instead of a dead CTA (iOS parity).
-        val activity = androidx.compose.ui.platform.LocalContext.current as? android.app.Activity
-        PurchaseRow(
-            title = stringResource(R.string.shopNoAds),
-            subtitle = null,
-            trailing = when {
-                adsRemoved -> stringResource(R.string.owned)
-                price != null -> price ?: ""
-                else -> stringResource(R.string.shopUnavailable)
-            },
-            owned = adsRemoved,
-            enabled = !adsRemoved && price != null && activity != null,
-        ) { activity?.let { graph.billing.launchPurchase(it) } }
-        if (!adsRemoved) {
-            Gap(DesignTokens.Space.sm)
-            LinkRow(stringResource(R.string.restore), null) {
-                scope.launch { graph.billing.restore() }
-            }
-        }
-        Gap(DesignTokens.Space.md)
+        // The switches come first, then the purchase, then the link rows: the
+        // purchase was at the head of the screen here and iOS puts it in the
+        // middle (Screens.swift:540).
+        Gap(12.dp)
         // iOS spaces the three switches by 10 (Screens.swift:540).
         Column(verticalArrangement = Arrangement.spacedBy(DesignTokens.Space.sm)) {
             ToggleRow(R.string.soundS, sound) { scope.launch { graph.prefs.setSound(it) } }
@@ -576,69 +567,97 @@ fun SettingsScreen(
                 scope.launch { graph.prefs.setNotifications(it) }
             }
         }
-        Gap(DesignTokens.Space.md)
-        LinkRow(
-            stringResource(R.string.rowLang),
-            // iOS shows the resolved language next to the source, e.g.
-            // "English · System" (Screens.swift:566).
-            run {
-                val loc = Locale.getDefault()
-                val lang = loc.getDisplayLanguage(loc).replaceFirstChar { it.uppercase() }
-                lang + " · " + stringResource(R.string.systemV)
+        Gap(DesignTokens.Space.gutter)
+        // The one purchase: the remove-ads entitlement (no shop screen).
+        // Without a loaded store price there is nothing to sell: show a
+        // discreet, non-clickable note instead of a dead CTA (iOS parity).
+        val activity = androidx.compose.ui.platform.LocalContext.current as? android.app.Activity
+        PurchaseCard(
+            title = stringResource(R.string.shopNoAds),
+            trailing = when {
+                adsRemoved -> stringResource(R.string.owned)
+                price != null -> price ?: ""
+                else -> stringResource(R.string.shopUnavailable)
             },
-            onClick = null,
-        )
-        LinkRow(
-            stringResource(R.string.rowConsent),
-            stringResource(
-                if (consent == "personalized") R.string.consentOn else R.string.consentOff
-            ),
-            onClick = onConsent,
-        )
-        // Both stores require a reachable privacy policy for an app that shows
-        // ads and sells an in-app purchase.
-        LinkRow(stringResource(R.string.rowPrivacy), null, onClick = onPrivacy, external = true)
-        LinkRow(stringResource(R.string.rowIntro), null, onClick = onReplayIntro)
-        LinkRow(stringResource(R.string.rowOffline), null, onClick = onOffline)
-        if (BuildConfig.DEBUG) {
-            LinkRow(stringResource(R.string.rowLab), null, onClick = onLab)
+            owned = adsRemoved,
+            enabled = !adsRemoved && price != null && activity != null,
+            restore = if (adsRemoved) null else ({ scope.launch { graph.billing.restore() }; Unit }),
+        ) { activity?.let { graph.billing.launchPurchase(it) } }
+        Gap(DesignTokens.Space.gutter)
+        // iOS spaces the link rows by 9 (Screens.swift:549).
+        Column(verticalArrangement = Arrangement.spacedBy(9.dp)) {
+            LinkRow(
+                stringResource(R.string.rowLang),
+                // iOS shows the resolved language next to the source, e.g.
+                // "English · System" (Screens.swift:566).
+                run {
+                    val loc = Locale.getDefault()
+                    val lang = loc.getDisplayLanguage(loc).replaceFirstChar { it.uppercase() }
+                    lang + " · " + stringResource(R.string.systemV)
+                },
+                onClick = null,
+            )
+            LinkRow(
+                stringResource(R.string.rowConsent),
+                stringResource(
+                    if (consent == "personalized") R.string.consentOn else R.string.consentOff
+                ),
+                onClick = onConsent,
+            )
+            // Both stores require a reachable privacy policy for an app that
+            // shows ads and sells an in-app purchase.
+            LinkRow(stringResource(R.string.rowPrivacy), null, onClick = onPrivacy, external = true)
+            LinkRow(stringResource(R.string.rowIntro), null, onClick = onReplayIntro)
+            LinkRow(stringResource(R.string.rowOffline), null, onClick = onOffline)
+            if (BuildConfig.DEBUG) {
+                LinkRow(stringResource(R.string.rowLab), null, onClick = onLab)
+            }
         }
-        // Fixed gap: weighted spacers are illegal inside a scrollable column.
-        Gap(DesignTokens.Space.xl)
+        // iOS `Spacer(minLength: 16)`: at least 16, then all the room left over.
+        Gap(DesignTokens.Space.gutter)
+        Spacer(Modifier.weight(1f))
         MenuBanner(graph.ads)
+        Gap(12.dp)
         Text(
             "MERCATO ${BuildConfig.VERSION_NAME}",
             style = typeStyle(
-                DesignTokens.Type.technical,
-                DesignTokens.Color.ivory.dim(DesignTokens.Opacity.textFaintest),
-                11.sp,
-                null,
+                DesignTokens.Type.monoPlain,
+                Color.White.dim(DesignTokens.Opacity.textFaintest),
             ),
-            modifier = Modifier.fillMaxWidth().padding(vertical = DesignTokens.Space.lg),
+            modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center,
         )
+        Gap(DesignTokens.Space.gutter)
     }
 }
 
-/** One full-width tap target: title and price both launch the purchase. */
+/**
+ * One full-width tap target: title and price both launch the purchase, with
+ * Restore purchases underneath, inside the card. Restore was a separate link
+ * row of its own on the blue background; iOS keeps it in the card as a plain
+ * blue text button (Screens.swift:629).
+ */
 @Composable
-private fun PurchaseRow(
+private fun PurchaseCard(
     title: String,
-    /** iOS shows the title alone (Screens.swift:670); null reproduces that. */
-    subtitle: String?,
     trailing: String,
     owned: Boolean,
     enabled: Boolean,
+    /** null once the entitlement is owned: there is nothing left to restore. */
+    restore: (() -> Unit)?,
     onClick: () -> Unit,
 ) {
     // A raised ivory card, as on iOS. It was a dark navy row, and when the
     // store had no price the whole card vanished for a grey line of text.
-    Row(
+    Column(
         Modifier
             .fillMaxWidth()
             .solidRaised(DesignTokens.Radius.medium, depth = 6.dp, border = 4.dp)
             .background(DesignTokens.Color.ivory)
             .padding(18.dp),
+    ) {
+    Row(
+        Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -647,13 +666,6 @@ private fun PurchaseRow(
                 title,
                 style = typeStyle(DesignTokens.Type.purchaseTitle, DesignTokens.Color.ink),
             )
-            if (subtitle != null) {
-                Text(
-                    subtitle,
-                    style = typeStyle(DesignTokens.Type.bodySmall, DesignTokens.Color.muted),
-                    modifier = Modifier.padding(top = 4.dp),
-                )
-            }
         }
         Box(
             Modifier
@@ -672,7 +684,12 @@ private fun PurchaseRow(
                     }
                 )
                 .clickable(enabled = enabled, onClick = onClick)
-                .padding(horizontal = 14.dp, vertical = 9.dp),
+                // iOS: 16/11 around the price, 12/7 around the owned badge
+                // (Screens.swift:598).
+                .padding(
+                    horizontal = if (owned) 12.dp else 16.dp,
+                    vertical = if (owned) 7.dp else 11.dp,
+                ),
             contentAlignment = Alignment.Center,
         ) {
             Text(
@@ -681,6 +698,14 @@ private fun PurchaseRow(
                     if (owned) DesignTokens.Type.ownedBadge else DesignTokens.Type.badgeValue,
                     DesignTokens.Color.ink,
                 ),
+            )
+        }
+    }
+        if (restore != null) {
+            Text(
+                stringResource(R.string.restore),
+                style = typeStyle(DesignTokens.Type.bodySmallStrong, DesignTokens.Color.blue),
+                modifier = Modifier.padding(top = 14.dp).clickable(onClick = restore),
             )
         }
     }
@@ -718,7 +743,6 @@ private fun LinkRow(
     Row(
         Modifier
             .fillMaxWidth()
-            .padding(bottom = 9.dp)
             .background(DesignTokens.Color.ink.dim(DesignTokens.Opacity.row), shape)
             .border(3.dp, Color.White.dim(DesignTokens.Opacity.borderRow), shape)
             .clip(shape)
@@ -727,7 +751,7 @@ private fun LinkRow(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(label, style = typeStyle(DesignTokens.Type.body, Color.White))
+        Text(label, style = typeStyle(DesignTokens.Type.rowValue, Color.White))
         Row(verticalAlignment = Alignment.CenterVertically) {
             if (value != null) {
                 // iOS sets these values in IBM Plex Mono 11 (Screens.swift:709).
