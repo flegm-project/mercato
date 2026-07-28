@@ -486,7 +486,14 @@ struct GuessField: View {
     let onSubmit: () -> Void
 
     var body: some View {
-        TextField(placeholder, text: $text)
+        // The placeholder is stated, not left to SwiftUI: its default is the
+        // system placeholder grey at 30%, which on this ivory field at 30pt
+        // was barely there. Android has always drawn it in `muted`.
+        TextField(
+            "",
+            text: $text,
+            prompt: Text(placeholder).foregroundStyle(DesignTokens.Color.muted)
+        )
             .textInputAutocapitalization(.never)
             .autocorrectionDisabled()
             .submitLabel(.go)
