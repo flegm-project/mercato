@@ -240,6 +240,13 @@ fun InkButton(
     depth: Dp = 8.dp,
     radius: Dp = DesignTokens.Radius.large,
     height: Dp = 56.dp,
+    /**
+     * iOS sizes every one of these from the padding around the label rather
+     * than from a fixed height, so the same button is a different height on
+     * each screen. Set this to reproduce a specific one; [height] is the
+     * fallback for the call sites that have no iOS counterpart.
+     */
+    verticalPadding: Dp? = null,
     onClick: () -> Unit,
 ) {
     val interaction = remember { MutableInteractionSource() }
@@ -274,7 +281,7 @@ fun InkButton(
             Modifier
                 .offset(y = if (pressed && enabled) 5.dp else 0.dp)
                 .fillMaxWidth()
-                .height(height)
+                .then(if (verticalPadding == null) Modifier.height(height) else Modifier)
                 .background(fill, shape)
                 .border(borderWidth, borderColor, shape)
                 .clickable(
@@ -282,6 +289,10 @@ fun InkButton(
                     indication = null,
                     enabled = enabled,
                     onClick = onClick,
+                )
+                .then(
+                    if (verticalPadding != null) Modifier.padding(vertical = verticalPadding)
+                    else Modifier
                 ),
             contentAlignment = Alignment.Center,
         ) {
