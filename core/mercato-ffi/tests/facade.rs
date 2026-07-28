@@ -56,21 +56,15 @@ fn plays_a_full_easy_round() {
 }
 
 #[test]
-fn hardcore_accepts_the_right_name_and_spends_attempts() {
+fn hardcore_hints_then_a_wrong_guess_costs_a_life() {
     let g = game();
     g.start_round(GameLang::En, GameMode::Hardcore, 99);
 
     let q = g.next_question().expect("a question");
     assert!(q.options.is_empty(), "hardcore is free text");
-    assert_eq!(q.attempts_left, g.hardcore_attempts());
+    assert_eq!(q.attempts_left, g.hardcore_attempts()); // three lives for the round
 
-    // A wrong guess costs an attempt but does not end the question.
-    let miss = g.submit_guess("zzzzzzzzzz".into()).expect("answered");
-    assert!(!miss.correct);
-    assert_eq!(miss.attempts_left, g.hardcore_attempts() - 1);
-    assert!(!miss.finished);
-
-    // Hints unlock in order and are free.
+    // Hints unlock in order and are free while the question is open.
     let h1 = g.next_hint().expect("nationality hint");
     assert!(h1.nationality.is_some());
     let h2 = g.next_hint().expect("position hint");
@@ -78,6 +72,12 @@ fn hardcore_accepts_the_right_name_and_spends_attempts() {
     let h3 = g.next_hint().expect("surname hint");
     assert!(h3.surname_initial.is_some() && h3.surname_letters.is_some());
     assert!(g.next_hint().is_none(), "only three hints");
+
+    // One guess settles the question; a wrong one costs a life and reveals.
+    let miss = g.submit_guess("zzzzzzzzzz".into()).expect("answered");
+    assert!(!miss.correct && miss.finished);
+    assert_eq!(miss.attempts_left, g.hardcore_attempts() - 1);
+    assert!(miss.revealed_name.is_some());
 }
 
 #[test]

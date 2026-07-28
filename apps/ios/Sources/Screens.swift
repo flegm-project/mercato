@@ -80,10 +80,10 @@ struct HomeView: View {
                 Wordmark()
 
                 VStack(spacing: 14) {
-                    modeButton(title: L("l1"), chip: L("c1"), fill: DesignTokens.Color.yellow) {
+                    modeButton(title: L("l1"), fill: DesignTokens.Color.yellow) {
                         onPlay(.easy)
                     }
-                    modeButton(title: L("l3"), chip: L("c3"), fill: DesignTokens.Color.ivory) {
+                    modeButton(title: L("l3"), fill: DesignTokens.Color.ivory) {
                         onPlay(.hardcore)
                     }
                 }
@@ -106,26 +106,17 @@ struct HomeView: View {
         }
     }
 
-    private func modeButton(title: String, chip: String, fill: Color, action: @escaping () -> Void) -> some View {
+    private func modeButton(title: String, fill: Color, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            HStack(spacing: 14) {
-                Text(title)
-                    .font(DS.unbounded(30, weight: 900))
-                    .tracking(-0.05 * 30)
-                    .foregroundStyle(DesignTokens.Color.ink)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                Text(chip)
-                    .font(DS.unbounded(12, weight: 800))
-                    .foregroundStyle(DesignTokens.Color.yellow)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 7)
-                    .background(DesignTokens.Color.ink)
-                    .clipShape(Capsule())
-            }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 22)
-            .background(fill)
-            .solidRaised(radius: DesignTokens.Radius.card, depth: 10)
+            Text(title)
+                .font(DS.unbounded(30, weight: 900))
+                .tracking(-0.05 * 30)
+                .foregroundStyle(DesignTokens.Color.ink)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 24)
+                .background(fill)
+                .solidRaised(radius: DesignTokens.Radius.card, depth: 10)
         }
         .buttonStyle(.plain)
     }

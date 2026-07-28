@@ -15,7 +15,7 @@ no photos, no club badges.**
 | Mode | Pool | Answering |
 | --- | --- | --- |
 | **Easy** | tier 1 + 2 transfers (~956) | 4-option multiple choice |
-| **Hardcore** | every transfer (1 905) | free-text input, 3 attempts + hints |
+| **Hardcore** | every transfer (1 905) | free-text input, 3 lives/round + hints |
 
 Difficulty comes from the **answer mode**, not only transfer rarity. `tier`:
 1 = mainstream, 2 = informed fan, 3 = expert.
@@ -60,11 +60,13 @@ The critical component - **port exactly**, do not approximate. Full algorithm in
 - Surname variants keep particles (`van`, `de`, `di`, `dos`, `mc` …).
 - **Two mandatory safety rules**: exact match on another player beats a fuzzy
   match ("kane" ≠ Kanté); a surname shared by several players is rejected asking
-  for the first name (does **not** consume an attempt).
+  for the first name (does **not** consume a life).
 
-## Attempts & hints (Hardcore)
+## Lives & hints (Hardcore)
 
-3 attempts. Each failed attempt or hint request unlocks the next hint, in order:
+**3 lives for the whole round**, not per question. Each question takes one
+guess; a wrong answer costs a life and reveals the name, and the round ends the
+moment the last life is lost. Hints are free and requested on demand, in order:
 **nationality → position → initial + surname letter count.**
 
 ## Scoring

@@ -17,7 +17,8 @@ use crate::Corpus;
 
 /// Questions per round (10 progress pips in the UI spec).
 pub const QUESTIONS_PER_ROUND: usize = 10;
-/// Attempts per question in Hardcore.
+/// Lives for a whole Hardcore round. One guess per question; a wrong answer
+/// costs a life, and the round ends the moment the last life is lost.
 pub const HARDCORE_ATTEMPTS: u8 = 3;
 
 /// A question as the UI needs it, with names already resolved to the language.
@@ -80,7 +81,6 @@ struct Current {
     player_index: usize,
     /// Easy: option player indices in display order.
     option_indices: Vec<usize>,
-    attempts_left: u8,
     hints_used: usize,
     finished: bool,
 }
@@ -94,6 +94,8 @@ pub struct Session {
     asked: usize,
     current: Option<Current>,
     score: Score,
+    /// Hardcore lives remaining in this round (unused in Easy).
+    lives: u8,
     /// Transfers the player failed, for the recap screen.
     missed: Vec<usize>,
 }
@@ -110,6 +112,7 @@ impl Session {
             asked: 0,
             current: None,
             score: Score::new(),
+            lives: HARDCORE_ATTEMPTS,
             missed: Vec::new(),
         }
     }
@@ -136,12 +139,18 @@ impl Session {
     }
 
     pub fn is_over(&self) -> bool {
-        self.asked >= QUESTIONS_PER_ROUND && self.current.as_ref().is_none_or(|c| c.finished)
+        (self.mode == Mode::Hardcore && self.lives == 0)
+            || (self.asked >= QUESTIONS_PER_ROUND
+                && self.current.as_ref().is_none_or(|c| c.finished))
     }
 
-    /// Advance to the next question, or `None` when the round is over.
+    /// Advance to the next question, or `None` when the round is over. A
+    /// Hardcore round also ends the moment the last life is lost.
     pub fn next_question(&mut self) -> Option<Question> {
-        if self.asked >= QUESTIONS_PER_ROUND || self.pool.is_empty() {
+        if self.asked >= QUESTIONS_PER_ROUND
+            || self.pool.is_empty()
+            || (self.mode == Mode::Hardcore && self.lives == 0)
+        {
             self.current = None;
             return None;
         }
@@ -165,10 +174,6 @@ impl Session {
             transfer_index,
             player_index,
             option_indices,
-            attempts_left: match self.mode {
-                Mode::Easy => 1,
-                Mode::Hardcore => HARDCORE_ATTEMPTS,
-            },
             hints_used: 0,
             finished: false,
         });
@@ -193,7 +198,7 @@ impl Session {
                 .iter()
                 .map(|&i| self.corpus.players[i].name(self.lang).to_string())
                 .collect(),
-            attempts_left: c.attempts_left,
+            attempts_left: self.lives,
             masked_name: match self.mode {
                 Mode::Hardcore => mask_name(self.corpus.players[c.player_index].name(self.lang)),
                 Mode::Easy => String::new(),
@@ -239,12 +244,11 @@ impl Session {
 
         // An ambiguous surname asks for the first name and costs nothing.
         if r.ambiguous {
-            let attempts_left = self.current.as_ref()?.attempts_left;
             return Some(Answer {
                 correct: false,
                 rejection: Some(Rejection::AmbiguousSurname),
                 points_gained: 0,
-                attempts_left,
+                attempts_left: self.lives,
                 revealed_name: None,
                 finished: false,
             });
@@ -254,38 +258,32 @@ impl Session {
         Some(self.settle(correct, Some(Rejection::Wrong)))
     }
 
-    /// Apply an answer to the session state.
+    /// Apply an answer to the session state. One guess (Hardcore) or one
+    /// choice (Easy) settles the question; a wrong Hardcore answer costs one
+    /// of the round's shared lives.
     fn settle(&mut self, correct: bool, rejection: Option<Rejection>) -> Answer {
         let revealed = self.answer_name();
+        let mode = self.mode;
         let transfer_index = self.current.as_ref().expect("current").transfer_index;
-        let c = self.current.as_mut().expect("current");
 
-        if correct {
-            c.finished = true;
-        } else {
-            c.attempts_left = c.attempts_left.saturating_sub(1);
-            if c.attempts_left == 0 {
-                c.finished = true;
-            }
+        self.current.as_mut().expect("current").finished = true;
+
+        if !correct && mode == Mode::Hardcore {
+            self.lives = self.lives.saturating_sub(1);
         }
-        let finished = c.finished;
-        let attempts_left = c.attempts_left;
 
-        let mut points_gained = 0;
-        if finished {
-            points_gained = self.score.answer(correct);
-            if !correct {
-                self.missed.push(transfer_index);
-            }
+        let points_gained = self.score.answer(correct);
+        if !correct {
+            self.missed.push(transfer_index);
         }
 
         Answer {
             correct,
             rejection: if correct { None } else { rejection },
             points_gained,
-            attempts_left,
-            revealed_name: finished.then_some(revealed),
-            finished,
+            attempts_left: self.lives,
+            revealed_name: Some(revealed),
+            finished: true,
         }
     }
 
@@ -437,22 +435,43 @@ mod tests {
     }
 
     #[test]
-    fn hardcore_spends_three_attempts_then_reveals() {
+    fn hardcore_lives_are_shared_and_end_the_round() {
         let c = corpus();
         let mut s = Session::new(c.clone(), Lang::En, Mode::Hardcore, 11);
         let q = s.next_question().expect("question");
-        assert_eq!(q.attempts_left, HARDCORE_ATTEMPTS);
+        assert_eq!(q.attempts_left, HARDCORE_ATTEMPTS); // three lives for the round
         assert!(q.options.is_empty());
 
+        // One guess settles the question; a wrong one costs a life and reveals.
         let a1 = s.submit_guess("zzzzzzzz").expect("answered");
-        assert!(!a1.correct && !a1.finished && a1.attempts_left == 2);
+        assert!(!a1.correct && a1.finished && a1.attempts_left == 2);
+        assert!(a1.revealed_name.is_some());
+
+        s.next_question().expect("question 2");
         let a2 = s.submit_guess("zzzzzzzz").expect("answered");
         assert_eq!(a2.attempts_left, 1);
+
+        // Losing the last life ends the round immediately, before ten questions.
+        s.next_question().expect("question 3");
         let a3 = s.submit_guess("zzzzzzzz").expect("answered");
+        assert_eq!(a3.attempts_left, 0);
         assert!(a3.finished);
-        assert!(a3.revealed_name.is_some());
+        assert!(s.is_over());
+        assert!(s.next_question().is_none());
         assert_eq!(s.score().points, 0);
-        assert_eq!(s.missed_transfers().len(), 1);
+        assert_eq!(s.missed_transfers().len(), 3);
+    }
+
+    #[test]
+    fn hardcore_correct_keeps_lives() {
+        let c = corpus();
+        let mut s = Session::new(c.clone(), Lang::En, Mode::Hardcore, 11);
+        let _ = s.next_question().expect("question");
+        let name = s.answer_name();
+        let a = s.submit_guess(&name).expect("answered");
+        assert!(a.correct && a.finished);
+        assert_eq!(a.attempts_left, HARDCORE_ATTEMPTS); // no life lost
+        assert_eq!(s.score().points, 3);
     }
 
     #[test]
