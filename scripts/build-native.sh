@@ -14,6 +14,16 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CORE="$ROOT/core"
 OUT="$ROOT/build"
 
+# Build through the rustup toolchain, not whatever `cargo` PATH happens to
+# resolve first. A Homebrew Rust carries only the host target, so a machine
+# with both installed cross-compiles fine from a login shell and fails from a
+# script with "the aarch64-apple-ios target may not be installed", while
+# `rustup target list --installed` cheerfully shows it there.
+if [ -x "$HOME/.cargo/bin/cargo" ]; then
+  PATH="$HOME/.cargo/bin:$PATH"
+  export PATH
+fi
+
 IOS_TARGETS=(aarch64-apple-ios aarch64-apple-ios-sim x86_64-apple-ios)
 ANDROID_TARGETS=(aarch64-linux-android armv7-linux-androideabi x86_64-linux-android)
 
