@@ -53,6 +53,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import com.mercato.design.DesignTokens
 import uniffi.mercato_ffi.GameMode
@@ -96,6 +97,15 @@ fun GameScreen(
     }
 
     val q = question ?: return
+    // The Samsung keyboard is 407dp tall against the iPhone's 323, and the
+    // window shrinks under it (adjustResize). iOS has the 85dp of slack to
+    // absorb in its two spacers and Android does not, so the hint and submit
+    // buttons were cut off the bottom. The card is the only block with any
+    // give, so it goes compact while the column is short and comes back the
+    // moment the keyboard does. Nothing scrolls, and the question stays on
+    // screen while it is being answered.
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+    val compactCard = maxHeight < 620.dp
     ScreenColumn {
         // iOS pads the column by the gutter top and bottom (GameView.swift:56).
         Gap(DesignTokens.Space.gutter)
@@ -137,7 +147,7 @@ fun GameScreen(
             )
         }
         Gap(DesignTokens.Space.md)
-        TransferCard(q, onTap = vm::advance)
+        TransferCard(q, compact = compactCard, onTap = vm::advance)
         // No ad slot during a question (parity with iOS): the answers zone
         // floats centered between the card and the bottom edge. iOS holds at
         // least 12 either side of it (GameView.swift:47).
@@ -147,6 +157,7 @@ fun GameScreen(
         Spacer(Modifier.weight(1f))
         Gap(12.dp)
         Gap(DesignTokens.Space.gutter)
+    }
     }
 
     if (quitAsked) {
@@ -163,7 +174,7 @@ fun GameScreen(
 
 /** The transfer card: kind chip + year header, origin, arrow, destination. */
 @Composable
-private fun TransferCard(ui: QuestionUi, onTap: () -> Unit) {
+private fun TransferCard(ui: QuestionUi, compact: Boolean, onTap: () -> Unit) {
     val borderColor = when (ui.verdict) {
         true -> DesignTokens.Color.greenDeep
         false -> DesignTokens.Color.coralDeep
@@ -183,7 +194,7 @@ private fun TransferCard(ui: QuestionUi, onTap: () -> Unit) {
                 .fillMaxWidth()
                 .background(DesignTokens.Color.ink)
                 // iOS: 18 horizontal, 10 top and bottom (DesignSystem.swift:397).
-                .padding(horizontal = 18.dp, vertical = 10.dp),
+                .padding(horizontal = 18.dp, vertical = if (compact) 5.dp else 10.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -198,7 +209,12 @@ private fun TransferCard(ui: QuestionUi, onTap: () -> Unit) {
             Modifier
                 .fillMaxWidth()
                 // iOS: 18 horizontal, 14 top, 16 bottom (DesignSystem.swift:441).
-                .padding(start = 18.dp, end = 18.dp, top = 14.dp, bottom = 16.dp),
+                .padding(
+                    start = 18.dp,
+                    end = 18.dp,
+                    top = if (compact) 8.dp else 14.dp,
+                    bottom = if (compact) 8.dp else 16.dp,
+                ),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
@@ -215,7 +231,10 @@ private fun TransferCard(ui: QuestionUi, onTap: () -> Unit) {
                     fontFamily = FontFamily.Default,
                     fontSize = 13.sp,
                 ),
-                modifier = Modifier.padding(top = 6.dp, bottom = 8.dp),
+                modifier = Modifier.padding(
+                    top = if (compact) 2.dp else 6.dp,
+                    bottom = if (compact) 3.dp else 8.dp,
+                ),
             )
             Text(
                 ui.question.toClub,
@@ -223,8 +242,10 @@ private fun TransferCard(ui: QuestionUi, onTap: () -> Unit) {
                 textAlign = TextAlign.Center,
             )
             // The card never shows the answer: the masked name is only
-            // visible while the question is open (iOS parity).
-            if (ui.question.maskedName.isNotEmpty() && ui.verdict == null) {
+            // visible while the question is open (iOS parity). It is also the
+            // first thing to go when the column is short: it repeats what the
+            // guess field is already asking for.
+            if (ui.question.maskedName.isNotEmpty() && ui.verdict == null && !compact) {
                 Gap(DesignTokens.Space.sm)
                 Text(
                     ui.question.maskedName,
