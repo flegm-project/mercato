@@ -36,28 +36,10 @@ struct BannerSlot: View {
     }
 }
 
-/// The in-game sponsor board: the only slot allowed alongside a live question
-/// (docs/specs/ads.md, rule 1). Collapses once ads are removed.
-struct SponsorSlot: View {
-    let game: Game
+// The in-game sponsor board was removed for UX: no ad over a live question.
 
-    var body: some View {
-        if game.shouldShowAd(placement: .sponsorBoard) {
-            AdBanner(
-                adUnitID: AdConfig.sponsor,
-                size: AdSizeBanner,
-                personalizationAllowed: game.adPersonalizationAllowed()
-            )
-            .frame(height: 50)
-            .frame(maxWidth: .infinity)
-            .clipShape(RoundedRectangle(cornerRadius: 13, style: .continuous))
-            .inkOutlined(RoundedRectangle(cornerRadius: 13, style: .continuous))
-        }
-    }
-}
-
-/// The recap medium rectangle: 300x250, standard display slot. Hidden once ads
-/// are removed.
+/// The recap medium rectangle: 300x250, placed below the recap buttons so it
+/// never sits above the primary CTA. Hidden once ads are removed.
 struct RectangleSlot: View {
     let game: Game
 

@@ -55,15 +55,13 @@ struct GameView: View {
                     .contentShape(Rectangle())
                     .onTapGesture { if answer != nil { advanceNow() } }
 
-                    SponsorSlot(game: game)
-                        .padding(.top, 10)
-
                     Spacer(minLength: 16)
                     if mode == .easy {
                         answers(q)
                     } else {
                         hardcore(q)
                     }
+                    Spacer(minLength: 16)
                 } else {
                     Spacer(minLength: 0)
                 }

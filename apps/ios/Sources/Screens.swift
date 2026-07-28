@@ -72,12 +72,12 @@ struct HomeView: View {
         ZStack {
             DS.appBackground
             VStack(alignment: .leading, spacing: 0) {
-                // The wordmark sits near the top and the modes are anchored to
-                // the bottom, as in the source design, rather than the whole
-                // block floating in the middle.
+                // The wordmark and the two modes are centred as one block in the
+                // space above the banner and tab bar, so the screen reads as
+                // balanced rather than emptied out on tall devices.
+                Spacer(minLength: 0)
+
                 Wordmark()
-                    .padding(.top, 14)
-                Spacer(minLength: DesignTokens.Space.xl)
 
                 VStack(spacing: 14) {
                     modeButton(title: L("l1"), chip: L("c1"), fill: DesignTokens.Color.yellow) {
@@ -87,10 +87,12 @@ struct HomeView: View {
                         onPlay(.hardcore)
                     }
                 }
+                .padding(.top, DesignTokens.Space.xl)
+
+                Spacer(minLength: 0)
 
                 BannerSlot(game: game)
                     .frame(maxWidth: .infinity)
-                    .padding(.top, 14)
                     .padding(.bottom, 8)
 
                 MercatoTabBar(tabs: [L("tPlay"), L("tProfile")], selected: 0) { index in
@@ -183,9 +185,6 @@ struct RecapView: View {
 
                     scoreCard.padding(.top, 22)
 
-                    RectangleSlot(game: game)
-                        .padding(.top, 20)
-
                     VStack(spacing: 10) {
                         Button(action: onAgain) {
                             Text(L("again"))
@@ -209,6 +208,10 @@ struct RecapView: View {
                         .buttonStyle(.plain)
                     }
                     .padding(.top, 22)
+
+                    // Below the CTAs so it never pushes Play Again down.
+                    RectangleSlot(game: game)
+                        .padding(.top, 24)
                 }
                 .padding(.horizontal, DesignTokens.Space.gutter)
                 .padding(.bottom, 20)
@@ -518,6 +521,8 @@ struct SettingsView: View {
     let onReplayIntro: () -> Void
     let onOffline: () -> Void
     let onLab: () -> Void
+    /// The core gate decides whether the settings banner shows.
+    let game: Game
     @ObservedObject var store: Store
 
     @AppStorage("soundOn") private var soundOn = true
@@ -572,12 +577,16 @@ struct SettingsView: View {
                 }
                 .padding(.top, 16)
 
-                Spacer(minLength: 20)
+                Spacer(minLength: 16)
+
+                BannerSlot(game: game)
+                    .frame(maxWidth: .infinity)
 
                 Text(L("version"))
                     .font(DS.mono(11))
                     .foregroundStyle(Color.white.opacity(0.5))
                     .frame(maxWidth: .infinity)
+                    .padding(.top, 12)
             }
             .padding(.horizontal, DesignTokens.Space.gutter)
             .padding(.vertical, DesignTokens.Space.gutter)

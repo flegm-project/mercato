@@ -52,7 +52,13 @@ struct RootView: View {
                     DS.appBackground
                     ProgressView().tint(DesignTokens.Color.ivory)
                 }
-                .task { loadResult = Self.loadGame() }
+                .task {
+                    loadResult = Self.loadGame()
+                    #if DEBUG
+                    // Apply the QA route before the splash can route away.
+                    applyDebugRoute()
+                    #endif
+                }
 
             case .success(let game):
                 content(game)
@@ -65,6 +71,15 @@ struct RootView: View {
                             let personalised = UserDefaults.standard.bool(forKey: "adsPersonalised")
                             game.setAdConsent(consent: personalised ? .personalized : .nonPersonalized)
                         }
+                        #if DEBUG
+                        // QA affordance: jump straight to a screen for
+                        // screenshots (SIMCTL_CHILD_MERCATO_ROUTE=...), and skip
+                        // the ad SDK start so the ATT prompt and ad loads never
+                        // interfere with deterministic captures.
+                        if debugRouteArg() != nil {
+                            return
+                        }
+                        #endif
                         ads.bootstrap(game: game)
                     }
                     .onChange(of: store.adsRemoved) { _, removed in
@@ -136,6 +151,7 @@ struct RootView: View {
                 onReplayIntro: { route = .onboarding },
                 onOffline: { route = .offline },
                 onLab: { route = .lab },
+                game: game,
                 store: store
             )
 
@@ -187,6 +203,42 @@ struct RootView: View {
             }
         }
     }
+
+    #if DEBUG
+    /// The QA screen to jump to, from a launch argument (-MercatoRoute <name>).
+    private func debugRouteArg() -> String? {
+        let args = CommandLine.arguments
+        guard let i = args.firstIndex(of: "-MercatoRoute"), i + 1 < args.count else { return nil }
+        return args[i + 1]
+    }
+
+    /// Jump straight to a screen for screenshots, never compiled into release.
+    private func applyDebugRoute() {
+        guard let r = debugRouteArg() else { return }
+        seenOnboarding = true
+        consentAnswered = true
+        switch r {
+        case "home": route = .home
+        case "profile": route = .profile
+        case "settings": route = .settings
+        case "offline": route = .offline
+        case "lab": route = .lab
+        case "onboarding": seenOnboarding = false; route = .onboarding
+        case "consent": route = .consent
+        case "easy": route = .game(.easy)
+        case "hardcore": route = .game(.hardcore)
+        case "recap":
+            summary = RoundSummary(
+                mode: .easy,
+                score: ScoreView(points: 21, streak: 3, bestStreak: 5, lastCorrect: true),
+                correct: 7,
+                total: 10
+            )
+            route = .recap
+        default: break
+        }
+    }
+    #endif
 
     private static func loadGame() -> Result<Game, Error> {
         // The CSVs are bundled as loose resources, so the bundle root is the

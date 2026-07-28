@@ -55,13 +55,14 @@ struct ProfileView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.top, 8)
 
-                VStack(spacing: 10) {
+                Spacer(minLength: 0)
+
+                VStack(spacing: 12) {
                     statRow(L("stPlayed"), "\(stats.roundsPlayed)")
                     statRow(L("stBest"), "\(stats.bestScore)")
                     statRow(L("stStreak"), "\(stats.bestStreak)")
                     statRow(L("stAcc"), stats.accuracy)
                 }
-                .padding(.top, 18)
 
                 Button(action: onSettings) {
                     Text(L("settings"))
@@ -74,9 +75,9 @@ struct ProfileView: View {
                         .solidRaised(radius: 18, border: 4, depth: 6)
                 }
                 .buttonStyle(.plain)
-                .padding(.top, 18)
+                .padding(.top, 20)
 
-                Spacer(minLength: 16)
+                Spacer(minLength: 0)
 
                 BannerSlot(game: game)
                     .frame(maxWidth: .infinity)
@@ -100,11 +101,11 @@ struct ProfileView: View {
                 .foregroundStyle(DesignTokens.Color.ivory)
             Spacer(minLength: 0)
             Text(value)
-                .font(DS.unbounded(20, weight: 900))
+                .font(DS.unbounded(26, weight: 900))
                 .foregroundStyle(DesignTokens.Color.yellow)
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 16)
+        .padding(.horizontal, 18)
+        .padding(.vertical, 20)
         .background(DesignTokens.Color.ink.opacity(0.35))
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .overlay(
