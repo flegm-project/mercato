@@ -45,6 +45,8 @@ import com.mercato.app.QuestionUi
 import com.mercato.app.R
 import com.mercato.app.RecapUi
 import com.mercato.app.RecapRectangle
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -474,22 +476,29 @@ fun RecapScreen(
             horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
         ) {
             repeat(3) { i ->
-                Box {
-                    Text(
-                        "★",
-                        style = typeStyle(DesignTokens.Type.screenTitle, DesignTokens.Color.ink)
-                            .copy(fontSize = 46.sp),
-                        modifier = Modifier.offset(x = 4.dp, y = 4.dp),
-                    )
-                    Text(
-                        "★",
-                        style = typeStyle(
-                            DesignTokens.Type.screenTitle,
-                            if (i < r.stars) DesignTokens.Color.yellow
-                            else Color.White.dim(DesignTokens.Opacity.starOff),
-                        ).copy(fontSize = 46.sp),
-                    )
-                }
+                // iOS draws the glyph in the system face at 46 with a hard ink
+                // shadow (Screens.swift:162). Setting it in Unbounded and
+                // stacking a second copy behind it for the shadow made the row
+                // 69dp tall against 36, and pushed the whole screen down.
+                val earned = i < r.stars
+                Text(
+                    "★",
+                    style = TextStyle(
+                        color = if (earned) DesignTokens.Color.yellow
+                                else Color.White.dim(DesignTokens.Opacity.starOff),
+                        fontFamily = FontFamily.Default,
+                        fontSize = 46.sp,
+                        // SwiftUI shadows the rendered glyph, so an unearned
+                        // star at 15% casts a 15% shadow. A full-strength one
+                        // showed straight through it and all three read dark.
+                        shadow = Shadow(
+                            if (earned) DesignTokens.Color.ink
+                            else DesignTokens.Color.ink.dim(DesignTokens.Opacity.starOff),
+                            Offset(4f, 4f),
+                            blurRadius = 0f,
+                        ),
+                    ),
+                )
             }
         }
         Gap(DesignTokens.Space.xl)
