@@ -293,13 +293,43 @@ fun ProfileScreen(graph: AppGraph, onPlayTab: () -> Unit, onSettings: () -> Unit
         Gap(DesignTokens.Space.md)
         MenuBanner(graph.ads)
         Spacer(Modifier.weight(1f))
-        val accuracy =
-            if (stats.answered == 0) "-"
-            else "${(stats.correct * 100) / stats.answered}%"
-        StatRow(R.string.stPlayed, "${stats.roundsPlayed}")
-        StatRow(R.string.stBest, "${stats.bestScore}")
-        StatRow(R.string.stStreak, "${stats.bestStreak}")
-        StatRow(R.string.stAcc, accuracy)
+        if (stats.roundsPlayed == 0) {
+            // A column of zeros reads as broken: invite the first round
+            // instead (iOS parity).
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .background(
+                        DesignTokens.Color.blueNight,
+                        RoundedCornerShape(DesignTokens.Radius.medium),
+                    )
+                    .padding(DesignTokens.Space.xl),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(
+                    stringResource(R.string.statsEmptyTitle),
+                    style = typeStyle(DesignTokens.Type.answer, DesignTokens.Color.ivory),
+                    textAlign = TextAlign.Center,
+                )
+                Gap(DesignTokens.Space.xs)
+                Text(
+                    stringResource(R.string.statsEmptyBody),
+                    style = typeStyle(
+                        DesignTokens.Type.body,
+                        DesignTokens.Color.ivory.copy(alpha = 0.7f),
+                    ),
+                    textAlign = TextAlign.Center,
+                )
+            }
+        } else {
+            val accuracy =
+                if (stats.answered == 0) "-"
+                else "${(stats.correct * 100) / stats.answered}%"
+            StatRow(R.string.stPlayed, "${stats.roundsPlayed}")
+            StatRow(R.string.stBest, "${stats.bestScore}")
+            StatRow(R.string.stStreak, "${stats.bestStreak}")
+            StatRow(R.string.stAcc, accuracy)
+        }
         Gap(DesignTokens.Space.lg)
         InkButton(stringResource(R.string.settings), ButtonStyle.Secondary, onClick = onSettings)
         Spacer(Modifier.weight(1f))
@@ -372,13 +402,32 @@ fun SettingsScreen(
         }
         Gap(DesignTokens.Space.lg)
         // The one purchase: the remove-ads entitlement (no shop screen).
+        // Without a loaded store price there is nothing to sell: show a
+        // discreet, non-clickable note instead of a dead CTA (iOS parity).
         val activity = androidx.compose.ui.platform.LocalContext.current as? android.app.Activity
-        PurchaseRow(
-            title = stringResource(R.string.shopNoAds),
-            subtitle = stringResource(R.string.shopNoAdsSub),
-            trailing = if (adsRemoved) stringResource(R.string.owned) else price,
-            enabled = !adsRemoved && activity != null,
-        ) { activity?.let { graph.billing.launchPurchase(it) } }
+        when {
+            adsRemoved -> PurchaseRow(
+                title = stringResource(R.string.shopNoAds),
+                subtitle = stringResource(R.string.shopNoAdsSub),
+                trailing = stringResource(R.string.owned),
+                enabled = false,
+            ) {}
+            price != null -> PurchaseRow(
+                title = stringResource(R.string.shopNoAds),
+                subtitle = stringResource(R.string.shopNoAdsSub),
+                trailing = price,
+                enabled = activity != null,
+            ) { activity?.let { graph.billing.launchPurchase(it) } }
+            else -> Text(
+                stringResource(R.string.shopUnavailable),
+                style = typeStyle(
+                    DesignTokens.Type.body,
+                    DesignTokens.Color.ivory.copy(alpha = 0.5f),
+                ),
+                modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
+                textAlign = TextAlign.Center,
+            )
+        }
         if (!adsRemoved) {
             LinkRow(stringResource(R.string.restore), null) {
                 scope.launch { graph.billing.restore() }

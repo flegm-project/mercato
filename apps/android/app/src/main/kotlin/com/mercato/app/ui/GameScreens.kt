@@ -192,18 +192,14 @@ private fun TransferCard(ui: QuestionUi, onTap: () -> Unit) {
                 style = typeStyle(DesignTokens.Type.clubTo, DesignTokens.Color.ink),
                 textAlign = TextAlign.Center,
             )
-            if (ui.question.maskedName.isNotEmpty()) {
+            // The card never shows the answer: the masked name is only
+            // visible while the question is open (iOS parity).
+            if (ui.question.maskedName.isNotEmpty() && ui.verdict == null) {
                 Gap(DesignTokens.Space.sm)
                 Text(
-                    ui.revealedName ?: ui.question.maskedName,
-                    style = typeStyle(
-                        DesignTokens.Type.answer,
-                        when (ui.verdict) {
-                            true -> DesignTokens.Color.greenDeep
-                            false -> DesignTokens.Color.coralDeep
-                            null -> DesignTokens.Color.muted
-                        },
-                    ).copy(fontSize = if (ui.revealedName != null) 42.sp else 18.sp),
+                    ui.question.maskedName,
+                    style = typeStyle(DesignTokens.Type.answer, DesignTokens.Color.muted)
+                        .copy(fontSize = 18.sp),
                     textAlign = TextAlign.Center,
                 )
             }
