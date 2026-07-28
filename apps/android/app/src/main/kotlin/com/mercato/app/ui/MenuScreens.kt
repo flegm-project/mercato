@@ -314,9 +314,10 @@ fun ProfileScreen(graph: AppGraph, onPlayTab: () -> Unit, onSettings: () -> Unit
                 Gap(DesignTokens.Space.xs)
                 Text(
                     stringResource(R.string.statsEmptyBody),
+                    // Soft ivory at 72%, readable on the dark card (iOS parity).
                     style = typeStyle(
                         DesignTokens.Type.body,
-                        DesignTokens.Color.ivory.copy(alpha = 0.7f),
+                        DesignTokens.Color.ivory.copy(alpha = 0.72f),
                     ),
                     textAlign = TextAlign.Center,
                 )
@@ -408,13 +409,11 @@ fun SettingsScreen(
         when {
             adsRemoved -> PurchaseRow(
                 title = stringResource(R.string.shopNoAds),
-                subtitle = stringResource(R.string.shopNoAdsSub),
                 trailing = stringResource(R.string.owned),
                 enabled = false,
             ) {}
             price != null -> PurchaseRow(
                 title = stringResource(R.string.shopNoAds),
-                subtitle = stringResource(R.string.shopNoAdsSub),
                 trailing = price,
                 enabled = activity != null,
             ) { activity?.let { graph.billing.launchPurchase(it) } }
@@ -472,10 +471,10 @@ fun SettingsScreen(
     }
 }
 
+/** One full-width tap target: title and price both launch the purchase. */
 @Composable
 private fun PurchaseRow(
     title: String,
-    subtitle: String,
     trailing: String?,
     enabled: Boolean,
     onClick: () -> Unit,
@@ -494,16 +493,11 @@ private fun PurchaseRow(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Column(Modifier.padding(end = DesignTokens.Space.md)) {
-            Text(title, style = typeStyle(DesignTokens.Type.body, DesignTokens.Color.ivory))
-            Text(
-                subtitle,
-                style = typeStyle(
-                    DesignTokens.Type.body,
-                    DesignTokens.Color.ivory.copy(alpha = 0.6f),
-                ),
-            )
-        }
+        Text(
+            title,
+            style = typeStyle(DesignTokens.Type.body, DesignTokens.Color.ivory),
+            modifier = Modifier.padding(end = DesignTokens.Space.md),
+        )
         if (trailing != null) {
             Text(trailing, style = typeStyle(DesignTokens.Type.answer, DesignTokens.Color.yellow))
         }
