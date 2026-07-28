@@ -346,7 +346,12 @@ private fun HintChip(hint: HintView) {
                 else -> R.string.posFw
             }
         )
-        else -> "${hint.surnameInitial ?: "?"} · ${hint.surnameLetters ?: 0}"
+        // The initial, then one dot per remaining letter. "R · 7" made the
+        // player guess the convention before they could use the hint;
+        // "R ••••••" is read at a glance and needs no wording, so it works the
+        // same in all three languages.
+        else -> (hint.surnameInitial ?: "?") + " " +
+            "•".repeat(maxOf(0, (hint.surnameLetters?.toInt() ?: 0) - 1))
     }
     // Ivory face with ink text: the colours were inverted against iOS.
     Box(

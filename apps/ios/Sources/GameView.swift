@@ -161,7 +161,11 @@ struct GameView: View {
             }
         }
         if let initial = hint.surnameInitial, let letters = hint.surnameLetters {
-            return "\(initial) \u{00B7} \(letters)"
+            // The initial, then one dot per remaining letter. "R · 7" made the
+            // player guess the convention before they could use the hint;
+            // "R ••••••" is read at a glance and needs no wording, so it works
+            // the same in all three languages.
+            return "\(initial) " + String(repeating: "\u{2022}", count: max(0, Int(letters) - 1))
         }
         return ""
     }
