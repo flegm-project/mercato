@@ -1,5 +1,14 @@
 package com.mercato.app.ui
 
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.ui.draw.clip
+import androidx.compose.runtime.remember
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -57,28 +66,68 @@ fun SplashScreen(onDone: () -> Unit) {
     }
     ScreenColumn {
         Spacer(Modifier.weight(1f))
-        Text(
-            "MERCATO",
-            style = typeStyle(DesignTokens.Type.logo, DesignTokens.Color.ivory)
-                .copy(fontSize = 52.sp),
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center,
-        )
+        Wordmark(52.sp)
         Gap(DesignTokens.Space.xl)
+        // An ink-bordered capsule that actually fills, as on iOS. It used to
+        // sit frozen at two thirds, which read as a stalled load.
+        val progress = remember { Animatable(0.08f) }
+        LaunchedEffect(Unit) { progress.animateTo(1f, tween(1300)) }
         Box(
             Modifier
-                .fillMaxWidth()
-                .height(8.dp)
-                .background(DesignTokens.Color.blueNight, RoundedCornerShape(4.dp))
+                .align(Alignment.CenterHorizontally)
+                .width(172.dp)
+                .height(14.dp)
+                .solidRaised(7.dp, depth = 0.dp, border = 3.dp)
+                .background(DesignTokens.Color.ink.copy(alpha = 0.4f))
         ) {
             Box(
                 Modifier
-                    .fillMaxWidth(0.66f)
-                    .height(8.dp)
-                    .background(DesignTokens.Color.yellow, RoundedCornerShape(4.dp))
+                    .fillMaxWidth(progress.value)
+                    .fillMaxHeight()
+                    .background(DesignTokens.Color.yellow, CircleShape)
             )
         }
         Spacer(Modifier.weight(1.2f))
+    }
+}
+
+/**
+ * The wordmark: MER ivory, CATO yellow, over a hard ink offset. iOS draws it
+ * this way on both Splash and Home; a flat single-colour word made the two
+ * apps look unrelated.
+ */
+@Composable
+fun Wordmark(size: TextUnit, modifier: Modifier = Modifier) {
+    val text = buildAnnotatedString {
+        withStyle(SpanStyle(color = DesignTokens.Color.ivory)) { append("MER") }
+        withStyle(SpanStyle(color = DesignTokens.Color.yellow)) { append("CATO") }
+    }
+    // iOS lets the wordmark shrink to fit (minimumScaleFactor); Compose has no
+    // equivalent at this version, so the size is derived from the width
+    // available. Unbounded Black runs about 0.63em per glyph, so seven glyphs
+    // need roughly 4.4em.
+    BoxWithConstraints(modifier) {
+        val fitted = minOf(size.value, maxWidth.value / 4.4f).sp
+        val style = typeStyle(DesignTokens.Type.logo, DesignTokens.Color.ivory)
+            .copy(fontSize = fitted)
+        Box {
+            Text(
+                "MERCATO",
+                style = style.copy(color = DesignTokens.Color.ink),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .offset(x = (fitted.value * 0.08f).dp, y = (fitted.value * 0.095f).dp),
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+            )
+            Text(
+                text,
+                style = style,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+            )
+        }
     }
 }
 
@@ -97,8 +146,8 @@ fun OnboardingScreen(onDone: () -> Unit) {
         Row(Modifier.fillMaxWidth().padding(top = DesignTokens.Space.lg)) {
             Spacer(Modifier.weight(1f))
             Text(
-                stringResource(R.string.obSkip),
-                style = typeStyle(DesignTokens.Type.body, DesignTokens.Color.ivory),
+                stringResource(R.string.obSkip).uppercase(),
+                style = typeStyle(DesignTokens.Type.label, Color.White.copy(alpha = 0.68f)),
                 modifier = Modifier.clickable(onClick = onDone),
             )
         }
@@ -112,16 +161,15 @@ fun OnboardingScreen(onDone: () -> Unit) {
                 Box(
                     Modifier
                         .fillMaxWidth()
-                        .height(180.dp)
-                        .adHatch()
-                        .border(
-                            DesignTokens.Border.hairline,
-                            DesignTokens.Color.ink,
-                            RoundedCornerShape(DesignTokens.Radius.card),
-                        ),
+                        .height(200.dp)
+                        .padding(bottom = 10.dp)
+                        .solidRaised(DesignTokens.Radius.card, depth = 10.dp)
+                        .paperHatch(),
                     contentAlignment = Alignment.Center,
                 ) {
-                    CapsLabel(stringResource(art))
+                    // Ink-grey on the pale hatch: white at 60 percent was
+                    // barely legible there, unlike iOS.
+                    CapsLabel(stringResource(art), color = DesignTokens.Color.clubGrey)
                 }
                 Gap(DesignTokens.Space.xl)
                 Text(
@@ -147,11 +195,12 @@ fun OnboardingScreen(onDone: () -> Unit) {
             repeat(panes.size) { i ->
                 Box(
                     Modifier
-                        .padding(3.dp)
-                        .size(8.dp)
+                        .padding(horizontal = 4.dp)
+                        .width(if (i == pager.currentPage) 26.dp else 10.dp)
+                        .height(10.dp)
                         .background(
                             if (i == pager.currentPage) DesignTokens.Color.yellow
-                            else DesignTokens.Color.ivory.copy(alpha = 0.35f),
+                            else Color.White.copy(alpha = 0.25f),
                             CircleShape,
                         )
                 )
@@ -237,18 +286,7 @@ fun HomeScreen(graph: AppGraph, onPlay: (GameMode) -> Unit, onProfile: () -> Uni
     LaunchedEffect(Unit) { graph.ads.preloadInterstitial() }
     ScreenColumn {
         Spacer(Modifier.weight(1f))
-        // MER ivory, CATO yellow, as in the source design and on iOS. A
-        // single-colour wordmark made the two apps look like different games.
-        Text(
-            buildAnnotatedString {
-                withStyle(SpanStyle(color = DesignTokens.Color.ivory)) { append("MER") }
-                withStyle(SpanStyle(color = DesignTokens.Color.yellow)) { append("CATO") }
-            },
-            style = typeStyle(DesignTokens.Type.logo, DesignTokens.Color.ivory)
-                .copy(fontSize = 46.sp),
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center,
-        )
+        Wordmark(58.sp)
         Spacer(Modifier.weight(1f))
         ModeButton(R.string.l1, DesignTokens.Color.yellow) { onPlay(GameMode.EASY) }
         Gap(DesignTokens.Space.md)
@@ -519,14 +557,21 @@ private fun PurchaseRow(
 
 @Composable
 private fun ToggleRow(label: Int, checked: Boolean, onChange: (Boolean) -> Unit) {
+    // A raised ivory card, as iOS: the rows were bare text on the background.
     Row(
-        Modifier.fillMaxWidth().padding(vertical = 6.dp),
+        Modifier
+            .fillMaxWidth()
+            .padding(bottom = 6.dp)
+            .solidRaised(18.dp, depth = 6.dp, border = 4.dp)
+            .background(DesignTokens.Color.ivory)
+            .padding(horizontal = 16.dp, vertical = 15.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             stringResource(label),
-            style = typeStyle(DesignTokens.Type.body, DesignTokens.Color.ivory),
+            style = typeStyle(DesignTokens.Type.clubTo, DesignTokens.Color.ink)
+                .copy(fontSize = 15.sp),
         )
         MercatoToggle(checked, onChange)
     }
@@ -534,32 +579,31 @@ private fun ToggleRow(label: Int, checked: Boolean, onChange: (Boolean) -> Unit)
 
 @Composable
 private fun LinkRow(label: String, value: String?, onClick: (() -> Unit)?) {
+    val shape = RoundedCornerShape(16.dp)
     Row(
         Modifier
             .fillMaxWidth()
+            .padding(bottom = 9.dp)
+            .background(DesignTokens.Color.ink.copy(alpha = 0.35f), shape)
+            .border(3.dp, Color.White.copy(alpha = 0.16f), shape)
+            .clip(shape)
             .let { if (onClick != null) it.clickable(onClick = onClick) else it }
-            .padding(vertical = 10.dp),
+            .padding(horizontal = 16.dp, vertical = 14.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(label, style = typeStyle(DesignTokens.Type.body, DesignTokens.Color.ivory))
+        Text(label, style = typeStyle(DesignTokens.Type.body, Color.White))
         Row(verticalAlignment = Alignment.CenterVertically) {
             if (value != null) {
                 Text(
                     value,
-                    style = typeStyle(
-                        DesignTokens.Type.body,
-                        DesignTokens.Color.ivory.copy(alpha = 0.6f),
-                    ),
+                    style = typeStyle(DesignTokens.Type.label, Color.White.copy(alpha = 0.75f)),
                 )
             }
             if (onClick != null) {
                 Text(
                     " ›",
-                    style = typeStyle(
-                        DesignTokens.Type.body,
-                        DesignTokens.Color.ivory.copy(alpha = 0.6f),
-                    ),
+                    style = typeStyle(DesignTokens.Type.label, Color.White.copy(alpha = 0.75f)),
                 )
             }
         }

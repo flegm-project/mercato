@@ -4,6 +4,8 @@ import android.app.Activity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draw.clip
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -89,14 +92,21 @@ fun GameScreen(
         Gap(DesignTokens.Space.lg)
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             val closeLabel = stringResource(R.string.a11yClose)
-            Text(
-                "✕",
-                style = typeStyle(DesignTokens.Type.answer, DesignTokens.Color.ivory),
-                modifier = Modifier
+            Box(
+                Modifier
                     .semantics { contentDescription = closeLabel }
-                    .clickable { quitAsked = true }
-                    .padding(end = DesignTokens.Space.md, top = 10.dp, bottom = 10.dp),
-            )
+                    .size(38.dp)
+                    .background(
+                        DesignTokens.Color.ink.copy(alpha = 0.45f),
+                        RoundedCornerShape(12.dp),
+                    )
+                    .border(4.dp, DesignTokens.Color.ink, RoundedCornerShape(12.dp))
+                    .clickable { quitAsked = true },
+                contentAlignment = Alignment.Center,
+            ) {
+                Text("✕", style = typeStyle(DesignTokens.Type.answer, Color.White))
+            }
+            Gap(DesignTokens.Space.md)
             ProgressPips(pips, liveIndex = q.question.index.toInt() - 1, Modifier.weight(1f))
             if (mode == GameMode.HARDCORE) {
                 LivesRow(q.attemptsLeft, Modifier.padding(start = DesignTokens.Space.md))
@@ -131,29 +141,25 @@ fun GameScreen(
 /** The transfer card: kind chip + year header, origin, arrow, destination. */
 @Composable
 private fun TransferCard(ui: QuestionUi, onTap: () -> Unit) {
-    val shape = RoundedCornerShape(DesignTokens.Radius.card)
     val borderColor = when (ui.verdict) {
         true -> DesignTokens.Color.greenDeep
         false -> DesignTokens.Color.coralDeep
         null -> DesignTokens.Color.ink
     }
+    // Outline and solid drop shadow, both following the verdict, as iOS. The
+    // card was flat here while iOS showed it raised.
     Column(
         Modifier
             .fillMaxWidth()
-            .background(DesignTokens.Color.ivory, shape)
-            .border(DesignTokens.Border.heavy, borderColor, shape)
+            .padding(bottom = 11.dp)
+            .solidRaised(DesignTokens.Radius.card, depth = 11.dp, outline = borderColor)
+            .background(DesignTokens.Color.ivory)
             .clickable(onClick = onTap),
     ) {
         Row(
             Modifier
                 .fillMaxWidth()
-                .background(
-                    DesignTokens.Color.ink,
-                    RoundedCornerShape(
-                        topStart = DesignTokens.Radius.card,
-                        topEnd = DesignTokens.Radius.card,
-                    ),
-                )
+                .background(DesignTokens.Color.ink)
                 .padding(
                     horizontal = DesignTokens.Space.md,
                     vertical = DesignTokens.Space.sm,
@@ -165,7 +171,7 @@ private fun TransferCard(ui: QuestionUi, onTap: () -> Unit) {
             // Compact card (iOS parity): year 32, from 16, to 30, masked 18.
             Text(
                 "${ui.question.year}",
-                style = typeStyle(DesignTokens.Type.year, DesignTokens.Color.ivory)
+                style = typeStyle(DesignTokens.Type.year, DesignTokens.Color.yellow)
                     .copy(fontSize = 32.sp),
             )
         }
@@ -199,8 +205,8 @@ private fun TransferCard(ui: QuestionUi, onTap: () -> Unit) {
                 Gap(DesignTokens.Space.sm)
                 Text(
                     ui.question.maskedName,
-                    style = typeStyle(DesignTokens.Type.answer, DesignTokens.Color.muted)
-                        .copy(fontSize = 18.sp),
+                    style = typeStyle(DesignTokens.Type.answer, Color(0xFFD6D3C4))
+                        .copy(fontSize = 18.sp, letterSpacing = 1.8.sp),
                     textAlign = TextAlign.Center,
                 )
             }
@@ -264,6 +270,14 @@ private fun HardcoreAnswers(ui: QuestionUi, vm: GameViewModel) {
                 modifier = Modifier.padding(bottom = DesignTokens.Space.xs),
             )
         }
+        // Verdict colours for the field, matching the answer buttons on iOS.
+        val fieldFill = when (ui.verdict) {
+            true -> DesignTokens.Color.green
+            false -> DesignTokens.Color.coral
+            null -> DesignTokens.Color.ivory
+        }
+        val fieldText =
+            if (ui.verdict == false) Color.White else DesignTokens.Color.ink
         OutlinedTextField(
             value = text,
             onValueChange = { text = it },
@@ -275,29 +289,31 @@ private fun HardcoreAnswers(ui: QuestionUi, vm: GameViewModel) {
                     style = typeStyle(DesignTokens.Type.body, DesignTokens.Color.muted),
                 )
             },
-            textStyle = typeStyle(DesignTokens.Type.body, DesignTokens.Color.ink),
+            textStyle = typeStyle(DesignTokens.Type.clubTo, fieldText).copy(fontSize = 24.sp),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { vm.submitGuess(text) }),
+            // The field carries the verdict like the answer buttons do.
             colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = DesignTokens.Color.ivory,
-                unfocusedContainerColor = DesignTokens.Color.ivory,
-                disabledContainerColor = DesignTokens.Color.ivory.copy(alpha = 0.6f),
+                focusedContainerColor = fieldFill,
+                unfocusedContainerColor = fieldFill,
+                disabledContainerColor = fieldFill,
                 focusedBorderColor = DesignTokens.Color.ink,
                 unfocusedBorderColor = DesignTokens.Color.ink,
+                disabledBorderColor = DesignTokens.Color.ink,
             ),
             shape = RoundedCornerShape(DesignTokens.Radius.medium),
             modifier = Modifier.fillMaxWidth(),
         )
         Gap(DesignTokens.Space.sm)
         Row(horizontalArrangement = Arrangement.spacedBy(DesignTokens.Space.sm)) {
-            Box(Modifier.weight(1f)) {
+            Box(Modifier.weight(0.38f)) {
                 InkButton(
                     "${stringResource(R.string.hint)} (${3 - ui.hints.size})",
                     ButtonStyle.Secondary,
                     enabled = ui.verdict == null && ui.hints.size < 3,
                 ) { vm.requestHint() }
             }
-            Box(Modifier.weight(1f)) {
+            Box(Modifier.weight(0.62f)) {
                 InkButton(
                     stringResource(R.string.go),
                     ButtonStyle.Primary,
@@ -324,17 +340,44 @@ private fun HintChip(hint: HintView) {
         )
         else -> "${hint.surnameInitial ?: "?"} · ${hint.surnameLetters ?: 0}"
     }
+    // Ivory face with ink text: the colours were inverted against iOS.
     Box(
         Modifier
-            .background(DesignTokens.Color.blueNight, RoundedCornerShape(DesignTokens.Radius.chip))
-            .border(
-                DesignTokens.Border.hairline,
-                DesignTokens.Color.ink,
-                RoundedCornerShape(DesignTokens.Radius.chip),
-            )
-            .padding(horizontal = DesignTokens.Space.sm, vertical = 4.dp),
+            .background(DesignTokens.Color.ivory, RoundedCornerShape(DesignTokens.Radius.chip))
+            .border(4.dp, DesignTokens.Color.ink, RoundedCornerShape(DesignTokens.Radius.chip))
+            .padding(horizontal = 15.dp, vertical = 7.dp),
     ) {
-        Text(text, style = typeStyle(DesignTokens.Type.body, DesignTokens.Color.yellow))
+        Text(
+            text,
+            style = typeStyle(DesignTokens.Type.answer, DesignTokens.Color.ink)
+                .copy(fontSize = 13.5.sp),
+        )
+    }
+}
+
+/** One of the two stats inside the recap score card. */
+@Composable
+private fun StatTile(modifier: Modifier, value: String, label: String, tint: Color) {
+    Column(
+        modifier
+            .background(
+                DesignTokens.Color.ink.copy(alpha = 0.07f),
+                RoundedCornerShape(15.dp),
+            )
+            .padding(13.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(
+            value,
+            style = typeStyle(DesignTokens.Type.year, tint).copy(fontSize = 22.sp),
+        )
+        Text(
+            label,
+            style = typeStyle(DesignTokens.Type.body, DesignTokens.Color.muted)
+                .copy(fontSize = 11.5.sp),
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(top = 3.dp),
+        )
     }
 }
 
@@ -389,50 +432,72 @@ fun RecapScreen(
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center,
         )
-        Gap(DesignTokens.Space.sm)
-        Text(
-            List(3) { i -> if (i < r.stars) "★" else "☆" }.joinToString(" "),
-            style = typeStyle(DesignTokens.Type.screenTitle, DesignTokens.Color.yellow),
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center,
-        )
         Gap(DesignTokens.Space.md)
+        // Three separately shadowed 46sp stars, dimmed when unearned, rather
+        // than one small line of glyphs.
         Row(
             Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly,
+            horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
         ) {
-            RecapStat("${r.points}", stringResource(R.string.pts))
-            RecapStat("${r.correct}/${r.total}", stringResource(R.string.rGood))
-            RecapStat("${r.bestStreak}", stringResource(R.string.rStreak))
-        }
-        if (r.missed.isNotEmpty()) {
-            Gap(DesignTokens.Space.lg)
-            CapsLabel(stringResource(R.string.rMissed))
-            Gap(DesignTokens.Space.xs)
-            r.missed.forEach { m ->
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 3.dp)
-                        .background(
-                            DesignTokens.Color.blueNight,
-                            RoundedCornerShape(DesignTokens.Radius.small),
-                        )
-                        .padding(DesignTokens.Space.sm),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
+            repeat(3) { i ->
+                Box {
                     Text(
-                        m.playerName,
-                        style = typeStyle(DesignTokens.Type.body, DesignTokens.Color.ivory),
+                        "★",
+                        style = typeStyle(DesignTokens.Type.screenTitle, DesignTokens.Color.ink)
+                            .copy(fontSize = 46.sp),
+                        modifier = Modifier.offset(x = 4.dp, y = 4.dp),
                     )
                     Text(
-                        "${m.fromClub} > ${m.toClub} · ${m.year}",
+                        "★",
                         style = typeStyle(
-                            DesignTokens.Type.body,
-                            DesignTokens.Color.ivory.copy(alpha = 0.7f),
-                        ),
+                            DesignTokens.Type.screenTitle,
+                            if (i < r.stars) DesignTokens.Color.yellow
+                            else Color.White.copy(alpha = 0.15f),
+                        ).copy(fontSize = 46.sp),
                     )
                 }
+            }
+        }
+        Gap(DesignTokens.Space.lg)
+        // The score lives in a raised ivory card, as on iOS: the numbers were
+        // sitting bare on the background with no hierarchy between them.
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .padding(bottom = 10.dp)
+                .solidRaised(DesignTokens.Radius.card, depth = 10.dp)
+                .background(DesignTokens.Color.ivory)
+                .padding(22.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                "${r.points}",
+                style = typeStyle(DesignTokens.Type.year, DesignTokens.Color.ink)
+                    .copy(fontSize = 64.sp),
+            )
+            Text(
+                stringResource(R.string.pts).uppercase(),
+                style = typeStyle(DesignTokens.Type.label, DesignTokens.Color.muted),
+                modifier = Modifier.padding(top = 8.dp),
+            )
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(11.dp),
+            ) {
+                StatTile(
+                    Modifier.weight(1f),
+                    "${r.correct}/${r.total}",
+                    stringResource(R.string.rGood),
+                    DesignTokens.Color.greenDeep,
+                )
+                StatTile(
+                    Modifier.weight(1f),
+                    "${r.bestStreak}",
+                    stringResource(R.string.rStreak),
+                    DesignTokens.Color.ink,
+                )
             }
         }
         Gap(DesignTokens.Space.lg)

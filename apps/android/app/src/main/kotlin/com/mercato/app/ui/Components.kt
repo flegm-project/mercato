@@ -27,6 +27,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.composed
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
@@ -80,6 +82,62 @@ fun Modifier.adHatch(): Modifier = drawBehind {
     while (x < size.width) {
         drawLine(
             color = Color(0xFF12207A),
+            start = Offset(x, size.height),
+            end = Offset(x + size.height, 0f),
+            strokeWidth = stripe,
+        )
+        x += step
+    }
+}
+
+/**
+ * Ink outline plus a solid (unblurred) drop shadow: the signature of every
+ * raised surface, and the iOS `solidRaised` counterpart. Without it Android
+ * surfaces read flat next to the same screen on iOS.
+ *
+ * The outline is a filled shape behind content inset by the border width,
+ * rather than a stroke over a clipped fill, for the same reason as on iOS: a
+ * stroke leaves the fill's antialiased edge showing past it as a pale seam.
+ */
+fun Modifier.solidRaised(
+    radius: Dp,
+    depth: Dp,
+    border: Dp = DesignTokens.Border.heavy,
+    outline: Color = DesignTokens.Color.ink,
+    pressed: Boolean = false,
+): Modifier = composed {
+    val shape = RoundedCornerShape(radius)
+    val inner = RoundedCornerShape((radius - border).coerceAtLeast(0.dp))
+    // Pressing sinks the surface onto its shadow, as motion.press describes.
+    val sink = if (pressed) 5.dp else 0.dp
+    val drop = (depth - sink).coerceAtLeast(0.dp)
+    this
+        .offset(y = sink)
+        .drawBehind {
+            drawRoundRect(
+                color = outline,
+                topLeft = Offset(0f, drop.toPx()),
+                size = size,
+                cornerRadius = CornerRadius(radius.toPx()),
+            )
+        }
+        .background(outline, shape)
+        .padding(border)
+        .clip(inner)
+}
+
+/**
+ * The pale hatch behind an onboarding illustration. The ad slots use the dark
+ * navy [adHatch]; using it here made the intro art look like an ad.
+ */
+fun Modifier.paperHatch(): Modifier = drawBehind {
+    drawRect(DesignTokens.Color.ivory)
+    val step = 28.dp.toPx()
+    val stripe = 14.dp.toPx()
+    var x = -size.height
+    while (x < size.width) {
+        drawLine(
+            color = Color(0xFFEFEDE3),
             start = Offset(x, size.height),
             end = Offset(x + size.height, 0f),
             strokeWidth = stripe,
@@ -156,7 +214,8 @@ fun AnswerButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
-    val shape = RoundedCornerShape(DesignTokens.Radius.medium)
+    val interaction = remember { MutableInteractionSource() }
+    val pressed by interaction.collectIsPressedAsState()
     val (fill, textColor) = when (state) {
         AnswerState.Idle -> DesignTokens.Color.blueNight to Color.White
         AnswerState.Correct -> DesignTokens.Color.green to DesignTokens.Color.ink
@@ -164,21 +223,28 @@ fun AnswerButton(
         AnswerState.Dimmed -> DesignTokens.Color.blueNight.copy(alpha = 0.4f) to
             Color.White.copy(alpha = 0.4f)
     }
+    // Same metrics as the Home mode cards, matching iOS: an answer reads as the
+    // same kind of object as a mode.
     Box(
         modifier
             .fillMaxWidth()
-            .heightIn(min = 52.dp)
-            .background(fill, shape)
-            .border(DesignTokens.Border.hairline, DesignTokens.Color.ink, shape)
-            .clip(shape)
-            .clickable(enabled = enabled, onClick = onClick),
-        contentAlignment = Alignment.Center,
+            .padding(bottom = 10.dp)
+            .solidRaised(DesignTokens.Radius.large, depth = 10.dp, pressed = pressed)
+            .background(fill)
+            .clickable(
+                interactionSource = interaction,
+                indication = null,
+                enabled = enabled,
+                onClick = onClick,
+            )
+            .padding(horizontal = 20.dp, vertical = 22.dp),
+        contentAlignment = Alignment.CenterStart,
     ) {
         Text(
             text,
-            style = typeStyle(DesignTokens.Type.answer, textColor),
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(horizontal = DesignTokens.Space.sm),
+            style = typeStyle(DesignTokens.Type.clubTo, textColor),
+            textAlign = TextAlign.Start,
+            maxLines = 2,
         )
     }
 }
@@ -186,7 +252,7 @@ fun AnswerButton(
 /** One pip per question: green/coral for played, yellow live, dim pending. */
 @Composable
 fun ProgressPips(results: List<Boolean?>, liveIndex: Int, modifier: Modifier = Modifier) {
-    Row(modifier, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+    Row(modifier, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
         results.forEachIndexed { i, r ->
             val fill = when {
                 r == true -> DesignTokens.Color.green
@@ -198,8 +264,8 @@ fun ProgressPips(results: List<Boolean?>, liveIndex: Int, modifier: Modifier = M
                 Modifier
                     .weight(1f)
                     .height(9.dp)
-                    .background(fill, RoundedCornerShape(4.dp))
-                    .border(1.5.dp, DesignTokens.Color.ink, RoundedCornerShape(4.dp))
+                    .background(fill, CircleShape)
+                    .border(3.dp, DesignTokens.Color.ink, CircleShape)
             )
         }
     }
@@ -218,6 +284,7 @@ fun LivesRow(livesLeft: Int, modifier: Modifier = Modifier, total: Int = 3) {
                         else DesignTokens.Color.ink.copy(alpha = 0.45f),
                         CircleShape,
                     )
+                    .border(3.dp, DesignTokens.Color.ink, CircleShape)
             )
         }
     }
@@ -231,22 +298,34 @@ fun ScorePill(points: Long, lastCorrect: Boolean?, modifier: Modifier = Modifier
         false -> DesignTokens.Color.coral
         null -> DesignTokens.Color.ivory
     }
-    Text(
-        "$points",
-        style = typeStyle(DesignTokens.Type.year, color).copy(fontSize = 22.sp),
-        modifier = modifier,
-    )
+    // A bordered, raised capsule as on iOS: bare tinted text read as a stray
+    // number rather than part of the top bar.
+    Box(
+        modifier
+            .padding(bottom = 6.dp)
+            .solidRaised(15.dp, depth = 6.dp, border = 4.dp)
+            .background(color)
+            .padding(horizontal = 14.dp, vertical = 4.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            "$points",
+            style = typeStyle(DesignTokens.Type.year, DesignTokens.Color.ink)
+                .copy(fontSize = 22.sp),
+        )
+    }
 }
 
 /** 52x30 track, ink border, green when on. */
 @Composable
 fun MercatoToggle(checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
-    val track = if (checked) DesignTokens.Color.green else DesignTokens.Color.blueNight
+    val track =
+        if (checked) DesignTokens.Color.green else DesignTokens.Color.ink.copy(alpha = 0.25f)
     Box(
         Modifier
             .size(width = 52.dp, height = 30.dp)
             .background(track, RoundedCornerShape(15.dp))
-            .border(DesignTokens.Border.hairline, DesignTokens.Color.ink, RoundedCornerShape(15.dp))
+            .border(3.dp, DesignTokens.Color.ink, RoundedCornerShape(15.dp))
             .toggleable(
                 value = checked,
                 role = Role.Switch,
@@ -259,6 +338,7 @@ fun MercatoToggle(checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
                 .padding(3.dp)
                 .size(22.dp)
                 .background(DesignTokens.Color.ivory, CircleShape)
+                .border(3.dp, DesignTokens.Color.ink, CircleShape)
         )
     }
 }
@@ -275,7 +355,7 @@ fun MercatoTabBar(
         modifier
             .fillMaxWidth()
             .height(58.dp)
-            .background(DesignTokens.Color.ink, RoundedCornerShape(DesignTokens.Radius.large))
+            .background(DesignTokens.Color.ink, RoundedCornerShape(DesignTokens.Radius.card))
             .padding(6.dp),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
@@ -287,7 +367,7 @@ fun MercatoTabBar(
 
 @Composable
 private fun RowScope.TabCell(label: String, active: Boolean, onClick: () -> Unit) {
-    val shape = RoundedCornerShape(DesignTokens.Radius.medium)
+    val shape = RoundedCornerShape(14.dp)
     Box(
         Modifier
             .weight(1f)
@@ -300,9 +380,10 @@ private fun RowScope.TabCell(label: String, active: Boolean, onClick: () -> Unit
         Text(
             label,
             style = typeStyle(
-                DesignTokens.Type.label,
-                if (active) DesignTokens.Color.ink else DesignTokens.Color.ivory,
-            ),
+                DesignTokens.Type.clubTo,
+                if (active) DesignTokens.Color.ink
+                else DesignTokens.Color.ivory.copy(alpha = 0.7f),
+            ).copy(fontSize = 14.sp, letterSpacing = (-0.02 * 14).sp),
         )
     }
 }
