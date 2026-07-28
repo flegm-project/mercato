@@ -313,15 +313,18 @@ private fun HardcoreAnswers(ui: QuestionUi, vm: GameViewModel) {
 
 @Composable
 private fun HintChip(hint: HintView) {
-    // Positions use the same language-neutral abbreviations as the iOS app.
+    // Localized position abbreviations (posGk/posDef/posMid/posFw), same
+    // strings as the iOS hint chip.
     val text = when {
         hint.nationality != null -> hint.nationality ?: ""
-        hint.position != null -> when (hint.position) {
-            PlayerPosition.GK -> "GK"
-            PlayerPosition.DEF -> "DEF"
-            PlayerPosition.MID -> "MID"
-            else -> "FW"
-        }
+        hint.position != null -> stringResource(
+            when (hint.position) {
+                PlayerPosition.GK -> R.string.posGk
+                PlayerPosition.DEF -> R.string.posDef
+                PlayerPosition.MID -> R.string.posMid
+                else -> R.string.posFw
+            }
+        )
         else -> "${hint.surnameInitial ?: "?"} · ${hint.surnameLetters ?: 0}"
     }
     Box(
