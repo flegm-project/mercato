@@ -610,9 +610,9 @@ struct SettingsView: View {
                         .padding(.vertical, 7)
                         .background(DesignTokens.Color.green)
                         .clipShape(Capsule())
-                } else {
+                } else if let price = store.displayPrice {
                     Button { Task { await store.purchase() } } label: {
-                        Text(store.displayPrice ?? "\u{2026}")
+                        Text(price)
                             .font(DS.unbounded(15, weight: 900))
                             .tracking(-0.03 * 15)
                             .foregroundStyle(DesignTokens.Color.ink)
@@ -622,7 +622,14 @@ struct SettingsView: View {
                             .solidRaised(radius: 16, border: 4, depth: 6)
                     }
                     .buttonStyle(.plain)
-                    .disabled(store.purchasing || store.product == nil)
+                    .disabled(store.purchasing)
+                } else {
+                    // The store product (hence its price) has not loaded: show a
+                    // quiet, non-interactive label rather than a dead yellow CTA
+                    // displaying an ellipsis.
+                    Text(L("shopUnavailable"))
+                        .font(DS.figtree(13, weight: 700))
+                        .foregroundStyle(DesignTokens.Color.muted)
                 }
             }
 

@@ -315,7 +315,7 @@ struct AnswerButton: View {
 }
 
 /// The transfer card: an ink header with the move kind and the year, over an
-/// ivory body holding the two clubs, and the answer once the question closes.
+/// ivory body holding the two clubs. The answer is never shown here.
 struct TransferCard: View {
     let kindLabel: String
     let isLoan: Bool
@@ -324,7 +324,6 @@ struct TransferCard: View {
     let toClub: String
     /// nil while the question is open.
     let verdict: Bool?
-    let revealedName: String?
     /// Hardcore only: the answer as dots, shown while the question is open.
     var maskedName: String? = nil
 
@@ -400,23 +399,9 @@ struct TransferCard: View {
                     .padding(.top, 10)
             }
 
-            if let revealedName, verdict != nil {
-                VStack(spacing: 0) {
-                    // A dashed rule separates the question from its answer.
-                    Rectangle()
-                        .fill(DesignTokens.Color.ink.opacity(0.14))
-                        .frame(height: 4)
-                        .padding(.top, 18)
-                    Text(revealedName)
-                        .font(DS.unbounded(42, weight: 900))
-                        .tracking(-0.05 * 42)
-                        .foregroundStyle(edge)
-                        .multilineTextAlignment(.center)
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.45)
-                        .padding(.top, 16)
-                }
-            }
+            // The correct answer is intentionally never revealed inside the
+            // card: the masked name disappears once the question is settled and
+            // nothing replaces it.
         }
         .padding(.horizontal, 18)
         .padding(.top, 14)

@@ -63,11 +63,18 @@ struct ProfileView: View {
 
                 Spacer(minLength: 0)
 
-                VStack(spacing: 12) {
-                    statRow(L("stPlayed"), "\(stats.roundsPlayed)")
-                    statRow(L("stBest"), "\(stats.bestScore)")
-                    statRow(L("stStreak"), "\(stats.bestStreak)")
-                    statRow(L("stAcc"), stats.accuracy)
+                // Before the first round every stat is zero, and a column of
+                // zeros reads as broken. Show an inviting empty state instead;
+                // the real stats replace it as soon as one round is played.
+                if stats.roundsPlayed == 0 {
+                    emptyStats
+                } else {
+                    VStack(spacing: 12) {
+                        statRow(L("stPlayed"), "\(stats.roundsPlayed)")
+                        statRow(L("stBest"), "\(stats.bestScore)")
+                        statRow(L("stStreak"), "\(stats.bestStreak)")
+                        statRow(L("stAcc"), stats.accuracy)
+                    }
                 }
 
                 Button(action: onSettings) {
@@ -94,6 +101,32 @@ struct ProfileView: View {
             .frame(maxWidth: DesignTokens.Layout.columnMax)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+    }
+
+    /// Shown on the Profile before any round has been played, in place of the
+    /// four zeroed stat rows.
+    private var emptyStats: some View {
+        VStack(spacing: 10) {
+            Text(L("statsEmptyTitle"))
+                .font(DS.unbounded(18, weight: 900))
+                .tracking(-0.03 * 18)
+                .foregroundStyle(DesignTokens.Color.ivory)
+                .multilineTextAlignment(.center)
+            Text(L("statsEmptyBody"))
+                .font(DS.figtree(14, weight: 700))
+                .foregroundStyle(DesignTokens.Color.muted)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 18)
+        .padding(.vertical, 34)
+        .background(DesignTokens.Color.ink.opacity(0.35))
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .strokeBorder(Color.white.opacity(0.12), lineWidth: 2)
+        )
     }
 
     private func statRow(_ label: String, _ value: String) -> some View {

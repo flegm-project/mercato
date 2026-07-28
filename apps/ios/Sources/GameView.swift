@@ -77,7 +77,6 @@ struct GameView: View {
             fromClub: q.fromClub,
             toClub: q.toClub,
             verdict: answer?.correct,
-            revealedName: answer?.revealedName,
             maskedName: q.maskedName
         )
         .padding(.top, 14)
@@ -258,6 +257,18 @@ struct GameView: View {
                 if let h = game.nextHint() { hints.append(h) }
             }
         }
+        // QA: submit a (wrong) answer so the reveal state can be captured.
+        if CommandLine.arguments.contains("-MercatoAnswer"), question != nil {
+            if mode == .easy {
+                choose(0)
+            } else {
+                guess = "zzzzzz"
+                submitGuess()
+            }
+            advanceWork?.cancel() // freeze the reveal for the screenshot
+        }
+        // QA: show the quit dialog.
+        if CommandLine.arguments.contains("-MercatoQuit") { quitOpen = true }
         #endif
     }
 
@@ -292,11 +303,14 @@ struct GameView: View {
         score = game.score()
         if question == nil, !roundOver {
             roundOver = true
+            // The denominator is the fixed round length, not the number of
+            // questions answered: a Hardcore round that ends early on lost lives
+            // still reports the score out of the full round (e.g. 4/10).
             onFinish(RoundSummary(
                 mode: mode,
                 score: game.score(),
                 correct: results.filter { $0 }.count,
-                total: results.count
+                total: roundLength
             ))
         }
     }

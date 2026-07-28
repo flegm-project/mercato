@@ -235,6 +235,14 @@ struct RootView: View {
                 total: 10
             )
             route = .recap
+        case "recaplose":
+            summary = RoundSummary(
+                mode: .hardcore,
+                score: ScoreView(points: 6, streak: 1, bestStreak: 1, lastCorrect: false),
+                correct: 2,
+                total: 10
+            )
+            route = .recap
         default: break
         }
     }
