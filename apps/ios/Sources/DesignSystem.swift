@@ -249,6 +249,10 @@ struct ScorePill: View {
                     .allowsHitTesting(false)
                     .onAppear {
                         flying = false
+                        // motion.score-bump's 1500ms, but easeOut rather than
+                        // its cubic-bezier(.2,.9,.3,1): that curve is 95% done
+                        // by 30% of the duration, which fades the value out
+                        // before it has travelled far enough to read.
                         withAnimation(.easeOut(duration: 1.5)) { flying = true }
                     }
             }

@@ -68,6 +68,7 @@ fun GameScreen(
     val score by vm.score.collectAsState()
     val pips by vm.pips.collectAsState()
     val recap by vm.recap.collectAsState()
+    val bumpToken by vm.bumpToken.collectAsState()
     var quitAsked by remember { mutableStateOf(false) }
 
     LaunchedEffect(mode) {
@@ -117,7 +118,11 @@ fun GameScreen(
             }
             ScorePill(
                 score?.points ?: 0,
-                score?.lastCorrect,
+                // The question's own verdict, not the score's lastCorrect: the
+                // core keeps that set for the rest of the round, which left the
+                // pill green or coral from the first answer onwards.
+                q.verdict,
+                bumpToken,
                 Modifier.padding(start = DesignTokens.Space.md),
             )
         }

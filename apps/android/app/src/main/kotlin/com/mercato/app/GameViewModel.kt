@@ -60,6 +60,10 @@ class GameViewModel(private val graph: AppGraph) : ViewModel() {
     private val _recap = MutableStateFlow<RecapUi?>(null)
     val recap: StateFlow<RecapUi?> = _recap.asStateFlow()
 
+    /** Counts settled answers, so the score pill can replay its fly-up. */
+    private val _bumpToken = MutableStateFlow(0)
+    val bumpToken: StateFlow<Int> = _bumpToken.asStateFlow()
+
     private var advanceJob: Job? = null
     private var correctCount = 0
 
@@ -145,6 +149,7 @@ class GameViewModel(private val graph: AppGraph) : ViewModel() {
         _pips.value = _pips.value.toMutableList().also { if (index in it.indices) it[index] = correct }
         _score.value = game.score()
         _question.value = resolved
+        _bumpToken.value++
         advanceJob = viewModelScope.launch {
             delay(DesignTokens.Motion.autoAdvance.toLong())
             advance()

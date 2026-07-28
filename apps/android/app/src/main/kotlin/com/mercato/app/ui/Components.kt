@@ -1,5 +1,9 @@
 package com.mercato.app.ui
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.WindowInsets
@@ -25,10 +29,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.composed
 import androidx.compose.ui.geometry.CornerRadius
@@ -36,13 +43,16 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
+import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
 import com.mercato.design.DesignTokens
 
@@ -303,28 +313,75 @@ fun LivesRow(livesLeft: Int, modifier: Modifier = Modifier, total: Int = 3) {
 
 /** Score readout, tinted by the last verdict. */
 @Composable
-fun ScorePill(points: Long, lastCorrect: Boolean?, modifier: Modifier = Modifier) {
+fun ScorePill(
+    points: Long,
+    lastCorrect: Boolean?,
+    bumpToken: Int,
+    modifier: Modifier = Modifier,
+) {
     val color = when (lastCorrect) {
         true -> DesignTokens.Color.green
         false -> DesignTokens.Color.coral
         null -> DesignTokens.Color.ivory
     }
-    // A bordered, raised capsule as on iOS: bare tinted text read as a stray
-    // number rather than part of the top bar.
-    Box(
-        modifier
-            .padding(bottom = 6.dp)
-            .solidRaisedCapsule(depth = 6.dp)
-            .background(color)
-            .padding(horizontal = 16.dp, vertical = 6.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            "$points",
-            style = typeStyle(DesignTokens.Type.year, DesignTokens.Color.ink)
-                .copy(fontSize = 22.sp),
-        )
+    Box(modifier, contentAlignment = Alignment.TopCenter) {
+        // A bordered, raised capsule as on iOS: bare tinted text read as a stray
+        // number rather than part of the top bar.
+        Box(
+            Modifier
+                .padding(bottom = 6.dp)
+                .solidRaisedCapsule(depth = 6.dp)
+                .background(color)
+                .padding(horizontal = 16.dp, vertical = 6.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                "$points",
+                style = typeStyle(DesignTokens.Type.year, DesignTokens.Color.ink)
+                    .copy(fontSize = 22.sp),
+            )
+        }
+        if (lastCorrect != null) ScoreBump(lastCorrect, bumpToken)
     }
+}
+
+/**
+ * SwiftUI's `.easeOut`, so the fly-up reads the same on both platforms.
+ *
+ * motion.score-bump supplies the 1500ms but names cubic-bezier(.2,.9,.3,1),
+ * which iOS does not use: that curve is 95% done by 30% of the duration, so
+ * the value fades out before it has travelled far enough to read.
+ */
+private val scoreBumpEasing = CubicBezierEasing(0f, 0f, 0.58f, 1f)
+
+/**
+ * The value of the answer, flying up out of the score pill and fading.
+ *
+ * Keyed on [bumpToken] so it replays on every settled answer, including two
+ * correct answers in a row, where nothing else about the pill changes. It is
+ * laid out unbounded: at a low score the glyph is wider than the pill, and
+ * letting it measure would shove the progress pips sideways for the duration.
+ */
+@Composable
+private fun ScoreBump(correct: Boolean, bumpToken: Int) = key(bumpToken) {
+    val flight = remember { Animatable(0f) }
+    LaunchedEffect(Unit) {
+        flight.animateTo(1f, tween(1500, easing = scoreBumpEasing))
+    }
+    Text(
+        if (correct) "+3" else "0",
+        style = typeStyle(
+            DesignTokens.Type.year,
+            if (correct) DesignTokens.Color.green else DesignTokens.Color.coral,
+        ).copy(
+            fontSize = 30.sp,
+            shadow = Shadow(DesignTokens.Color.ink, Offset(3f, 3f), blurRadius = 0f),
+        ),
+        modifier = Modifier
+            .wrapContentSize(unbounded = true)
+            .offset { IntOffset(0, lerp(40.dp, (-4).dp, flight.value).roundToPx()) }
+            .alpha(1f - flight.value),
+    )
 }
 
 /** 52x30 track, ink border, green when on. */
