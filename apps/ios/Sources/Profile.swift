@@ -114,7 +114,9 @@ struct ProfileView: View {
                 .multilineTextAlignment(.center)
             Text(L("statsEmptyBody"))
                 .font(DS.figtree(14, weight: 700))
-                .foregroundStyle(DesignTokens.Color.muted)
+                // muted is far too dark on this ink card; a soft ivory keeps the
+                // body clearly legible while staying secondary to the title.
+                .foregroundStyle(DesignTokens.Color.ivory.opacity(0.72))
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
         }

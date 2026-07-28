@@ -93,5 +93,12 @@ final class Store: ObservableObject {
     }
 
     /// Display price in the store's own currency, once the product has loaded.
-    var displayPrice: String? { product?.displayPrice }
+    var displayPrice: String? {
+        #if DEBUG
+        // QA: render the purchasable row in the simulator, where no StoreKit
+        // product loads. Never compiled into release.
+        if CommandLine.arguments.contains("-MercatoFakePrice") { return "4,99 \u{20AC}" }
+        #endif
+        return product?.displayPrice
+    }
 }

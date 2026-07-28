@@ -590,18 +590,11 @@ struct SettingsView: View {
     /// simply reports the state, so there is nothing left to buy anywhere.
     private var purchaseCard: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack(alignment: .top, spacing: 12) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(L("shopNoAds"))
-                        .font(DS.unbounded(18, weight: 900))
-                        .tracking(-0.04 * 18)
-                    Text(L("shopNoAdsSub"))
-                        .font(DS.figtree(13, weight: 700))
-                        .foregroundStyle(DesignTokens.Color.muted)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                Spacer(minLength: 0)
-                if store.adsRemoved {
+            // The whole row is the buy control: tapping "Remove ads" starts the
+            // purchase. The descriptive subtitle was dropped to keep it to one
+            // obvious action.
+            if store.adsRemoved {
+                noAdsRow {
                     Text(L("owned"))
                         .font(DS.unbounded(12, weight: 800))
                         .tracking(0.08 * 12)
@@ -610,8 +603,10 @@ struct SettingsView: View {
                         .padding(.vertical, 7)
                         .background(DesignTokens.Color.green)
                         .clipShape(Capsule())
-                } else if let price = store.displayPrice {
-                    Button { Task { await store.purchase() } } label: {
+                }
+            } else if let price = store.displayPrice {
+                Button { Task { await store.purchase() } } label: {
+                    noAdsRow {
                         Text(price)
                             .font(DS.unbounded(15, weight: 900))
                             .tracking(-0.03 * 15)
@@ -621,12 +616,14 @@ struct SettingsView: View {
                             .background(DesignTokens.Color.yellow)
                             .solidRaised(radius: 16, border: 4, depth: 6)
                     }
-                    .buttonStyle(.plain)
-                    .disabled(store.purchasing)
-                } else {
-                    // The store product (hence its price) has not loaded: show a
-                    // quiet, non-interactive label rather than a dead yellow CTA
-                    // displaying an ellipsis.
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .disabled(store.purchasing)
+            } else {
+                // The store product (hence its price) has not loaded: a quiet,
+                // non-interactive label rather than a dead CTA.
+                noAdsRow {
                     Text(L("shopUnavailable"))
                         .font(DS.figtree(13, weight: 700))
                         .foregroundStyle(DesignTokens.Color.muted)
@@ -650,6 +647,19 @@ struct SettingsView: View {
         .solidRaised(radius: 18, border: 4, depth: 6)
         .alert(L("restoreToast"), isPresented: $store.restoreFoundNothing) {
             Button("OK", role: .cancel) {}
+        }
+    }
+
+    /// The "Remove ads" title with a trailing control (price, owned badge or
+    /// the unavailable label), shared by every state of the purchase row.
+    private func noAdsRow<Trailing: View>(@ViewBuilder trailing: () -> Trailing) -> some View {
+        HStack(alignment: .center, spacing: 12) {
+            Text(L("shopNoAds"))
+                .font(DS.unbounded(18, weight: 900))
+                .tracking(-0.04 * 18)
+                .foregroundStyle(DesignTokens.Color.ink)
+            Spacer(minLength: 0)
+            trailing()
         }
     }
 
