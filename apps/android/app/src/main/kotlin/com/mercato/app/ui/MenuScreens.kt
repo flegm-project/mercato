@@ -543,11 +543,8 @@ fun SettingsScreen(
                 Modifier
                     .semantics { contentDescription = backLabel }
                     .size(38.dp)
-                    .background(
-                        DesignTokens.Color.ink.dim(DesignTokens.Opacity.control),
-                        RoundedCornerShape(DesignTokens.Radius.control),
-                    )
-                    .border(4.dp, DesignTokens.Color.ink, RoundedCornerShape(DesignTokens.Radius.control))
+                    .inkOutlined(DesignTokens.Radius.control)
+                    .background(DesignTokens.Color.ink.dim(DesignTokens.Opacity.control))
                     .clickable(onClick = onBack),
                 contentAlignment = Alignment.Center,
             ) {

@@ -211,6 +211,19 @@ fun Modifier.solidRaised(
 }
 
 /**
+ * Outlined but not raised: the close button on the game bar and the back button
+ * on Settings, matching iOS `inkOutlined` (DesignSystem.swift:188).
+ *
+ * The ring is the outer band of the surface, and the fill only exists inside
+ * it. Drawing the fill across the whole shape and stroking a border over it
+ * straddles the boundary, so half the ring sits outside the surface and the
+ * tinted fill shows past the corners: the two buttons read a size apart from
+ * their iOS counterparts.
+ */
+fun Modifier.inkOutlined(radius: Dp, border: Dp = 4.dp): Modifier =
+    solidRaised(radius = radius, depth = 0.dp, border = border)
+
+/**
  * The pale hatch behind an onboarding illustration. The ad slots use the dark
  * navy [adHatch]; using it here made the intro art look like an ad.
  */

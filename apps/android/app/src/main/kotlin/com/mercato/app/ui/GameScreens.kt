@@ -109,11 +109,8 @@ fun GameScreen(
                 Modifier
                     .semantics { contentDescription = closeLabel }
                     .size(38.dp)
-                    .background(
-                        DesignTokens.Color.ink.dim(DesignTokens.Opacity.control),
-                        RoundedCornerShape(DesignTokens.Radius.control),
-                    )
-                    .border(4.dp, DesignTokens.Color.ink, RoundedCornerShape(DesignTokens.Radius.control))
+                    .inkOutlined(DesignTokens.Radius.control)
+                    .background(DesignTokens.Color.ink.dim(DesignTokens.Opacity.control))
                     .clickable { quitAsked = true },
                 contentAlignment = Alignment.Center,
             ) {
