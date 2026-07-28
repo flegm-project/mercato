@@ -41,6 +41,30 @@ fn short_forms_still_match() {
     }
 }
 
+/// Players whose name carries a middle name or a hyphenated compound first name
+/// gained a "first + surname" alias, so the everyday short form is accepted even
+/// though it is far past the fuzzy threshold from the full name. A shared
+/// surname (Kevin-Prince vs Jerome Boateng) is disambiguated by the first name.
+#[test]
+fn first_plus_surname_short_forms_match() {
+    let c = load_corpus(&data_dir()).expect("dataset loads");
+    let cases = [
+        ("Q151034", "Kevin Boateng"),   // Kevin-Prince Boateng
+        ("Q44977", "Pierre Aubameyang"), // Pierre-Emerick Aubameyang
+        ("Q26069", "Klaas Huntelaar"),   // Klaas-Jan Huntelaar
+        ("Q13494", "Jean Papin"),        // Jean-Pierre Papin
+        ("Q160472", "Marc ter Stegen"),  // Marc-Andre ter Stegen
+        ("Q152871", "Karl Rummenigge"),  // Karl-Heinz Rummenigge
+    ];
+    for (id, typed) in cases {
+        let r = c
+            .matcher()
+            .match_by_id(&c.players, typed, id, 2)
+            .unwrap_or_else(|| panic!("unknown player {id}"));
+        assert!(r.ok, "typing {typed:?} should match {id}, got {r:?}");
+    }
+}
+
 /// Every form the review displaced was kept as an alias, so a guess that was
 /// valid before the corrections is still valid after them.
 #[test]

@@ -23,12 +23,13 @@ fn loads_the_real_dataset() {
     assert_eq!(c.transfers.len(), 1905);
     assert_eq!(c.nationalities.len(), 53);
 
-    // Aliases were joined onto players. 945 came with the dataset; the other
-    // 40 were added by the name review, which unified each player's name
-    // across the three languages and kept every displaced form reachable so a
-    // guess that was valid before still matches (see tests/corrections.rs).
+    // Aliases were joined onto players. 945 came with the dataset; 40 were
+    // added by the name review (unifying each player's name across the three
+    // languages while keeping every displaced form reachable), and 15 more are
+    // "first + surname" short forms for middle or hyphenated compound names, so
+    // an everyday guess still matches (see tests/corrections.rs).
     let aliases: usize = c.players.iter().map(|p| p.aliases.len()).sum();
-    assert_eq!(aliases, 985);
+    assert_eq!(aliases, 1000);
 }
 
 #[test]
