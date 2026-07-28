@@ -40,7 +40,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.composed
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
@@ -145,9 +148,15 @@ fun Modifier.adHatch(): Modifier = drawBehind {
  * raised surface, and the iOS `solidRaised` counterpart. Without it Android
  * surfaces read flat next to the same screen on iOS.
  *
- * The outline is a filled shape behind content inset by the border width,
- * rather than a stroke over a clipped fill, for the same reason as on iOS: a
- * stroke leaves the fill's antialiased edge showing past it as a pale seam.
+ * The outline hugs the outer edge and is painted over the content, rather than
+ * being a stroke straddling the boundary of a clipped fill: a straddling stroke
+ * leaves the fill's antialiased edge showing past it as a pale seam.
+ *
+ * It costs no layout. iOS `SolidRaised` only clips and paints, so a raised row
+ * is exactly as tall as its padded content and the border eats into it.
+ * Reserving the border as padding instead, as this did, made every raised
+ * surface on Android 2x`border` taller than the same surface on iOS, and the
+ * error accumulated down every stack of them.
  */
 fun Modifier.solidRaisedCapsule(
     depth: Dp,
@@ -164,13 +173,12 @@ fun Modifier.solidRaised(
     pressed: Boolean = false,
 ): Modifier = composed {
     val shape = if (radius == null) CircleShape else RoundedCornerShape(radius)
-    val inner = if (radius == null) CircleShape
-                else RoundedCornerShape((radius - border).coerceAtLeast(0.dp))
     // Pressing sinks the surface onto its shadow, as motion.press describes.
     val sink = if (pressed) 5.dp else 0.dp
     val drop = (depth - sink).coerceAtLeast(0.dp)
     this
         .offset(y = sink)
+        // Outside the clip below: the drop shadow sits proud of the surface.
         .drawBehind {
             drawRoundRect(
                 color = outline,
@@ -179,9 +187,19 @@ fun Modifier.solidRaised(
                 cornerRadius = CornerRadius((radius?.toPx() ?: (size.height / 2f))),
             )
         }
-        .background(outline, shape)
-        .padding(border)
-        .clip(inner)
+        .clip(shape)
+        .drawWithContent {
+            drawContent()
+            val b = border.toPx()
+            val r = radius?.toPx() ?: (size.height / 2f)
+            drawRoundRect(
+                color = outline,
+                topLeft = Offset(b / 2f, b / 2f),
+                size = Size(size.width - b, size.height - b),
+                cornerRadius = CornerRadius((r - b / 2f).coerceAtLeast(0f)),
+                style = Stroke(width = b),
+            )
+        }
 }
 
 /**
