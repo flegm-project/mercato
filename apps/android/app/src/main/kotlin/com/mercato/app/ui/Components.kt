@@ -12,10 +12,12 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -29,6 +31,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -164,7 +167,7 @@ fun AnswerButton(
     Box(
         modifier
             .fillMaxWidth()
-            .height(52.dp)
+            .heightIn(min = 52.dp)
             .background(fill, shape)
             .border(DesignTokens.Border.hairline, DesignTokens.Color.ink, shape)
             .clip(shape)
@@ -244,7 +247,11 @@ fun MercatoToggle(checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
             .size(width = 52.dp, height = 30.dp)
             .background(track, RoundedCornerShape(15.dp))
             .border(DesignTokens.Border.hairline, DesignTokens.Color.ink, RoundedCornerShape(15.dp))
-            .clickable { onCheckedChange(!checked) },
+            .toggleable(
+                value = checked,
+                role = Role.Switch,
+                onValueChange = onCheckedChange,
+            ),
         contentAlignment = if (checked) Alignment.CenterEnd else Alignment.CenterStart,
     ) {
         Box(

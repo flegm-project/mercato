@@ -133,7 +133,9 @@
     "sGold": "Noyau or",
     "sAmb": "Noms ambigus",
     "ambT": "Collisions de noms de famille",
-    "ambN": "Cas réels extraits des données. Le niveau hardcore doit refuser le nom de famille seul pour chacun."
+    "ambN": "Cas réels extraits des données. Le niveau hardcore doit refuser le nom de famille seul pour chacun.",
+    "a11yBack": "Retour",
+    "a11yClose": "Fermer"
   },
   "en": {
     "l1": "EASY",
@@ -269,7 +271,9 @@
     "sGold": "Gold pool",
     "sAmb": "Ambiguous names",
     "ambT": "Surname collisions",
-    "ambN": "Real cases from the data. Hardcore must reject the bare surname for each."
+    "ambN": "Real cases from the data. Hardcore must reject the bare surname for each.",
+    "a11yBack": "Back",
+    "a11yClose": "Close"
   },
   "es": {
     "l1": "FÁCIL",
@@ -405,6 +409,8 @@
     "sGold": "Núcleo oro",
     "sAmb": "Nombres ambiguos",
     "ambT": "Colisiones de apellidos",
-    "ambN": "Casos reales de los datos. El nivel hardcore debe rechazar el apellido solo en cada uno."
+    "ambN": "Casos reales de los datos. El nivel hardcore debe rechazar el apellido solo en cada uno.",
+    "a11yBack": "Atrás",
+    "a11yClose": "Cerrar"
   }
 }

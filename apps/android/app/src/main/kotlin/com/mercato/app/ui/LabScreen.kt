@@ -22,6 +22,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.mercato.app.AppGraph
 import com.mercato.app.R
@@ -53,12 +55,14 @@ fun LabScreen(graph: AppGraph, onBack: () -> Unit) {
     ScreenColumn(Modifier.verticalScroll(rememberScrollState())) {
         Gap(DesignTokens.Space.xl)
         Row(verticalAlignment = Alignment.CenterVertically) {
+            val backLabel = stringResource(R.string.a11yBack)
             Text(
                 "‹",
                 style = typeStyle(DesignTokens.Type.screenTitle, DesignTokens.Color.ivory),
                 modifier = Modifier
+                    .semantics { contentDescription = backLabel }
                     .clickable(onClick = onBack)
-                    .padding(end = DesignTokens.Space.md),
+                    .padding(end = DesignTokens.Space.md, top = 6.dp, bottom = 6.dp),
             )
             Text(
                 stringResource(R.string.labT),

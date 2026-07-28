@@ -30,6 +30,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.window.Dialog
@@ -85,12 +87,14 @@ fun GameScreen(
     ScreenColumn {
         Gap(DesignTokens.Space.lg)
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            val closeLabel = stringResource(R.string.a11yClose)
             Text(
                 "✕",
                 style = typeStyle(DesignTokens.Type.answer, DesignTokens.Color.ivory),
                 modifier = Modifier
+                    .semantics { contentDescription = closeLabel }
                     .clickable { quitAsked = true }
-                    .padding(end = DesignTokens.Space.md),
+                    .padding(end = DesignTokens.Space.md, top = 10.dp, bottom = 10.dp),
             )
             ProgressPips(pips, liveIndex = q.question.index.toInt() - 1, Modifier.weight(1f))
             if (mode == GameMode.HARDCORE) {
