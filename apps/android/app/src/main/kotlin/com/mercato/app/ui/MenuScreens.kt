@@ -255,6 +255,8 @@ fun ConsentScreen(graph: AppGraph, fromSettings: Boolean, onDone: () -> Unit) {
     }
 
     ScreenColumn {
+        // iOS pads the column by 20 top and bottom (Screens.swift:435).
+        Gap(20.dp)
         Spacer(Modifier.weight(1f))
         Column(
             Modifier
@@ -267,14 +269,15 @@ fun ConsentScreen(graph: AppGraph, fromSettings: Boolean, onDone: () -> Unit) {
                 stringResource(R.string.cnTitle),
                 style = typeStyle(DesignTokens.Type.consentTitle, DesignTokens.Color.ink),
             )
-            Gap(DesignTokens.Space.sm)
+            // iOS: 12 under the title, 16 above the bullets (Screens.swift:372).
+            Gap(12.dp)
             Text(
                 // iOS: Figtree 14.5/600 in muted, and the bullet text in ink.
                 // The two colours were swapped on Android.
                 stringResource(R.string.cnBody),
                 style = typeStyle(DesignTokens.Type.consentBody, DesignTokens.Color.muted),
             )
-            Gap(DesignTokens.Space.md)
+            Gap(DesignTokens.Space.gutter)
             listOf(R.string.cnPoints_0, R.string.cnPoints_1, R.string.cnPoints_2).forEach {
                 Row(
                     Modifier.padding(vertical = 4.5.dp),
@@ -299,25 +302,36 @@ fun ConsentScreen(graph: AppGraph, fromSettings: Boolean, onDone: () -> Unit) {
         // leaves the actions and the footer on the blue background
         // (Screens.swift:381). Putting them inside turned the bottom half of
         // the screen ivory.
-        Gap(DesignTokens.Space.lg)
+        //
+        // The flexible space goes between the card and the actions, which is
+        // what holds the actions on the bottom edge. Android put both spacers
+        // above the card and below the footnote, so the actions rode up under
+        // the card and the bottom third of the screen was empty.
+        Spacer(Modifier.weight(1f))
         InkButton(
             stringResource(R.string.cnAccept), ButtonStyle.Primary,
             fontSize = 18.sp, fontWeight = 900, tracking = -0.03f,
+            depth = 9.dp, verticalPadding = 19.dp,
         ) { choose(true) }
         // iOS spaces the actions and the footnote by 11 (Screens.swift:403).
         Gap(11.dp)
         InkButton(
             stringResource(R.string.cnRefuse), ButtonStyle.Secondary,
             fontSize = 15.sp, fontWeight = 800, tracking = -0.03f,
+            depth = 9.dp, verticalPadding = 17.dp,
         ) { choose(false) }
-        Gap(11.dp)
+        // 11 of stack spacing plus the footnote's own 4 (Screens.swift:431).
+        Gap(15.dp)
         Text(
             stringResource(R.string.cnFoot),
-            style = typeStyle(DesignTokens.Type.body, Color.White.dim(DesignTokens.Opacity.textFootnote)),
+            style = typeStyle(
+                DesignTokens.Type.footnote,
+                Color.White.dim(DesignTokens.Opacity.textFootnote),
+            ),
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center,
         )
-        Spacer(Modifier.weight(1f))
+        Gap(20.dp)
     }
 }
 
