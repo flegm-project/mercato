@@ -353,13 +353,13 @@ struct TransferCard: View {
                 .clipShape(Capsule())
             Spacer(minLength: 0)
             Text(String(year))
-                .font(DS.unbounded(42, weight: 900))
+                .font(DS.unbounded(32, weight: 900))
                 .monospacedDigit()
                 .foregroundStyle(DesignTokens.Color.yellow)
         }
         .padding(.horizontal, 18)
-        .padding(.top, 12)
-        .padding(.bottom, 14)
+        .padding(.top, 10)
+        .padding(.bottom, 10)
         .frame(maxWidth: .infinity)
         .background(DesignTokens.Color.ink)
     }
@@ -367,37 +367,37 @@ struct TransferCard: View {
     private var content: some View {
         VStack(spacing: 0) {
             Text(fromClub)
-                .font(DS.unbounded(19, weight: 800))
-                .tracking(-0.04 * 19)
+                .font(DS.unbounded(16, weight: 800))
+                .tracking(-0.04 * 16)
                 .foregroundStyle(DesignTokens.Color.clubGrey)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
                 .minimumScaleFactor(0.5)
 
             Text("\u{25BC}")
-                .font(.system(size: 15))
+                .font(.system(size: 13))
                 .foregroundStyle(arrowColor)
-                .padding(.top, 10)
-                .padding(.bottom, 12)
+                .padding(.top, 6)
+                .padding(.bottom, 8)
 
             Text(toClub)
-                .font(DS.unbounded(32, weight: 900))
-                .tracking(-0.05 * 32)
+                .font(DS.unbounded(30, weight: 900))
+                .tracking(-0.05 * 30)
                 .foregroundStyle(DesignTokens.Color.ink)
                 .multilineTextAlignment(.center)
                 // Capping the lines makes a long name scale down rather than
-                // wrap mid-word.
+                // wrap mid-word, but keep the floor high so it stays prominent.
                 .lineLimit(2)
-                .minimumScaleFactor(0.45)
+                .minimumScaleFactor(0.6)
 
             if let maskedName, verdict == nil, !maskedName.isEmpty {
                 Text(maskedName)
-                    .font(DS.unbounded(22, weight: 900))
-                    .tracking(0.1 * 22)
+                    .font(DS.unbounded(18, weight: 900))
+                    .tracking(0.1 * 18)
                     .foregroundStyle(Color(red: 0.84, green: 0.83, blue: 0.77))
                     .lineLimit(2)
                     .minimumScaleFactor(0.5)
-                    .padding(.top, 18)
+                    .padding(.top, 10)
             }
 
             if let revealedName, verdict != nil {
@@ -419,8 +419,8 @@ struct TransferCard: View {
             }
         }
         .padding(.horizontal, 18)
-        .padding(.top, 20)
-        .padding(.bottom, 22)
+        .padding(.top, 14)
+        .padding(.bottom, 16)
         .frame(maxWidth: .infinity)
         .background(DesignTokens.Color.ivory)
     }

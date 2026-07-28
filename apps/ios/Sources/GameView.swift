@@ -41,27 +41,14 @@ struct GameView: View {
                 topBar
 
                 if let q = question {
-                    TransferCard(
-                        kindLabel: kindLabel(q.kind),
-                        isLoan: q.kind == .loan,
-                        year: q.year,
-                        fromClub: q.fromClub,
-                        toClub: q.toClub,
-                        verdict: answer?.correct,
-                        revealedName: answer?.revealedName,
-                        maskedName: q.maskedName
-                    )
-                    .padding(.top, 14)
-                    .contentShape(Rectangle())
-                    .onTapGesture { if answer != nil { advanceNow() } }
-
-                    Spacer(minLength: 16)
+                    transferCard(q)
+                    Spacer(minLength: 12)
                     if mode == .easy {
                         answers(q)
                     } else {
                         hardcore(q)
                     }
-                    Spacer(minLength: 16)
+                    Spacer(minLength: 12)
                 } else {
                     Spacer(minLength: 0)
                 }
@@ -81,6 +68,22 @@ struct GameView: View {
     }
 
     // MARK: - Pieces
+
+    private func transferCard(_ q: QuestionView) -> some View {
+        TransferCard(
+            kindLabel: kindLabel(q.kind),
+            isLoan: q.kind == .loan,
+            year: q.year,
+            fromClub: q.fromClub,
+            toClub: q.toClub,
+            verdict: answer?.correct,
+            revealedName: answer?.revealedName,
+            maskedName: q.maskedName
+        )
+        .padding(.top, 14)
+        .contentShape(Rectangle())
+        .onTapGesture { if answer != nil { advanceNow() } }
+    }
 
     private var topBar: some View {
         HStack(spacing: 12) {
