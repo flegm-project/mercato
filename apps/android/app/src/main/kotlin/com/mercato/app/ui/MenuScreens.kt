@@ -149,20 +149,29 @@ fun OnboardingScreen(onDone: () -> Unit) {
     val scope = rememberCoroutineScope()
 
     ScreenColumn {
-        Row(Modifier.fillMaxWidth().padding(top = DesignTokens.Space.lg)) {
+        // iOS pads the top by the gutter and gives the skip row a fixed 38
+        // (Screens.swift:272).
+        Gap(DesignTokens.Space.gutter)
+        Row(
+            Modifier.fillMaxWidth().height(38.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             Spacer(Modifier.weight(1f))
             Text(
                 stringResource(R.string.obSkip).uppercase(),
                 style = typeStyle(DesignTokens.Type.skipLabel, Color.White.dim(DesignTokens.Opacity.textSoft)),
-                modifier = Modifier.clickable(onClick = onDone),
+                modifier = Modifier.clickable(onClick = onDone).padding(8.dp),
             )
         }
         HorizontalPager(pager, Modifier.weight(1f)) { page ->
             val (art, title, body) = panes[page]
+            // iOS leaves the art and the copy left-aligned in a block centred
+            // between two spacers; Android centred every line of them
+            // (Screens.swift:284).
             Column(
                 Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
+                horizontalAlignment = Alignment.Start,
             ) {
                 Box(
                     Modifier
@@ -180,25 +189,25 @@ fun OnboardingScreen(onDone: () -> Unit) {
                         style = DesignTokens.Type.technical,
                     )
                 }
-                Gap(DesignTokens.Space.xl)
+                // iOS: 26 under the art, 12 between title and body
+                // (Screens.swift:284).
+                Gap(26.dp)
                 Text(
                     stringResource(title),
                     style = typeStyle(DesignTokens.Type.screenTitle, DesignTokens.Color.ivory),
-                    textAlign = TextAlign.Center,
                 )
-                Gap(DesignTokens.Space.sm)
+                Gap(12.dp)
                 Text(
                     stringResource(body),
                     style = typeStyle(
-                        DesignTokens.Type.body,
-                        DesignTokens.Color.ivory.dim(DesignTokens.Opacity.textNear),
+                        DesignTokens.Type.bodyLarge,
+                        Color.White.dim(DesignTokens.Opacity.textSoft),
                     ),
-                    textAlign = TextAlign.Center,
                 )
             }
         }
         Row(
-            Modifier.fillMaxWidth().padding(vertical = DesignTokens.Space.md),
+            Modifier.fillMaxWidth().padding(bottom = 18.dp),
             horizontalArrangement = Arrangement.Center,
         ) {
             repeat(panes.size) { i ->
@@ -219,8 +228,9 @@ fun OnboardingScreen(onDone: () -> Unit) {
         InkButton(
             stringResource(if (last) R.string.obStart else R.string.obNext),
             ButtonStyle.Primary,
-            Modifier.padding(bottom = DesignTokens.Space.xl),
+            Modifier.padding(bottom = 20.dp),
             fontSize = 22.sp, fontWeight = 900, tracking = -0.03f,
+            depth = 9.dp, verticalPadding = 20.dp,
         ) {
             if (last) onDone()
             else scope.launch { pager.animateScrollToPage(pager.currentPage + 1) }
