@@ -7,6 +7,25 @@ struct MercatoTabBar: View {
     let selected: Int
     let onSelect: (Int) -> Void
 
+    /// The inset between the bar's edge and a tab.
+    private let inset: CGFloat = 6
+
+    /// The outer corners follow the bar's own, pulled in by the inset; only the
+    /// corners facing the other tab take the small radius. At a flat small
+    /// radius against the bar's, the yellow left a crescent of ink in each
+    /// outer corner and read as the wrong shape inside the border.
+    private func shape(_ index: Int) -> UnevenRoundedRectangle {
+        let outer = DesignTokens.Radius.card - inset
+        let small = DesignTokens.Radius.small
+        return UnevenRoundedRectangle(
+            topLeadingRadius: index == 0 ? outer : small,
+            bottomLeadingRadius: index == 0 ? outer : small,
+            bottomTrailingRadius: index == tabs.count - 1 ? outer : small,
+            topTrailingRadius: index == tabs.count - 1 ? outer : small,
+            style: .continuous
+        )
+    }
+
     var body: some View {
         HStack(spacing: 6) {
             ForEach(Array(tabs.enumerated()), id: \.offset) { index, label in
@@ -20,12 +39,14 @@ struct MercatoTabBar: View {
                         )
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .background(index == selected ? DesignTokens.Color.yellow : Color.clear)
-                        .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.small, style: .continuous))
+                        .clipShape(shape(index))
+                        // The whole cell is the target, not just the label.
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
             }
         }
-        .padding(6)
+        .padding(inset)
         .frame(height: 58)
         .background(DesignTokens.Color.ink)
         .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.card, style: .continuous))

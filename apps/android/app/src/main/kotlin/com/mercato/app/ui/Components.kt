@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.systemGestureExclusion
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -533,23 +534,46 @@ fun MercatoTabBar(
     modifier: Modifier = Modifier,
     onSelect: (Int) -> Unit,
 ) {
+    val inset = 6.dp
     Row(
         modifier
             .fillMaxWidth()
             .height(58.dp)
             .background(DesignTokens.Color.ink, RoundedCornerShape(DesignTokens.Radius.card))
-            .padding(6.dp),
+            // The bar sits at the foot of the screen, where the system claims a
+            // strip along each edge for the back gesture, and a Galaxy's curved
+            // sides reject touches there outright. That took the outer end of
+            // each tab with it, which is why the two tabs only answered near
+            // their label. Claiming the bar back is what this is for.
+            .systemGestureExclusion()
+            .padding(inset),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         tabs.forEachIndexed { i, label ->
-            TabCell(label, i == selected) { onSelect(i) }
+            // The outer corners follow the bar's own, pulled in by the inset;
+            // only the corners facing the other tab take the small radius. At a
+            // flat 14 against the bar's 26 the yellow left a crescent of ink in
+            // each outer corner and read as the wrong shape inside the border.
+            val outer = DesignTokens.Radius.card - inset
+            val small = DesignTokens.Radius.small
+            val shape = RoundedCornerShape(
+                topStart = if (i == 0) outer else small,
+                bottomStart = if (i == 0) outer else small,
+                topEnd = if (i == tabs.lastIndex) outer else small,
+                bottomEnd = if (i == tabs.lastIndex) outer else small,
+            )
+            TabCell(label, i == selected, shape) { onSelect(i) }
         }
     }
 }
 
 @Composable
-private fun RowScope.TabCell(label: String, active: Boolean, onClick: () -> Unit) {
-    val shape = RoundedCornerShape(DesignTokens.Radius.small)
+private fun RowScope.TabCell(
+    label: String,
+    active: Boolean,
+    shape: RoundedCornerShape,
+    onClick: () -> Unit,
+) {
     Box(
         Modifier
             .weight(1f)
