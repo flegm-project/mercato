@@ -509,10 +509,10 @@ private fun RowScope.TabCell(label: String, active: Boolean, onClick: () -> Unit
         Text(
             label,
             style = typeStyle(
-                DesignTokens.Type.clubTo,
+                DesignTokens.Type.tabLabel,
                 if (active) DesignTokens.Color.ink
                 else DesignTokens.Color.ivory.copy(alpha = 0.7f),
-            ).copy(fontSize = 13.5.sp, letterSpacing = (-0.02f).em),
+            ),
         )
     }
 }
@@ -540,8 +540,13 @@ fun ScreenColumn(
 
 /** Small all-caps label (ADVERTISEMENT, section titles...). */
 @Composable
-fun CapsLabel(text: String, modifier: Modifier = Modifier, color: Color = Color.White.copy(alpha = 0.6f)) {
-    Text(text.uppercase(), style = typeStyle(DesignTokens.Type.label, color), modifier = modifier)
+fun CapsLabel(
+    text: String,
+    modifier: Modifier = Modifier,
+    color: Color = Color.White.copy(alpha = 0.6f),
+    style: DesignTokens.TypeStyle = DesignTokens.Type.label,
+) {
+    Text(text.uppercase(), style = typeStyle(style, color), modifier = modifier)
 }
 
 /** Vertical spacer shorthand. */

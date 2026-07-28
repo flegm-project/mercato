@@ -153,12 +153,7 @@ fun OnboardingScreen(onDone: () -> Unit) {
             Spacer(Modifier.weight(1f))
             Text(
                 stringResource(R.string.obSkip).uppercase(),
-                style = typeStyle(
-                    DesignTokens.Type.label,
-                    Color.White.copy(alpha = 0.68f),
-                    13.sp,
-                    0.06f,
-                ),
+                style = typeStyle(DesignTokens.Type.skipLabel, Color.White.copy(alpha = 0.68f)),
                 modifier = Modifier.clickable(onClick = onDone),
             )
         }
@@ -180,7 +175,11 @@ fun OnboardingScreen(onDone: () -> Unit) {
                 ) {
                     // Ink-grey on the pale hatch: white at 60 percent was
                     // barely legible there, unlike iOS.
-                    CapsLabel(stringResource(art), color = DesignTokens.Color.clubGrey)
+                    CapsLabel(
+                        stringResource(art),
+                        color = DesignTokens.Color.clubGrey,
+                        style = DesignTokens.Type.technical,
+                    )
                 }
                 Gap(DesignTokens.Space.xl)
                 Text(
@@ -257,7 +256,7 @@ fun ConsentScreen(graph: AppGraph, fromSettings: Boolean, onDone: () -> Unit) {
         ) {
             Text(
                 stringResource(R.string.cnTitle),
-                style = typeStyle(DesignTokens.Type.screenTitle, DesignTokens.Color.ink),
+                style = typeStyle(DesignTokens.Type.consentTitle, DesignTokens.Color.ink),
             )
             Gap(DesignTokens.Space.sm)
             Text(
@@ -362,8 +361,7 @@ fun ProfileScreen(graph: AppGraph, onPlayTab: () -> Unit, onSettings: () -> Unit
         Gap(DesignTokens.Space.xl)
         Text(
             stringResource(R.string.profile),
-            style = typeStyle(DesignTokens.Type.clubTo, DesignTokens.Color.ivory)
-                .copy(fontSize = 20.sp, letterSpacing = (-0.04 * 20).sp),
+            style = typeStyle(DesignTokens.Type.panelTitle, DesignTokens.Color.ivory),
         )
         // Banner at the top, far from the tab bar, so a mistap near the
         // bottom never lands on an ad (iOS parity).
@@ -634,8 +632,10 @@ private fun PurchaseRow(
         ) {
             Text(
                 trailing,
-                style = typeStyle(DesignTokens.Type.clubTo, DesignTokens.Color.ink)
-                    .copy(fontSize = 15.sp),
+                style = typeStyle(
+                    if (owned) DesignTokens.Type.ownedBadge else DesignTokens.Type.badgeValue,
+                    DesignTokens.Color.ink,
+                ),
             )
         }
     }
@@ -656,8 +656,7 @@ private fun ToggleRow(label: Int, checked: Boolean, onChange: (Boolean) -> Unit)
     ) {
         Text(
             stringResource(label),
-            style = typeStyle(DesignTokens.Type.clubTo, DesignTokens.Color.ink)
-                .copy(fontSize = 15.sp),
+            style = typeStyle(DesignTokens.Type.ctaCompact, DesignTokens.Color.ink),
         )
         MercatoToggle(checked, onChange)
     }

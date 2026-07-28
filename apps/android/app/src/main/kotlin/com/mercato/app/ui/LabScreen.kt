@@ -109,7 +109,7 @@ fun LabScreen(graph: AppGraph, onBack: () -> Unit) {
         Gap(DesignTokens.Space.lg)
 
         // Target picker: filter by name, tap a row to lock the target.
-        CapsLabel(stringResource(R.string.labTarget))
+        CapsLabel(stringResource(R.string.labTarget), style = DesignTokens.Type.labCaps)
         Gap(DesignTokens.Space.xs)
         LabField(
             value = if (targetId == null) filter else targetName.orEmpty(),
@@ -134,7 +134,7 @@ fun LabScreen(graph: AppGraph, onBack: () -> Unit) {
         }
         Gap(DesignTokens.Space.md)
 
-        CapsLabel(stringResource(R.string.labGuess))
+        CapsLabel(stringResource(R.string.labGuess), style = DesignTokens.Type.labCaps)
         Gap(DesignTokens.Space.xs)
         LabField(
             value = guess,
@@ -196,7 +196,7 @@ fun LabScreen(graph: AppGraph, onBack: () -> Unit) {
             Gap(DesignTokens.Space.lg)
         }
 
-        CapsLabel(stringResource(R.string.stats))
+        CapsLabel(stringResource(R.string.stats), style = DesignTokens.Type.labCaps)
         Gap(DesignTokens.Space.xs)
         LabPanel {
             LabStatLine(stringResource(R.string.sPlayers), stats.players.toString())
@@ -207,11 +207,14 @@ fun LabScreen(graph: AppGraph, onBack: () -> Unit) {
         }
         Gap(DesignTokens.Space.lg)
 
-        CapsLabel(stringResource(R.string.ambT))
+        CapsLabel(stringResource(R.string.ambT), style = DesignTokens.Type.labCaps)
         Gap(DesignTokens.Space.xs)
         Text(
             stringResource(R.string.ambN),
-            style = typeStyle(DesignTokens.Type.body, DesignTokens.Color.ivory.copy(alpha = 0.7f)),
+            style = typeStyle(
+                DesignTokens.Type.labCaption,
+                DesignTokens.Color.ivory.copy(alpha = 0.6f),
+            ),
         )
         Gap(DesignTokens.Space.xs)
         collisions.take(30).forEach { c ->
@@ -228,7 +231,7 @@ fun LabScreen(graph: AppGraph, onBack: () -> Unit) {
             ) {
                 Text(
                     c.surname,
-                    style = typeStyle(DesignTokens.Type.answer, DesignTokens.Color.yellow),
+                    style = typeStyle(DesignTokens.Type.monoValue, DesignTokens.Color.yellow),
                 )
                 Text(
                     c.players.joinToString(", "),

@@ -52,6 +52,13 @@ enum DS {
         }
     }
 
+    /// Token tracking at a size other than the token's own, for the one view
+    /// that scales: the wordmark shrinks to fit its column.
+    static func tracking(_ style: DesignTokens.TypeStyle, at size: CGFloat) -> CGFloat {
+        guard style.size > 0 else { return 0 }
+        return tracking(style) / style.size * size
+    }
+
     /// Token tracking converted to points, the unit `.tracking()` expects.
     /// tokens.json states it in em, as CSS does.
     static func tracking(_ style: DesignTokens.TypeStyle) -> CGFloat {

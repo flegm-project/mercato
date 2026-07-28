@@ -171,6 +171,16 @@ const KT_TOKEN_TYPE = {
   expand: (m) => expandType(m[1]),
 };
 
+// A token also travels as a parameter, a composable default or a branch of a
+// conditional, and never reaches a typeStyle() call in the same file. Matching
+// the bare reference covers all of those. The cost is that a call site which
+// overrides the size still contributes the token's own size; harmless now that
+// Android has almost no overrides left.
+const KT_TOKEN_PARAM = {
+  re: /DesignTokens\.Type\.(\w+)/g,
+  expand: (m) => expandType(m[1]),
+};
+
 // Values that carry no visual meaning on their own, or that one platform
 // expresses structurally rather than numerically. Comparing them produces
 // noise, not drift.
@@ -208,7 +218,7 @@ const KINDS = ["fontSize", "fontWeight", "tracking", "radius", "depth", "opacity
 
 function compare() {
   const ios = inventory(readAll(IOS, IOS_FILES), [...IOS_MATCHERS, IOS_TOKEN_TYPE]);
-  const and = inventory(readAll(AND, AND_FILES), [...KT_MATCHERS, KT_TOKEN_TYPE]);
+  const and = inventory(readAll(AND, AND_FILES), [...KT_MATCHERS, KT_TOKEN_TYPE, KT_TOKEN_PARAM]);
   const findings = [];
   for (const kind of KINDS) {
     const a = ios.get(kind) ?? new Map();

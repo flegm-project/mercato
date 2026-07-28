@@ -9,13 +9,13 @@ func L(_ key: String) -> String {
 
 /// The wordmark: MER in ivory, CATO in yellow, over a hard ink offset shadow.
 struct Wordmark: View {
-    var size: CGFloat = 74
+    var size: CGFloat = TypeToken.logo.size
 
     var body: some View {
         (Text("MER").foregroundColor(DesignTokens.Color.ivory)
             + Text("CATO").foregroundColor(DesignTokens.Color.yellow))
-            .font(DS.unbounded(size, weight: 900))
-            .tracking(-0.06 * size)
+            .font(DS.unbounded(size, weight: TypeToken.logo.weight))
+            .tracking(DS.tracking(TypeToken.logo, at: size))
             .shadow(color: DesignTokens.Color.ink, radius: 0, x: 6, y: 7)
             .lineLimit(1)
             .minimumScaleFactor(0.5)

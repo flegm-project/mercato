@@ -227,8 +227,7 @@ private fun TransferCard(ui: QuestionUi, onTap: () -> Unit) {
                 Gap(DesignTokens.Space.sm)
                 Text(
                     ui.question.maskedName,
-                    style = typeStyle(DesignTokens.Type.answer, Color(0xFFD6D3C4))
-                        .copy(fontSize = 18.sp, letterSpacing = 1.8.sp),
+                    style = typeStyle(DesignTokens.Type.maskedName, Color(0xFFD6D3C4)),
                     textAlign = TextAlign.Center,
                 )
             }
@@ -251,7 +250,7 @@ private fun KindChip(kind: MoveKind) {
     ) {
         Text(
             stringResource(label),
-            style = typeStyle(DesignTokens.Type.label, DesignTokens.Color.ink),
+            style = typeStyle(DesignTokens.Type.cardKind, DesignTokens.Color.ink),
         )
     }
 }
@@ -344,8 +343,7 @@ private fun HintChip(hint: HintView) {
     ) {
         Text(
             text,
-            style = typeStyle(DesignTokens.Type.answer, DesignTokens.Color.ink)
-                .copy(fontSize = 13.5.sp),
+            style = typeStyle(DesignTokens.Type.hintChip, DesignTokens.Color.ink),
         )
     }
 }
@@ -559,6 +557,6 @@ fun RecapScreen(
 private fun RecapStat(value: String, label: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(value, style = typeStyle(DesignTokens.Type.year, DesignTokens.Color.ivory))
-        CapsLabel(label)
+        CapsLabel(label, style = DesignTokens.Type.adLabel)
     }
 }
