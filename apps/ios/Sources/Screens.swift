@@ -662,6 +662,9 @@ struct SettingsView: View {
         .alert(L("restoreToast"), isPresented: $store.restoreFoundNothing) {
             Button("OK", role: .cancel) {}
         }
+        .alert(L("buyFailed"), isPresented: $store.purchaseFailed) {
+            Button("OK", role: .cancel) {}
+        }
     }
 
     /// The "Remove ads" title with a trailing control (price, owned badge or

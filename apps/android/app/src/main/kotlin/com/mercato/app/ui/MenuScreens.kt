@@ -30,6 +30,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -233,17 +237,22 @@ fun HomeScreen(graph: AppGraph, onPlay: (GameMode) -> Unit, onProfile: () -> Uni
     LaunchedEffect(Unit) { graph.ads.preloadInterstitial() }
     ScreenColumn {
         Spacer(Modifier.weight(1f))
+        // MER ivory, CATO yellow, as in the source design and on iOS. A
+        // single-colour wordmark made the two apps look like different games.
         Text(
-            "MERCATO",
+            buildAnnotatedString {
+                withStyle(SpanStyle(color = DesignTokens.Color.ivory)) { append("MER") }
+                withStyle(SpanStyle(color = DesignTokens.Color.yellow)) { append("CATO") }
+            },
             style = typeStyle(DesignTokens.Type.logo, DesignTokens.Color.ivory)
                 .copy(fontSize = 46.sp),
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center,
         )
         Spacer(Modifier.weight(1f))
-        ModeButton(R.string.l1) { onPlay(GameMode.EASY) }
+        ModeButton(R.string.l1, DesignTokens.Color.yellow) { onPlay(GameMode.EASY) }
         Gap(DesignTokens.Space.md)
-        ModeButton(R.string.l3) { onPlay(GameMode.HARDCORE) }
+        ModeButton(R.string.l3, DesignTokens.Color.ivory) { onPlay(GameMode.HARDCORE) }
         Gap(DesignTokens.Space.lg)
         MenuBanner(graph.ads)
         Gap(DesignTokens.Space.sm)
@@ -257,11 +266,11 @@ fun HomeScreen(graph: AppGraph, onPlay: (GameMode) -> Unit, onProfile: () -> Uni
 
 /** Mode buttons carry only the mode name (iOS parity, no chips). */
 @Composable
-private fun ModeButton(title: Int, onClick: () -> Unit) {
+private fun ModeButton(title: Int, fill: Color, onClick: () -> Unit) {
     Box(
         Modifier
             .fillMaxWidth()
-            .background(DesignTokens.Color.blueNight, RoundedCornerShape(DesignTokens.Radius.large))
+            .background(fill, RoundedCornerShape(DesignTokens.Radius.large))
             .border(
                 DesignTokens.Border.heavy,
                 DesignTokens.Color.ink,
@@ -269,11 +278,11 @@ private fun ModeButton(title: Int, onClick: () -> Unit) {
             )
             .clickable(onClick = onClick)
             .padding(vertical = DesignTokens.Space.xl, horizontal = DesignTokens.Space.lg),
-        contentAlignment = Alignment.Center,
+        contentAlignment = Alignment.CenterStart,
     ) {
         Text(
             stringResource(title),
-            style = typeStyle(DesignTokens.Type.clubTo, DesignTokens.Color.yellow),
+            style = typeStyle(DesignTokens.Type.clubTo, DesignTokens.Color.ink),
         )
     }
 }

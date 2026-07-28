@@ -81,7 +81,7 @@ targets:
       path: Sources/Info.plist
       properties:
         CFBundleDisplayName: Mercato
-        CFBundleShortVersionString: "0.1.0"
+        CFBundleShortVersionString: "1.0.0"
         CFBundleVersion: "1"
         # AdMob. The application ID must be present or the SDK aborts on
         # start-up. See docs/specs/ads.md.
@@ -136,7 +136,10 @@ targets:
           - SKAdNetworkIdentifier: zq492l623r.skadnetwork
           - SKAdNetworkIdentifier: 3rd42ekr43.skadnetwork
           - SKAdNetworkIdentifier: 3qcr597p9d.skadnetwork
-        UILaunchScreen: {}
+        # An empty dict flashes white before the splash. Painting the launch
+        # screen in the app's own background makes the hand-off invisible.
+        UILaunchScreen:
+          UIColorName: LaunchBackground
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
         # The game reads the system language and falls back to English; there

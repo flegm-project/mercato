@@ -20,6 +20,9 @@ final class Store: ObservableObject {
     @Published private(set) var purchasing = false
     /// Set when a restore found nothing, so the UI can say so.
     @Published var restoreFoundNothing = false
+    /// Set when a purchase failed before the store could show its own alert,
+    /// so the button never just stops spinning with nothing said.
+    @Published var purchaseFailed = false
 
     private var updates: Task<Void, Never>?
 
@@ -79,8 +82,11 @@ final class Store: ObservableObject {
                 break
             }
         } catch {
-            // A failed purchase leaves the entitlement untouched; the store
-            // surfaces its own error to the player.
+            // StoreKit shows its own alert for most failures, but not for all
+            // of them: an unavailable product or a network drop before the
+            // sheet appears throws with nothing on screen. Without this the
+            // button would simply stop spinning and look broken.
+            purchaseFailed = true
         }
     }
 

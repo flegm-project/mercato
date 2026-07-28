@@ -1,3 +1,5 @@
+import java.util.Properties
+
 // Mercato Android app.
 //
 // Generated inputs come from the repo's shared pipeline and are NOT committed
@@ -30,15 +32,46 @@ val stageAssets = tasks.register<Copy>("stageAssets") {
 }
 
 android {
+    // Release signing. The keystore and its passwords never enter the repo:
+    // they come from keystore.properties (git-ignored) or, in CI, from the
+    // environment. Without either, the release build is left unsigned rather
+    // than failing, so a debug-only checkout still builds.
+    val keystoreProperties = Properties().apply {
+        val f = rootProject.file("keystore.properties")
+        if (f.exists()) f.inputStream().use { load(it) }
+    }
+    fun secret(key: String, env: String): String? =
+        keystoreProperties.getProperty(key) ?: System.getenv(env)
+
+
     namespace = "com.mercato.app"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.nicogaray.mercato"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
-        versionName = "1.0"
+        versionName = "1.0.0"
+
+        ndk {
+            // Ship only the ABIs the Rust core is built for. JNA otherwise
+            // drags in mips, x86 and armeabi copies of its helper, on which
+            // libmercato_ffi does not exist and the app could not run anyway.
+            abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86_64")
+        }
+    }
+
+    signingConfigs {
+        val storePath = secret("storeFile", "MERCATO_KEYSTORE")
+        if (storePath != null && file(storePath).exists()) {
+            create("release") {
+                storeFile = file(storePath)
+                storePassword = secret("storePassword", "MERCATO_KEYSTORE_PASSWORD")
+                keyAlias = secret("keyAlias", "MERCATO_KEY_ALIAS")
+                keyPassword = secret("keyPassword", "MERCATO_KEY_PASSWORD")
+            }
+        }
     }
 
     buildTypes {
@@ -54,7 +87,15 @@ android {
         // Production ad units of the "Mercato" Android app entry in the
         // AdMob console (account ca-app-pub-5435447054359850).
         release {
-            isMinifyEnabled = false
+            signingConfig = signingConfigs.findByName("release")
+            // R8 shrinks and obfuscates. The rules keep the JNI entry points
+            // and the UniFFI types the native library reflects on.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
             manifestPlaceholders["admobAppId"] = "ca-app-pub-5435447054359850~6149652518"
             buildConfigField("String", "ADMOB_BANNER_ID", "\"ca-app-pub-5435447054359850/8524534412\"")
             buildConfigField("String", "ADMOB_SPONSOR_ID", "\"ca-app-pub-5435447054359850/3959557736\"")

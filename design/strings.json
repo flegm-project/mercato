@@ -25,14 +25,11 @@
     "rGood": "bonnes réponses",
     "rStreak": "meilleure série",
     "rMissed": "À revoir",
-    "ballsWon": "ballons",
     "again": "REJOUER",
     "home": "Accueil",
     "tPlay": "JOUER",
-    "tShop": "BOUTIQUE",
     "tProfile": "PROFIL",
     "profile": "PROFIL",
-    "shop": "BOUTIQUE",
     "settings": "RÉGLAGES",
     "stPlayed": "Manches jouées",
     "stBest": "Meilleur score",
@@ -47,9 +44,6 @@
     "adRect": "PAVÉ 300×250",
     "adSkip": "PASSER",
     "adWait": "PASSER DANS",
-    "reward": "▶ VIDÉO BONUS · ×2 BALLONS",
-    "rewardDone": "BALLONS DOUBLÉS",
-    "rewardToast": "Ballons doublés !",
     "obSkip": "Passer",
     "obNext": "SUIVANT",
     "obStart": "COMMENCER",
@@ -65,9 +59,9 @@
         "b": "En facile, quatre propositions. En hardcore, tu écris le nom, avec trois vies."
       },
       {
-        "a": "ILLUSTRATION · BALLONS",
+        "a": "ILLUSTRATION · SCORE",
         "t": "+3 par bonne réponse.",
-        "b": "Une mauvaise réponse ne rapporte rien. Les points se transforment en ballons à la fin de la manche."
+        "b": "Une mauvaise réponse ne rapporte rien. Assez de bonnes réponses et la manche se termine par trois étoiles."
       }
     ],
     "cnTitle": "Publicité et données",
@@ -83,17 +77,10 @@
     "shopNoAds": "Sans publicité",
     "shopNoAdsSub": "Supprime bandeaux, interstitiels et pavés",
     "shopUnavailable": "Indisponible",
-    "shopH1": "10 indices",
-    "shopH1Sub": "À dépenser en mode hardcore",
-    "shopH2": "50 indices",
-    "shopH2Sub": "Le meilleur rapport",
-    "shopBalls": "200 ballons",
-    "shopBallsSub": "Recharge de ballons",
     "owned": "ACQUIS",
     "restore": "Restaurer mes achats",
     "restoreToast": "Aucun achat à restaurer",
     "adsOffToast": "Publicités désactivées",
-    "noBalls": "Pas assez de ballons",
     "soundS": "Son",
     "vibrateS": "Vibrations",
     "notifS": "Notifications",
@@ -143,7 +130,8 @@
     "a11yBack": "Retour",
     "a11yClose": "Fermer",
     "rowPrivacy": "Politique de confidentialité",
-    "attUsage": "Nous utilisons votre identifiant publicitaire pour rendre les publicités plus pertinentes. Vous pouvez jouer sans l'autoriser."
+    "attUsage": "Nous utilisons votre identifiant publicitaire pour rendre les publicités plus pertinentes. Vous pouvez jouer sans l'autoriser.",
+    "buyFailed": "L'achat n'a pas pu aboutir"
   },
   "en": {
     "l1": "EASY",
@@ -171,14 +159,11 @@
     "rGood": "correct",
     "rStreak": "best streak",
     "rMissed": "Worth revisiting",
-    "ballsWon": "balls",
     "again": "PLAY AGAIN",
     "home": "Home",
     "tPlay": "PLAY",
-    "tShop": "SHOP",
     "tProfile": "PROFILE",
     "profile": "PROFILE",
-    "shop": "SHOP",
     "settings": "SETTINGS",
     "stPlayed": "Rounds played",
     "stBest": "Best score",
@@ -193,9 +178,6 @@
     "adRect": "RECTANGLE 300×250",
     "adSkip": "SKIP",
     "adWait": "SKIP IN",
-    "reward": "▶ BONUS VIDEO · ×2 BALLS",
-    "rewardDone": "BALLS DOUBLED",
-    "rewardToast": "Balls doubled!",
     "obSkip": "Skip",
     "obNext": "NEXT",
     "obStart": "START",
@@ -211,9 +193,9 @@
         "b": "Easy gives you four options. Hardcore makes you type it, with three lives."
       },
       {
-        "a": "ILLUSTRATION · BALLS",
+        "a": "ILLUSTRATION · SCORE",
         "t": "+3 per correct answer.",
-        "b": "A miss scores nothing. Points turn into balls at the end of the round."
+        "b": "A miss scores nothing. Answer well enough and the round ends with three stars."
       }
     ],
     "cnTitle": "Ads and data",
@@ -229,17 +211,10 @@
     "shopNoAds": "Remove ads",
     "shopNoAdsSub": "No banners, interstitials or rectangles",
     "shopUnavailable": "Unavailable",
-    "shopH1": "10 hints",
-    "shopH1Sub": "To spend in hardcore mode",
-    "shopH2": "50 hints",
-    "shopH2Sub": "Best value",
-    "shopBalls": "200 balls",
-    "shopBallsSub": "Top up your balls",
     "owned": "OWNED",
     "restore": "Restore purchases",
     "restoreToast": "Nothing to restore",
     "adsOffToast": "Ads disabled",
-    "noBalls": "Not enough balls",
     "soundS": "Sound",
     "vibrateS": "Vibration",
     "notifS": "Notifications",
@@ -289,7 +264,8 @@
     "a11yBack": "Back",
     "a11yClose": "Close",
     "rowPrivacy": "Privacy policy",
-    "attUsage": "We use your advertising identifier to make the ads you see more relevant. You can play without allowing it."
+    "attUsage": "We use your advertising identifier to make the ads you see more relevant. You can play without allowing it.",
+    "buyFailed": "Purchase could not be completed"
   },
   "es": {
     "l1": "FÁCIL",
@@ -317,14 +293,11 @@
     "rGood": "aciertos",
     "rStreak": "mejor racha",
     "rMissed": "Para repasar",
-    "ballsWon": "balones",
     "again": "JUGAR OTRA VEZ",
     "home": "Inicio",
     "tPlay": "JUGAR",
-    "tShop": "TIENDA",
     "tProfile": "PERFIL",
     "profile": "PERFIL",
-    "shop": "TIENDA",
     "settings": "AJUSTES",
     "stPlayed": "Rondas jugadas",
     "stBest": "Mejor puntuación",
@@ -339,9 +312,6 @@
     "adRect": "RECTÁNGULO 300×250",
     "adSkip": "SALTAR",
     "adWait": "SALTAR EN",
-    "reward": "▶ VÍDEO BONUS · ×2 BALONES",
-    "rewardDone": "BALONES DOBLADOS",
-    "rewardToast": "¡Balones doblados!",
     "obSkip": "Saltar",
     "obNext": "SIGUIENTE",
     "obStart": "EMPEZAR",
@@ -357,9 +327,9 @@
         "b": "En fácil, cuatro opciones. En hardcore escribes el nombre, con tres vidas."
       },
       {
-        "a": "ILUSTRACIÓN · BALONES",
+        "a": "ILUSTRACIÓN · PUNTUACIÓN",
         "t": "+3 por acierto.",
-        "b": "Un fallo no suma. Los puntos se convierten en balones al final de la ronda."
+        "b": "Un fallo no suma. Con suficientes aciertos la ronda termina con tres estrellas."
       }
     ],
     "cnTitle": "Publicidad y datos",
@@ -375,17 +345,10 @@
     "shopNoAds": "Sin publicidad",
     "shopNoAdsSub": "Quita banners, intersticiales y rectángulos",
     "shopUnavailable": "No disponible",
-    "shopH1": "10 pistas",
-    "shopH1Sub": "Para gastar en hardcore",
-    "shopH2": "50 pistas",
-    "shopH2Sub": "La mejor relación",
-    "shopBalls": "200 balones",
-    "shopBallsSub": "Recarga de balones",
     "owned": "ADQUIRIDO",
     "restore": "Restaurar compras",
     "restoreToast": "Nada que restaurar",
     "adsOffToast": "Publicidad desactivada",
-    "noBalls": "No hay suficientes balones",
     "soundS": "Sonido",
     "vibrateS": "Vibración",
     "notifS": "Notificaciones",
@@ -435,6 +398,7 @@
     "a11yBack": "Atrás",
     "a11yClose": "Cerrar",
     "rowPrivacy": "Política de privacidad",
-    "attUsage": "Usamos tu identificador de publicidad para mostrarte anuncios más relevantes. Puedes jugar sin permitirlo."
+    "attUsage": "Usamos tu identificador de publicidad para mostrarte anuncios más relevantes. Puedes jugar sin permitirlo.",
+    "buyFailed": "No se pudo completar la compra"
   }
 }

@@ -120,6 +120,32 @@ fs.writeFileSync(
   ) + "\n"
 );
 
+// The launch screen is painted in the app's own background, so the hand-off to
+// the splash is invisible instead of a white flash.
+const launchDir = path.join(iosAssets, "LaunchBackground.colorset");
+fs.mkdirSync(launchDir, { recursive: true });
+const deep = T["blue-deep"].replace("#", "");
+const channel = (i) => (parseInt(deep.slice(i, i + 2), 16) / 255).toFixed(3);
+fs.writeFileSync(
+  path.join(launchDir, "Contents.json"),
+  JSON.stringify(
+    {
+      colors: [
+        {
+          color: {
+            "color-space": "srgb",
+            components: { alpha: "1.000", blue: channel(4), green: channel(2), red: channel(0) },
+          },
+          idiom: "universal",
+        },
+      ],
+      info: { author: "mercato", version: 1 },
+    },
+    null,
+    2
+  ) + "\n"
+);
+
 // --- Android: adaptive foreground and background, plus legacy densities ---
 const andRes = path.join(OUT, "android/res");
 const densities = { mdpi: 48, hdpi: 72, xhdpi: 96, xxhdpi: 144, xxxhdpi: 192 };

@@ -43,6 +43,9 @@ struct RootView: View {
     @StateObject private var ads = AdsManager()
     /// Lifetime stats shown on Profile; updated at the end of every round.
     @StateObject private var stats = AppStats()
+    /// Google UMP. Where GDPR applies its form is the legal consent surface;
+    /// elsewhere the app's own screen stays the choice.
+    @StateObject private var consent = ConsentManager()
 
     var body: some View {
         Group {
@@ -84,7 +87,13 @@ struct RootView: View {
                         // consent screen: the system tracking prompt must not
                         // land on top of onboarding.
                         if consentAnswered {
-                            ads.bootstrap(game: game)
+                            Task {
+                                // UMP first: inside the EEA its form is the
+                                // legal surface and it overrides the stored
+                                // answer. Outside, it returns without asking.
+                                await consent.gather(game: game)
+                                ads.bootstrap(game: game)
+                            }
                         }
                     }
                     .onChange(of: store.adsRemoved) { _, removed in
@@ -131,10 +140,14 @@ struct RootView: View {
                 UserDefaults.standard.set(personalised, forKey: "adsPersonalised")
                 game.setAdConsent(consent: personalised ? .personalized : .nonPersonalized)
                 consentAnswered = true
-                // The player has just been told the app is ad-funded, which is
-                // the moment the system tracking prompt makes sense.
-                ads.bootstrap(game: game)
                 route = .home
+                // The player has just been told the app is ad-funded, which is
+                // the moment to run UMP where it applies and then ask for
+                // tracking.
+                Task {
+                    await consent.gather(game: game)
+                    ads.bootstrap(game: game)
+                }
             }
 
         case .home:
@@ -155,7 +168,15 @@ struct RootView: View {
         case .settings:
             SettingsView(
                 onBack: { route = .profile },
-                onConsent: { route = .consent },
+                onConsent: {
+                    // Inside GDPR scope the UMP privacy options form is the
+                    // legal surface; elsewhere the app's own screen handles it.
+                    if consent.privacyOptionsRequired {
+                        Task { await consent.showPrivacyOptions(game: game) }
+                    } else {
+                        route = .consent
+                    }
+                },
                 onReplayIntro: { route = .onboarding },
                 onOffline: { route = .offline },
                 onLab: { route = .lab },

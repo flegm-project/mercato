@@ -51,7 +51,11 @@ class MainActivity : ComponentActivity() {
         val graph = (application as MercatoApplication).graph
         // GDPR consent surface: shows the UMP form when required, silent
         // no-op elsewhere. The outcome lands in the core via setAdConsent.
-        graph.consent.gather(this)
+        //
+        // Deferred until the intro is behind us, matching iOS: gathering here
+        // dropped the form on top of the first onboarding pane, before the
+        // player knew what the app was. MercatoNav runs it on the way to Home,
+        // which is still well before anything requests an ad.
         setContent {
             CompositionLocalProvider(LocalFonts provides rememberFonts()) {
                 Box(Modifier.fillMaxSize().appBackground()) {
@@ -79,29 +83,49 @@ fun MercatoNav(graph: AppGraph) {
     val nav = rememberNavController()
     val vm: GameViewModel = viewModel(factory = GameVmFactory(graph))
     val onboarded by graph.prefs.onboarded.collectAsState(initial = null)
+    val activity = androidx.compose.ui.platform.LocalContext.current as? android.app.Activity
+    // Once per process, on the way to Home rather than at launch.
+    val consentGathered = androidx.compose.runtime.remember {
+        androidx.compose.runtime.mutableStateOf(false)
+    }
+    val gatherConsent = { onDone: () -> Unit ->
+        if (!consentGathered.value && activity != null) {
+            consentGathered.value = true
+            graph.consent.gather(activity, onDone)
+        } else {
+            onDone()
+        }
+    }
 
     NavHost(nav, startDestination = Routes.SPLASH) {
         composable(Routes.SPLASH) {
             SplashScreen {
-                nav.navigate(if (onboarded == true) Routes.HOME else Routes.ONBOARDING) {
-                    popUpTo(Routes.SPLASH) { inclusive = true }
+                if (onboarded == true) {
+                    gatherConsent {
+                        nav.navigate(Routes.HOME) { popUpTo(Routes.SPLASH) { inclusive = true } }
+                    }
+                } else {
+                    nav.navigate(Routes.ONBOARDING) { popUpTo(Routes.SPLASH) { inclusive = true } }
                 }
             }
         }
         composable(Routes.ONBOARDING) {
             val scope = androidx.compose.runtime.rememberCoroutineScope()
             OnboardingScreen(onDone = {
-                // Where UMP already collected GDPR consent, the app's own
-                // consent screen would double-ask; skip straight home.
-                if (graph.consent.handledByUmp.value) {
-                    scope.launch {
-                        graph.prefs.setOnboarded()
-                        nav.navigate(Routes.HOME) {
-                            popUpTo(Routes.ONBOARDING) { inclusive = true }
+                // UMP runs here rather than at launch, so its form never lands
+                // on top of the intro. Where it collected GDPR consent the
+                // app's own screen would double-ask, so skip straight home.
+                gatherConsent {
+                    if (graph.consent.handledByUmp.value) {
+                        scope.launch {
+                            graph.prefs.setOnboarded()
+                            nav.navigate(Routes.HOME) {
+                                popUpTo(Routes.ONBOARDING) { inclusive = true }
+                            }
                         }
+                    } else {
+                        nav.navigate(Routes.CONSENT)
                     }
-                } else {
-                    nav.navigate(Routes.CONSENT)
                 }
             })
         }
