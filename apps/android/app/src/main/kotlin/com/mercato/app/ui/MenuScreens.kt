@@ -52,6 +52,8 @@ import com.mercato.app.MenuBanner
 import com.mercato.app.Prefs
 import com.mercato.app.R
 import java.util.Locale
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -108,14 +110,21 @@ fun Wordmark(size: TextUnit, modifier: Modifier = Modifier) {
         withStyle(SpanStyle(color = DesignTokens.Color.ivory)) { append("MER") }
         withStyle(SpanStyle(color = DesignTokens.Color.yellow)) { append("CATO") }
     }
-    // iOS lets the wordmark shrink to fit (minimumScaleFactor); Compose has no
-    // equivalent at this version, so the size is derived from the width
-    // available. Unbounded Black runs about 0.63em per glyph, so seven glyphs
-    // need roughly 4.4em.
+    // iOS lets the wordmark shrink to fit (minimumScaleFactor). Compose has no
+    // equivalent, so it is measured down to a size that fits, the way the guess
+    // field does. Estimating it as 4.4em per seven glyphs was optimistic by
+    // about a glyph and a half: the word rendered as MERCA with the rest
+    // clipped, and the block came out the wrong height as well.
     BoxWithConstraints(modifier) {
-        val fitted = minOf(size.value, maxWidth.value / 4.4f).sp
-        val style = typeStyle(DesignTokens.Type.logo, DesignTokens.Color.ivory)
-            .copy(fontSize = fitted)
+        val measurer = rememberTextMeasurer()
+        val base = typeStyle(DesignTokens.Type.logo, DesignTokens.Color.ivory)
+        val availPx = with(LocalDensity.current) { maxWidth.toPx() }
+        var pt = size.value
+        while (pt > size.value * 0.5f &&
+            measurer.measure("MERCATO", base.copy(fontSize = pt.sp), maxLines = 1).size.width > availPx
+        ) pt -= 1f
+        val fitted = pt.sp
+        val style = base.copy(fontSize = fitted)
         Box {
             Text(
                 "MERCATO",
