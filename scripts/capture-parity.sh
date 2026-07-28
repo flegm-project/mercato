@@ -84,6 +84,13 @@ sleep 10
 for r in "${ROUTES[@]}"; do
   adb shell am force-stop "$AND_PKG" >/dev/null 2>&1
   adb shell am start -n "$AND_PKG/$AND_ACT" --es route "$r" >/dev/null 2>&1
+  # Wait for the app's own window before looking at pixels. The system splash
+  # holds perfectly still, so two identical frames of it satisfy settle() and
+  # the route comes back as a launcher icon on a grey field.
+  for _ in $(seq 1 30); do
+    adb shell dumpsys window 2>/dev/null | grep -q "mCurrentFocus.*$AND_PKG" && break
+    sleep 1
+  done
   settle "$OUT/android/$r.png" \
     "adb exec-out screencap -p > '$OUT/android/$r.png'" && ok=ok || ok=UNSETTLED
   size=$(stat -f%z "$OUT/android/$r.png" 2>/dev/null || echo 0)
