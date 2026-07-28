@@ -676,37 +676,40 @@ private fun PurchaseCard(
                 style = typeStyle(DesignTokens.Type.purchaseTitle, DesignTokens.Color.ink),
             )
         }
-        Box(
-            Modifier
-                .then(
-                    if (owned) {
-                        // CircleShape on a wide box drew an ellipse; iOS uses
-                        // a capsule.
-                        Modifier.background(
-                            DesignTokens.Color.green,
-                            RoundedCornerShape(percent = 50),
-                        )
-                    } else {
-                        Modifier
-                            .solidRaised(DesignTokens.Radius.row, depth = 6.dp, border = 4.dp)
-                            .background(DesignTokens.Color.yellow)
-                    }
+        when {
+            owned -> Box(
+                Modifier
+                    // CircleShape on a wide box drew an ellipse; iOS uses a
+                    // capsule.
+                    .background(DesignTokens.Color.green, RoundedCornerShape(percent = 50))
+                    // iOS: 12 by 7 around the owned badge (Screens.swift:598).
+                    .padding(horizontal = 12.dp, vertical = 7.dp),
+            ) {
+                Text(
+                    trailing,
+                    style = typeStyle(DesignTokens.Type.ownedBadge, DesignTokens.Color.ink),
                 )
-                .clickable(enabled = enabled, onClick = onClick)
-                // iOS: 16/11 around the price, 12/7 around the owned badge
-                // (Screens.swift:598).
-                .padding(
-                    horizontal = if (owned) 12.dp else 16.dp,
-                    vertical = if (owned) 7.dp else 11.dp,
-                ),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
+            }
+            enabled -> Box(
+                Modifier
+                    .solidRaised(DesignTokens.Radius.row, depth = 6.dp, border = 4.dp)
+                    .background(DesignTokens.Color.yellow)
+                    .clickable(onClick = onClick)
+                    // iOS: 16 by 11 around the price (Screens.swift:611).
+                    .padding(horizontal = 16.dp, vertical = 11.dp),
+            ) {
+                Text(
+                    trailing,
+                    style = typeStyle(DesignTokens.Type.badgeValue, DesignTokens.Color.ink),
+                )
+            }
+            // No price loaded: iOS drops the badge entirely for a quiet muted
+            // label, so there is no dead CTA (Screens.swift:622). Android kept
+            // drawing the yellow pill, which read as tappable and made the card
+            // 28dp taller than the same card on iOS.
+            else -> Text(
                 trailing,
-                style = typeStyle(
-                    if (owned) DesignTokens.Type.ownedBadge else DesignTokens.Type.badgeValue,
-                    DesignTokens.Color.ink,
-                ),
+                style = typeStyle(DesignTokens.Type.bodySmall, DesignTokens.Color.muted),
             )
         }
     }
