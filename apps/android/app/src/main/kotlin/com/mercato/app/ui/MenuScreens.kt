@@ -342,21 +342,23 @@ fun HomeScreen(graph: AppGraph, onPlay: (GameMode) -> Unit, onProfile: () -> Uni
     ScreenColumn {
         // iOS treats the wordmark and both buttons as one block, with the
         // flexible space above and below it, not between them.
+        // iOS pads the column by the gutter on both axes (Screens.swift:102).
+        Gap(DesignTokens.Space.gutter)
         Spacer(Modifier.weight(1f))
         Wordmark(DesignTokens.Type.logo.size)
-        Gap(DesignTokens.Space.lg)
+        // iOS: 22 under the wordmark, 14 between the modes (Screens.swift:82).
+        Gap(DesignTokens.Space.xl)
         ModeButton(R.string.l1, DesignTokens.Color.yellow) { onPlay(GameMode.EASY) }
         Gap(DesignTokens.Space.md)
         ModeButton(R.string.l3, DesignTokens.Color.ivory) { onPlay(GameMode.HARDCORE) }
         Spacer(Modifier.weight(1f))
-        Gap(DesignTokens.Space.lg)
         MenuBanner(graph.ads)
-        Gap(DesignTokens.Space.sm)
+        Gap(8.dp)
         MercatoTabBar(
             tabs = listOf(stringResource(R.string.tPlay), stringResource(R.string.tProfile)),
             selected = 0,
         ) { if (it == 1) onProfile() }
-        Gap(DesignTokens.Space.md)
+        Gap(DesignTokens.Space.gutter)
     }
 }
 
@@ -369,12 +371,15 @@ private fun ModeButton(title: Int, fill: Color, onClick: () -> Unit) {
             .solidRaised(radius = DesignTokens.Radius.card, depth = 10.dp)
             .background(fill)
             .clickable(onClick = onClick)
-            .padding(vertical = 20.dp, horizontal = 24.dp),
+            // iOS: 24 vertical, 20 horizontal. The two were the wrong way round
+            // here, which made the button squat and its label inset too far
+            // (Screens.swift:115).
+            .padding(vertical = 24.dp, horizontal = 20.dp),
         contentAlignment = Alignment.CenterStart,
     ) {
         Text(
             stringResource(title),
-            style = typeStyle(DesignTokens.Type.clubTo, DesignTokens.Color.ink),
+            style = typeStyle(DesignTokens.Type.screenTitle, DesignTokens.Color.ink),
         )
     }
 }
@@ -384,14 +389,17 @@ private fun ModeButton(title: Int, fill: Color, onClick: () -> Unit) {
 fun ProfileScreen(graph: AppGraph, onPlayTab: () -> Unit, onSettings: () -> Unit) {
     val stats by graph.prefs.stats.collectAsState(initial = Prefs.Stats(0, 0, 0, 0, 0))
     ScreenColumn {
-        Gap(DesignTokens.Space.xl)
+        // iOS pads the column by the gutter on both axes, then the title by 8
+        // and the banner by 16 (Profile.swift:49).
+        Gap(DesignTokens.Space.gutter)
+        Gap(8.dp)
         Text(
             stringResource(R.string.profile),
             style = typeStyle(DesignTokens.Type.panelTitle, DesignTokens.Color.ivory),
         )
         // Banner at the top, far from the tab bar, so a mistap near the
         // bottom never lands on an ad (iOS parity).
-        Gap(DesignTokens.Space.md)
+        Gap(DesignTokens.Space.gutter)
         MenuBanner(graph.ads)
         Spacer(Modifier.weight(1f))
         if (stats.roundsPlayed == 0) {
