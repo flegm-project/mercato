@@ -155,10 +155,10 @@ struct GameView: View {
         if let nationality = hint.nationality { return nationality }
         if let position = hint.position {
             switch position {
-            case .gk: return "GK"
-            case .def: return "DEF"
-            case .mid: return "MID"
-            case .fw: return "FW"
+            case .gk: return L("posGk")
+            case .def: return L("posDef")
+            case .mid: return L("posMid")
+            case .fw: return L("posFw")
             }
         }
         if let initial = hint.surnameInitial, let letters = hint.surnameLetters {
@@ -251,6 +251,14 @@ struct GameView: View {
         ambiguous = false
         roundOver = false
         advance()
+        #if DEBUG
+        // QA: pre-unlock the nationality and position hints for screenshots.
+        if CommandLine.arguments.contains("-MercatoHints") {
+            for _ in 0..<2 where question != nil {
+                if let h = game.nextHint() { hints.append(h) }
+            }
+        }
+        #endif
     }
 
     private func choose(_ index: Int) {
