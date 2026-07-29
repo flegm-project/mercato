@@ -234,7 +234,6 @@ struct GameView: View {
         switch kind {
         case .transfer: return L("perm")
         case .loan: return L("loan")
-        case .free: return L("free")
         }
     }
 

@@ -262,7 +262,6 @@ private fun KindChip(kind: MoveKind) {
     val label = when (kind) {
         MoveKind.TRANSFER -> R.string.perm
         MoveKind.LOAN -> R.string.loan
-        MoveKind.FREE -> R.string.free
     }
     val fill = if (kind == MoveKind.LOAN) DesignTokens.Color.yellow else DesignTokens.Color.ivory
     Box(

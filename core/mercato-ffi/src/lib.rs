@@ -78,7 +78,6 @@ impl From<GameMode> for Mode {
 pub enum MoveKind {
     Transfer,
     Loan,
-    Free,
 }
 
 impl From<Kind> for MoveKind {
@@ -86,7 +85,6 @@ impl From<Kind> for MoveKind {
         match k {
             Kind::Transfer => MoveKind::Transfer,
             Kind::Loan => MoveKind::Loan,
-            Kind::Free => MoveKind::Free,
         }
     }
 }

@@ -22,12 +22,17 @@ pub enum Position {
 }
 
 /// Move type. Matches the `kind` CSV column.
+///
+/// The dataset carries permanent moves and loans, and nothing else. A free
+/// transfer is a permanent move that happened to cost no fee, so it is a
+/// `transfer` here rather than a third kind. Serde has no fallback arm on
+/// purpose: a row with any other kind fails the load loudly instead of
+/// reaching a player as a question nobody meant to ask.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Kind {
     Transfer,
     Loan,
-    Free,
 }
 
 /// A footballer. Names are stored per language; player names are identical

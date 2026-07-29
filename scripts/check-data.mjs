@@ -97,12 +97,23 @@ checkNames(aliases, "player_aliases.csv", { extra: ["alias"], allowDigits: true 
 const clubIds = new Set(clubs.map((c) => c.id));
 const playerIds = new Set(players.map((p) => p.id));
 const natIds = new Set(nationalities.map((n) => n.id));
+// The dataset carries permanent moves and loans, and nothing else. A free
+// transfer is a permanent move that cost no fee, so it belongs under
+// `transfer` rather than in a kind of its own. The core's `Kind` has no
+// fallback arm either, so a stray kind fails the load; this catches it here,
+// where the fix is a one-character edit rather than a crash on a phone.
+const KINDS = new Set(["transfer", "loan"]);
 for (const t of readCsv("transfers.csv")) {
   for (const field of ["from_club", "to_club"]) {
     if (!clubIds.has(t[field])) problems.push(`transfers.csv ${t.id}: unknown ${field} ${t[field]}`);
   }
   if (!playerIds.has(t.player_id)) problems.push(`transfers.csv ${t.id}: unknown player ${t.player_id}`);
   if (t.from_club === t.to_club) problems.push(`transfers.csv ${t.id}: club moves to itself`);
+  if (!KINDS.has(t.kind)) {
+    problems.push(
+      `transfers.csv ${t.id}: kind "${t.kind}" is neither transfer nor loan`
+    );
+  }
 }
 for (const p of players) {
   if (p.nationality && !natIds.has(p.nationality)) {

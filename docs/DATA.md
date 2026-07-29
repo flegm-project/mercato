@@ -30,7 +30,9 @@ transfer    (id, player_id, from_club, to_club, year, kind, tier)
 ```
 
 - `position` : `gk` | `def` | `mid` | `fw`
-- `kind`     : `transfer` | `loan` | `free`
+- `kind`     : `transfer` | `loan` - nothing else. A free transfer is a
+  permanent move that cost no fee, so it is a `transfer`; `check-data.mjs`
+  rejects any other value and the core refuses to load it.
 - `tier`     : 1 mainstream · 2 informed fan · 3 expert
 - `notoriety`: integer; drives sorting and decoy plausibility
 - Indexes on `transfer(tier)`, `transfer(player_id)`, `player_alias(player_id)`.
