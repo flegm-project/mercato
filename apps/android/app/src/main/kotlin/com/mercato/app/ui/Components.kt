@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -51,6 +52,9 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -577,10 +581,15 @@ private fun RowScope.TabCell(
     Box(
         Modifier
             .weight(1f)
-            .fillMaxSize()
-            .background(if (active) DesignTokens.Color.yellow else Color.Transparent, shape)
+            // fillMaxHeight, not fillMaxSize: a weighted child already has its
+            // width fixed by the Row, and asking it to fill both left the
+            // accessibility node the size of the label rather than of the cell.
+            // A screen reader then framed and targeted the two words only.
+            .fillMaxHeight()
             .clip(shape)
-            .clickable(onClick = onClick),
+            .background(if (active) DesignTokens.Color.yellow else Color.Transparent)
+            .clickable(onClick = onClick)
+            .semantics(mergeDescendants = true) { role = Role.Tab; selected = active },
         contentAlignment = Alignment.Center,
     ) {
         Text(
