@@ -18,10 +18,35 @@ const ROOT = new URL("..", import.meta.url).pathname;
 const OUT = path.join(ROOT, "build/icons");
 const T = JSON.parse(fs.readFileSync(path.join(ROOT, "design/tokens.json"), "utf8")).color;
 
-const FONT = path.join(ROOT, "design/fonts/Unbounded-Black.ttf");
-if (!fs.existsSync(FONT)) {
-  console.error(`error: ${FONT} is missing; run scripts/gen-fonts.sh first`);
-  process.exit(1);
+// The M of the wordmark, as an outline rather than as a font lookup.
+//
+// rsvg does not honour `font-family` for a font it only knows through a
+// throwaway fontconfig file: rendering the same SVG with `font-family="Unbounded"`
+// and with a family that does not exist produced byte-identical PNGs, so the
+// icon had been drawn in a fallback face since it was first generated, which is
+// why it did not look like the app. Embedding the outline removes the lookup.
+//
+// Taken from design/fonts/Unbounded-Black.ttf, flipped to SVG's y-down axis and
+// pulled to the origin, so it lives in a MARK_W x MARK_H box. Regenerate with:
+//
+//   python3 -c "from fontTools.ttLib import TTFont; \
+//     from fontTools.pens.svgPathPen import SVGPathPen; \
+//     from fontTools.pens.transformPen import TransformPen; \
+//     from fontTools.misc.transform import Transform; \
+//     f=TTFont('design/fonts/Unbounded-Black.ttf'); gs=f.getGlyphSet(); \
+//     p=SVGPathPen(gs); gs[f.getBestCmap()[ord('M')]].draw( \
+//       TransformPen(p, Transform(1,0,0,-1,-60,750))); print(p.getCommands())"
+const MARK_PATH =
+  "M1155 0V750H910V97L957 103L705 750H450L198 106L245 99V750H0V0H399L623 611H534L756 0Z";
+const MARK_W = 1155;
+const MARK_H = 750;
+
+/** The mark drawn at `size`, centred on the 512 canvas, in `fill`. */
+function glyph(size, fill, dx = 0, dy = 0) {
+  const s = size / MARK_H;
+  const x = 256 - (MARK_W * s) / 2 + dx;
+  const y = 256 - size / 2 + dy;
+  return `<path d="${MARK_PATH}" fill="${fill}" transform="translate(${x} ${y}) scale(${s})"/>`;
 }
 
 /**
@@ -55,15 +80,13 @@ function mark(size, { inset = 1, transparent = true } = {}) {
         <stop offset="100%" stop-color="${T["blue-deep"]}"/>
       </radialGradient></defs>`;
   const scale = inset;
+  // The wordmark's own treatment: the mark over a hard ink offset, no blur, the
+  // same signature every raised surface in the app carries.
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 512 512">
   ${defs}${bg}
   <g transform="translate(256 256) scale(${scale}) translate(-256 -256)">
-    <text x="256" y="256" text-anchor="middle" dominant-baseline="central"
-          font-family="Unbounded" font-weight="900" font-size="340"
-          letter-spacing="-20" fill="${T.ink}" transform="translate(14 16)">M</text>
-    <text x="256" y="256" text-anchor="middle" dominant-baseline="central"
-          font-family="Unbounded" font-weight="900" font-size="340"
-          letter-spacing="-20" fill="${T.yellow}">M</text>
+    ${glyph(250, T.ink, 14, 16)}
+    ${glyph(250, T.yellow)}
   </g>
 </svg>`;
 }
