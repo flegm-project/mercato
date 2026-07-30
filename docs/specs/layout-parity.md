@@ -151,14 +151,18 @@ taking its share of the column.
 ### 5. Recap and Recap (lost)
 
 ```
-ivory       219  36  ->  204  74    -15 +38
-ivory       263 179  ->  290 147    +27 -32
-ivory       686  62  ->  599  35    -87 -27
-ivory       759  71  ->  676  61    -84 -10
+ivory       219  36  ->  205  69    -14 +33
+ivory       263 179  ->  286 142    +23 -37
+ivory       686  62  ->  597  35    -88 -27
+ivory       759  71  ->  674  61    -85 -10
 ```
 
-The stars block and the score card trade height, and both buttons at the
-bottom sit ~85dp too high with an extra ivory band below them on Android.
+The star block is settled: on `recaplose`, where the score card is one
+unbroken ivory band, it measures 223dp on both sides at a flat -14, which is
+the whole-screen offset every band above carries. What is left here is the
+score card's *inside* -- the two ivory runs above trade 33dp around the text
+rows that split them -- and both buttons at the bottom sitting ~85dp too high
+with an extra ivory band below them on Android.
 
 ### 6. Profile
 

@@ -191,57 +191,6 @@ extension View {
     }
 }
 
-/// A recap star, drawn rather than typed.
-///
-/// It used to be the "★" glyph at 46, which is SF Pro's star here and Roboto's
-/// on Android: two different shapes, and the one thing on that screen a player
-/// looks at first. A path is the same five points on both, and it carries the
-/// hard ink offset every mark in this app carries.
-struct RecapStar: View {
-    /// A won star is yellow at full strength; the rest sit at `star-off`,
-    /// shadow included.
-    let earned: Bool
-    var size: CGFloat = 42
-
-    var body: some View {
-        ZStack {
-            StarShape().fill(shade).offset(x: 4, y: 4)
-            StarShape().fill(fill)
-        }
-        .frame(width: size, height: size)
-    }
-
-    private var fill: Color {
-        earned ? DesignTokens.Color.yellow : .white.opacity(DesignTokens.Opacity.starOff)
-    }
-
-    private var shade: Color {
-        earned
-            ? DesignTokens.Color.ink
-            : DesignTokens.Color.ink.opacity(DesignTokens.Opacity.starOff)
-    }
-}
-
-/// A five-pointed star, first point up. The waist sits at 1/phi^2 of the outer
-/// radius, which is the ratio a pentagram makes and what every star glyph is
-/// cut from.
-struct StarShape: Shape {
-    func path(in rect: CGRect) -> Path {
-        let outer = min(rect.width, rect.height) / 2
-        let inner = outer * 0.382
-        let c = CGPoint(x: rect.midX, y: rect.midY)
-        var path = Path()
-        for i in 0..<10 {
-            let r = i.isMultiple(of: 2) ? outer : inner
-            let a = CGFloat(-90 + i * 36) * .pi / 180
-            let p = CGPoint(x: c.x + r * cos(a), y: c.y + r * sin(a))
-            if i == 0 { path.move(to: p) } else { path.addLine(to: p) }
-        }
-        path.closeSubpath()
-        return path
-    }
-}
-
 /// Closes the round. Sits at the head of the top bar.
 struct CloseButton: View {
     let action: () -> Void

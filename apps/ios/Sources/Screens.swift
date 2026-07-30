@@ -160,7 +160,14 @@ struct RecapView: View {
 
                     HStack(spacing: 12) {
                         ForEach(0..<3, id: \.self) { index in
-                            RecapStar(earned: index < stars)
+                            Text("\u{2605}")
+                                .font(.system(size: 46))
+                                .foregroundStyle(
+                                    index < stars
+                                        ? DesignTokens.Color.yellow
+                                        : Color.white.opacity(DesignTokens.Opacity.starOff)
+                                )
+                                .shadow(color: DesignTokens.Color.ink, radius: 0, x: 4, y: 4)
                         }
                     }
                     .padding(.top, 18)

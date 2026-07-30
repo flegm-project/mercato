@@ -491,15 +491,18 @@ fun RecapScreen(
             textAlign = TextAlign.Center,
         )
         Gap(DesignTokens.Space.lg)
-        // Three separately shadowed 46sp stars, dimmed when unearned, rather
-        // than one small line of glyphs.
+        // Three separately shadowed stars, dimmed when unearned. The 12 is the
+        // iOS HStack spacing, and RecapStar carries the glyph's side bearings,
+        // so the pitch comes out at the measured 59.3dp.
         Row(
             Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
         ) {
             // Drawn, not typed: "★" is SF Pro's star on iOS and Roboto's here,
             // two different shapes on the one thing a player looks at first.
-            repeat(3) { i -> RecapStar(earned = i < r.stars) }
+            // Still the same 46 iOS sets the glyph at (Screens.swift), which
+            // is what the drawn geometry is a fraction of.
+            repeat(3) { i -> RecapStar(earned = i < r.stars, fontSize = 46.sp) }
         }
         Gap(DesignTokens.Space.xl)
         // The score lives in a raised ivory card, as on iOS: the numbers were

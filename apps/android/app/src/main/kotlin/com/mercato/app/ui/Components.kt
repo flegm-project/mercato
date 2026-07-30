@@ -12,8 +12,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.ui.graphics.drawscope.translate
 import kotlin.math.PI
+import kotlin.math.acos
 import kotlin.math.cos
+import kotlin.math.min
 import kotlin.math.sin
+import kotlin.math.tan
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -221,46 +224,140 @@ fun Modifier.solidRaised(
 }
 
 /**
- * A recap star, drawn rather than typed.
+ * A recap star, drawn to the proportions of the iOS one.
  *
- * It used to be the "★" glyph at 46, which is SF Pro's star on iOS and
- * Roboto's on Android: two different shapes, and the one thing on that screen
- * a player looks at first. A path is the same five points everywhere, and it
- * carries the hard ink offset every mark in this app carries.
+ * iOS sets "★" at 46 in the system face, which is SF Pro's star; the same
+ * character here is Roboto's, and the two are visibly different shapes on the
+ * one thing a player looks at first after a round. SF Pro's outline is
+ * licensed for Apple platforms and cannot ship in the APK, so the shape is
+ * reconstructed from what the iOS render measures rather than copied:
+ *
+ *   - the ink is 39.3 x 37.6dp, and the row pitch is 59.3dp;
+ *   - fitting a straight edge through the mid-edge samples puts the *sharp*
+ *     vertex at 24.1dp and the waist at 0.392 of it, near enough the textbook
+ *     pentagram's 0.382;
+ *   - every corner is then rounded by 1.6dp, which is what pulls the visible
+ *     tip back to 0.858 of the sharp radius and gives the blunt points.
+ *
+ * The rounding is the whole difference. A plain ten-vertex polygon fitted to
+ * the *visible* tip and waist reads thin and spiky, because it takes the
+ * cut-back tip for the real one and so understates the waist (0.365 rather
+ * than 0.392) on top of keeping the points sharp.
+ *
+ * The size is the type size, not a radius: this is still the "★" of a 46
+ * face, and every fraction below was measured against that em. Saying so at
+ * the call site is also what keeps the 46 stated on both platforms.
  *
  * @param earned a won star is yellow at full strength; the rest sit at
  *   `star-off`, shadow included, the way SwiftUI shadows a translucent view.
+ * @param fontSize the em the mark is cut for.
  */
 @Composable
-fun RecapStar(earned: Boolean, size: Dp = 42.dp, modifier: Modifier = Modifier) {
+fun RecapStar(earned: Boolean, fontSize: TextUnit, modifier: Modifier = Modifier) {
     val fill = if (earned) DesignTokens.Color.yellow
                else Color.White.dim(DesignTokens.Opacity.starOff)
     val shade = if (earned) DesignTokens.Color.ink
                 else DesignTokens.Color.ink.dim(DesignTokens.Opacity.starOff)
-    Canvas(modifier.size(size)) {
-        val path = starPath(this.size.width, this.size.height)
-        translate(4f, 4f) { drawPath(path, shade) }
+    // The em straight to dp rather than through toDp(): iOS sets the glyph at
+    // a fixed .system(size: 46), which Dynamic Type leaves alone, so letting
+    // this one follow the font-size setting would create the difference
+    // instead of removing it.
+    val em = fontSize.value.dp
+    val radius = em * STAR_RADIUS
+    // The box is the glyph's cell, not its ink: iOS lays these out as a line
+    // of type, so the row is as tall as a 46 line box and as wide as the
+    // advance, with the ink sitting inside. Sizing the box to the ink instead
+    // left the row 10dp short and pulled the score card up behind it, and the
+    // shadow needs the right-hand bearing to land in anyway.
+    Canvas(modifier.size(em * STAR_ADVANCE, em * STAR_LINE)) {
+        val r = radius.toPx()
+        val path = starPath(
+            cx = (em * STAR_INK_X).toPx() + r * STAR_INK_W / 2f,
+            cy = (em * STAR_INK_Y).toPx() + r * STAR_TIP,
+            outer = r,
+        )
+        // toPx, not a bare 4: DrawScope translates in pixels, and 4 pixels on
+        // a 2.6x screen is a shadow you cannot see.
+        val d = 4.dp.toPx()
+        translate(d, d) { drawPath(path, shade) }
         drawPath(path, fill)
     }
 }
 
+/** Sharp radius, as a fraction of the em the star is set at. */
+private const val STAR_RADIUS = 0.524f
 /**
- * A five-pointed star filling [w] by [h], first point up. The waist sits at
- * 1/phi^2 of the outer radius, which is the ratio a pentagram makes and what
- * every star glyph is cut from.
+ * The glyph's cell and where the ink sits in it, as fractions of the em:
+ * 47.3 x 55.7dp at 46, ink 4dp in from the left and 7.4dp down. Read off the
+ * iOS render, since the two are only comparable when the Android row occupies
+ * the same space a line of 46 does.
  */
-private fun starPath(w: Float, h: Float): Path {
-    val cx = w / 2f
-    val cy = h / 2f
-    val outer = minOf(w, h) / 2f
-    val inner = outer * 0.382f
+private const val STAR_ADVANCE = 1.0285f
+private const val STAR_LINE = 1.210f
+private const val STAR_INK_X = 0.087f
+private const val STAR_INK_Y = 0.161f
+/** Visible tip, as a fraction of the sharp radius, once the corner is rounded. */
+private const val STAR_TIP = 0.858f
+/** Ink width and height, as fractions of the sharp radius. */
+private const val STAR_INK_W = 1.631f
+private const val STAR_INK_H = 1.562f
+private const val STAR_WAIST = 0.392f
+/**
+ * Corner radii, again as fractions of the sharp radius, and deliberately not
+ * equal: the render's waist sits 1.01px outside the sharp vertex where an
+ * evenly rounded star would put it 2.2px out, so the inner corners are cut
+ * about half as round as the points. Rounding both the same scoops the valleys
+ * and thins the arms.
+ */
+private const val STAR_CORNER_TIP = 0.0665f
+private const val STAR_CORNER_WAIST = 0.031f
+
+/**
+ * A five-pointed star centred on [cx], [cy], one point up, built from the
+ * sharp pentagram of radius [outer] with every corner replaced by a rounded
+ * join.
+ *
+ * Each corner is trimmed back along both of its edges by `corner / tan(half
+ * angle)` and bridged with the standard cubic approximation of the tangent
+ * arc. The straight part of each edge therefore still lies exactly where the
+ * measured profile says it does, and only the corners move.
+ *
+ * A quadratic through the vertex is the obvious shortcut and is wrong here:
+ * it passes 1.41 corner-radii from the vertex where the arc passes 2.13, so
+ * the points stay long and the star renders about 5% oversized.
+ */
+private fun starPath(cx: Float, cy: Float, outer: Float): Path {
+    val pts = (0 until 10).map { i ->
+        val r = if (i % 2 == 0) outer else outer * STAR_WAIST
+        val a = (-90f + i * 36f) * PI.toFloat() / 180f
+        Offset(cx + r * cos(a), cy + r * sin(a))
+    }
     return Path().apply {
         for (i in 0 until 10) {
-            val r = if (i % 2 == 0) outer else inner
-            val a = (-90f + i * 36f) * PI.toFloat() / 180f
-            val x = cx + r * cos(a)
-            val y = cy + r * sin(a)
-            if (i == 0) moveTo(x, y) else lineTo(x, y)
+            val p = pts[i]
+            val toPrev = pts[(i + 9) % 10] - p
+            val toNext = pts[(i + 1) % 10] - p
+            val u = toPrev / toPrev.getDistance()
+            val v = toNext / toNext.getDistance()
+            val half = acos((u.x * v.x + u.y * v.y).coerceIn(-1f, 1f)) / 2f
+            val corner = outer * if (i % 2 == 0) STAR_CORNER_TIP else STAR_CORNER_WAIST
+            // Never eat more than half an edge, so two corners cannot cross.
+            val trim = min(
+                corner / tan(half),
+                min(toPrev.getDistance(), toNext.getDistance()) / 2f,
+            )
+            val a = p + u * trim
+            val b = p + v * trim
+            // Control points at 4/3 tan(sweep/4) radii along each tangent,
+            // expressed as a fraction of the trim so the vertex itself can
+            // stand in for the tangent direction.
+            val k = 4f / 3f * tan((PI.toFloat() - 2f * half) / 4f) * tan(half)
+            if (i == 0) moveTo(a.x, a.y) else lineTo(a.x, a.y)
+            cubicTo(
+                a.x + (p.x - a.x) * k, a.y + (p.y - a.y) * k,
+                b.x + (p.x - b.x) * k, b.y + (p.y - b.y) * k,
+                b.x, b.y,
+            )
         }
         close()
     }
