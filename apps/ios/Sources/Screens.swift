@@ -546,6 +546,9 @@ struct SettingsView: View {
 
                 VStack(spacing: 10) {
                     toggleRow(L("soundS"), isOn: $soundOn)
+                        .onChange(of: soundOn) { _, on in
+                            Analytics.shared.log(.soundSet, [.on: on])
+                        }
                     toggleRow(L("notifS"), isOn: $notificationsOn)
                 }
                 .padding(.top, 12)

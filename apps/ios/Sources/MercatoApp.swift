@@ -65,6 +65,15 @@ struct RootView: View {
 
             case .success(let game):
                 content(game)
+                    // One hook for every screen rather than a call in each
+                    // view: a screen added later is counted without anyone
+                    // remembering to count it, and the names come from the
+                    // shared vocabulary rather than from the Route enum.
+                    .onChange(of: route) { _, new in
+                        if let name = Self.screenName(new) {
+                            Analytics.shared.log(.screenOpened, [.screen: name])
+                        }
+                    }
                     .onAppear {
                         // The gate is app-lifetime state that resets with each
                         // fresh Game, so seed it on load: the store entitlement
@@ -115,6 +124,21 @@ struct RootView: View {
                     .padding(DesignTokens.Space.gutter)
                 }
             }
+        }
+    }
+
+    /// The screen name the shared vocabulary uses, or nil for the screens not
+    /// worth counting. Splash and consent are unavoidable, the game has its
+    /// own round events, and the lab is debug only.
+    private static func screenName(_ route: Route) -> String? {
+        switch route {
+        case .home: return "home"
+        case .profile: return "profile"
+        case .settings: return "settings"
+        case .recap: return "recap"
+        case .offline: return "offline"
+        case .onboarding: return "onboarding"
+        case .splash, .consent, .game, .lab: return nil
         }
     }
 

@@ -33,6 +33,9 @@ struct GameView: View {
 
     private var roundLength: Int { Int(DesignTokens.Game.roundLength) }
 
+    /// The mode as the shared event vocabulary spells it, not as Swift does.
+    private var modeName: String { mode == .easy ? "easy" : "hardcore" }
+
     var body: some View {
         ZStack {
             DS.appBackground
@@ -61,7 +64,10 @@ struct GameView: View {
         }
         .overlay {
             if quitOpen {
-                QuitDialog(onStay: { quitOpen = false }, onQuit: onQuit)
+                QuitDialog(onStay: { quitOpen = false }, onQuit: {
+                    Analytics.shared.log(.roundQuit, [.mode: modeName, .answered: results.count])
+                    onQuit()
+                })
             }
         }
         .onAppear(perform: startRound)
@@ -171,7 +177,10 @@ struct GameView: View {
     }
 
     private func takeHint() {
-        if let hint = game.nextHint() { hints.append(hint) }
+        if let hint = game.nextHint() {
+            Analytics.shared.log(.hintTaken, [.rank: hints.count + 1])
+            hints.append(hint)
+        }
     }
 
     private func submitGuess() {
@@ -245,6 +254,7 @@ struct GameView: View {
         // Seeded from the clock so each round differs. The core stays
         // deterministic for a given seed, which is what the tests rely on.
         game.startRound(lang: lang, mode: mode, seed: UInt32.random(in: 0...UInt32.max))
+        Analytics.shared.log(.roundStart, [.mode: modeName])
         advanceWork?.cancel()
         results = []
         answer = nil
@@ -309,6 +319,19 @@ struct GameView: View {
         if question == nil, !roundOver {
             roundOver = true
             Sounds.shared.play(.roundOver)
+            // Recomputed here rather than read from the recap view, which is
+            // built by the caller: the two must agree, and the star rule lives
+            // in the core's tokens (game.stars).
+            let right = results.filter { $0 }.count
+            let ratio = roundLength == 0 ? 0 : Double(right) / Double(roundLength)
+            let stars = ratio >= 0.9 ? 3 : (ratio >= 0.6 ? 2 : (ratio > 0 ? 1 : 0))
+            Analytics.shared.log(.roundEnd, [
+                .mode: modeName,
+                .score: Int(game.score().points),
+                .correct: right,
+                .stars: stars,
+                .won: stars >= 2,
+            ])
             // The denominator is the fixed round length, not the number of
             // questions answered: a Hardcore round that ends early on lost lives
             // still reports the score out of the full round (e.g. 4/10).

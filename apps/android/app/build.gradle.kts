@@ -15,6 +15,22 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
+// Firebase is opt-in on the presence of its own credentials. google-services
+// fails the build outright when google-services.json is missing, so applying
+// it unconditionally would mean nobody can compile the app without a Firebase
+// project of their own. `Analytics.kt` reads the same condition at runtime and
+// becomes a no-op, so the two never disagree.
+val firebaseConfig = file("google-services.json")
+if (firebaseConfig.exists()) {
+    apply(plugin = "com.google.gms.google-services")
+    apply(plugin = "com.google.firebase.crashlytics")
+} else {
+    logger.lifecycle(
+        "note: apps/android/app/google-services.json is absent, so Firebase " +
+            "Analytics and Crashlytics are compiled out of this build."
+    )
+}
+
 val repoRoot = rootProject.projectDir.resolve("../..")
 
 // CSV dataset and fonts ship inside the APK as assets. They are staged into
@@ -42,6 +58,16 @@ val genSounds = tasks.register<Exec>("genSounds") {
     commandLine("node", "scripts/gen-sounds.mjs")
     inputs.file(repoRoot.resolve("scripts/gen-sounds.mjs"))
     outputs.dir(repoRoot.resolve("build/sounds"))
+}
+
+// The event vocabulary is generated from design/analytics.json for both
+// platforms at once, so neither app can invent or misspell an event name.
+val genAnalytics = tasks.register<Exec>("genAnalytics") {
+    workingDir = repoRoot
+    commandLine("node", "scripts/gen-analytics.mjs")
+    inputs.file(repoRoot.resolve("scripts/gen-analytics.mjs"))
+    inputs.file(repoRoot.resolve("design/analytics.json"))
+    outputs.dir(repoRoot.resolve("build/analytics"))
 }
 
 // The launcher icon is generated from the design tokens, like the strings and
@@ -139,6 +165,7 @@ android {
     sourceSets.getByName("main") {
         kotlin.srcDir(repoRoot.resolve("build/bindings/kotlin"))
         kotlin.srcDir(repoRoot.resolve("build/tokens"))
+        kotlin.srcDir(repoRoot.resolve("build/analytics"))
         res.srcDir(repoRoot.resolve("build/strings/android"))
         res.srcDir(repoRoot.resolve("build/icons/android/res"))
         // The launch theme's colour, generated from the tokens: XML cannot read
@@ -159,7 +186,7 @@ android {
 }
 
 tasks.named("preBuild") {
-    dependsOn(stageAssets, genIcons)
+    dependsOn(stageAssets, genIcons, genAnalytics)
 }
 stageAssets { dependsOn(genSounds) }
 
@@ -184,6 +211,13 @@ dependencies {
 
     // Play Billing: the single remove-ads non-consumable.
     implementation("com.android.billingclient:billing-ktx:9.1.0")
+
+    // Analytics and Crashlytics. Both are no-cost on the Spark plan with no
+    // usage limits; nothing else from Firebase is used, and nothing else is
+    // wanted, since the rest of it is a backend this app does not have.
+    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-crashlytics")
 
     testImplementation("junit:junit:4.13.2")
 }

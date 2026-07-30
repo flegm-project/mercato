@@ -34,11 +34,14 @@ class AppGraph(private val context: Context, private val scope: CoroutineScope) 
     /** The three game cues, gated by the sound setting. */
     val sounds by lazy { Sounds(context, prefs, scope) }
 
+    /** Usage measurement and crash reporting. A no-op without credentials. */
+    val analytics by lazy { Analytics(context) }
+
     /** Play Billing bridge for the remove-ads entitlement. */
-    val billing by lazy { BillingManager(context, { game }, prefs, scope) }
+    val billing by lazy { BillingManager(context, { game }, prefs, scope, { analytics }) }
 
     /** Google UMP consent flow, mapped onto the core's consent contract. */
-    val consent by lazy { ConsentManager({ game }, prefs, scope) }
+    val consent by lazy { ConsentManager({ game }, prefs, scope, { analytics }) }
 
     /** Called from Application.onCreate on a background dispatcher. */
     suspend fun warmUp() = withContext(Dispatchers.IO) {

@@ -27,6 +27,11 @@ packages:
   GoogleMobileAds:
     url: https://github.com/googleads/swift-package-manager-google-mobile-ads.git
     from: "13.0.0"
+  # Analytics and Crashlytics only. Both are no-cost with no usage limits, and
+  # the rest of Firebase is a backend this app does not have.
+  Firebase:
+    url: https://github.com/firebase/firebase-ios-sdk.git
+    from: "11.7.0"
 
 targets:
   Mercato:
@@ -39,6 +44,9 @@ targets:
       - path: ../../build/bindings/swift/mercato_ffi.swift
         group: Generated
       - path: ../../build/tokens/DesignTokens.swift
+        group: Generated
+      # The event vocabulary, generated for both platforms from one file.
+      - path: ../../build/analytics/AnalyticsEvents.swift
         group: Generated
       - path: ../../build/strings/ios/en.lproj
         group: Generated
@@ -91,6 +99,10 @@ targets:
       - framework: ../../build/ios/Mercato.xcframework
         embed: false
       - package: GoogleMobileAds
+      - package: Firebase
+        product: FirebaseAnalytics
+      - package: Firebase
+        product: FirebaseCrashlytics
     scheme:
       # Local StoreKit products, so the purchase can be exercised without an
       # App Store Connect entry. See Support/README.md.

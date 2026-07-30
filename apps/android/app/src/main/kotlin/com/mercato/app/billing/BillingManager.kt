@@ -13,6 +13,7 @@ import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchasesUpdatedListener
 import com.android.billingclient.api.QueryProductDetailsParams
 import com.android.billingclient.api.QueryPurchasesParams
+import com.mercato.analytics.Event
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -39,6 +40,8 @@ class BillingManager(
     private val gameProvider: () -> Game,
     private val prefs: Prefs,
     private val scope: CoroutineScope,
+    /** Deferred for the same reason as the game: nothing forces creation order. */
+    private val analytics: () -> Analytics,
 ) : PurchasesUpdatedListener {
 
     companion object {
@@ -119,6 +122,10 @@ class BillingManager(
             )
             .build()
         client.launchBillingFlow(activity, flowParams)
+        // After the sheet opens, not on the tap: the two early returns above
+        // are a store that never answered, and counting those as intent to
+        // buy would flatter the funnel with people who saw nothing.
+        analytics().log(Event.PURCHASE_STARTED)
     }
 
     /**
@@ -126,7 +133,7 @@ class BillingManager(
      * Settings "restore purchases" row). Also revokes locally after a
      * refund, since the store stops reporting the purchase.
      */
-    fun restore() {
+    fun restore(explicit: Boolean = false) {
         if (!client.isReady) return
         val params = QueryPurchasesParams.newBuilder()
             .setProductType(BillingClient.ProductType.INAPP)
@@ -138,6 +145,10 @@ class BillingManager(
                     it.purchaseState == Purchase.PurchaseState.PURCHASED
             }
             purchases.forEach(::acknowledgeIfNeeded)
+            // Only the Settings row is worth an event. This also runs at every
+            // launch and every resume, and logging those would drown the
+            // signal in a count of app openings.
+            if (explicit && owned) analytics().log(Event.PURCHASE_RESTORED)
             setEntitlement(owned)
         }
     }
@@ -153,6 +164,7 @@ class BillingManager(
                 purchase.purchaseState == Purchase.PurchaseState.PURCHASED
             ) {
                 acknowledgeIfNeeded(purchase)
+                if (!_adsRemoved.value) analytics().log(Event.PURCHASE_DONE)
                 setEntitlement(true)
             }
         }

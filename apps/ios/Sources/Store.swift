@@ -69,12 +69,17 @@ final class Store: ObservableObject {
         purchasing = true
         defer { purchasing = false }
         do {
+            // Before the sheet, unlike the `guard` above: a nil product is a
+            // store that never answered, and counting that as intent to buy
+            // would flatter the funnel with people who saw nothing.
+            Analytics.shared.log(.purchaseStarted)
             let result = try await product.purchase()
             switch result {
             case .success(let verification):
                 if case .verified(let transaction) = verification {
                     await transaction.finish()
                     await refreshEntitlement()
+                    Analytics.shared.log(.purchaseDone)
                 }
             case .userCancelled, .pending:
                 break
@@ -87,6 +92,10 @@ final class Store: ObservableObject {
             // sheet appears throws with nothing on screen. Without this the
             // button would simply stop spinning and look broken.
             purchaseFailed = true
+            // Swallowed on purpose above, which is exactly why it has to be
+            // recorded: a store error that only shows a banner is one nobody
+            // ever hears about.
+            Analytics.shared.recordError("Store.purchase", error)
         }
     }
 
@@ -96,6 +105,10 @@ final class Store: ObservableObject {
         try? await AppStore.sync()
         await refreshEntitlement()
         restoreFoundNothing = !adsRemoved
+        // Only when it found something, and only from this explicit call: the
+        // entitlement is also refreshed at launch, and logging that would
+        // drown the signal in a count of app openings.
+        if adsRemoved { Analytics.shared.log(.purchaseRestored) }
     }
 
     /// Display price in the store's own currency, once the product has loaded.

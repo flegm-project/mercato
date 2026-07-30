@@ -52,6 +52,13 @@ review fail. Everything under "Should fix" ships, but ships worse.
    upload keystore, keep it out of the repo, enrol in Play App Signing, and
    make the release build fail loudly when no config resolved.
 
+5b. **Firebase has to be created and its two config files dropped in.**
+   `apps/android/app/google-services.json` and the iOS
+   `GoogleService-Info.plist` are per-account and are not in the repo. Both
+   apps build and run without them and simply do not measure anything, so this
+   is not a build blocker, but shipping without it means launching blind. See
+   `docs/specs/analytics.md`.
+
 6. **Play Console declarations are all still open.** The merged release
    manifest pulls in `AD_ID`, the three `ACCESS_ADSERVICES_*` permissions,
    `WAKE_LOCK`, `FOREGROUND_SERVICE` and `BILLING` transitively from GMA and

@@ -6,4 +6,10 @@ plugins {
     id("com.android.application") version "8.9.2" apply false
     id("org.jetbrains.kotlin.android") version "2.2.0" apply false
     id("org.jetbrains.kotlin.plugin.compose") version "2.2.0" apply false
+    // Analytics and Crashlytics. Declared here but applied conditionally in
+    // app/build.gradle.kts: the google-services plugin fails the build when
+    // google-services.json is absent, and a clone without Firebase
+    // credentials still has to compile.
+    id("com.google.gms.google-services") version "4.4.2" apply false
+    id("com.google.firebase.crashlytics") version "3.0.2" apply false
 }

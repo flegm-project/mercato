@@ -21,6 +21,8 @@ node "$ROOT/scripts/gen-strings.mjs"
 # The project references the three .wav files by name, so they have to exist
 # before xcodegen runs or a fresh clone generates a project that cannot build.
 node "$ROOT/scripts/gen-sounds.mjs"
+# The event vocabulary, shared with Android and compiled into the app.
+node "$ROOT/scripts/gen-analytics.mjs"
 
 echo "==> building the core for iOS"
 "$ROOT/scripts/build-native.sh" ios

@@ -66,10 +66,16 @@ final class ConsentManager: ObservableObject {
             let personalised = Self.tcfAllowsPersonalizedAds()
             game.setAdConsent(consent: personalised ? .personalized : .nonPersonalized)
             UserDefaults.standard.set(personalised, forKey: "adsPersonalised")
+            // The same decision drives measurement. The app has exactly one
+            // consent surface and it stays that way: a second dialog asking
+            // about analytics would be worse for the player and would
+            // contradict what the first one promised.
+            Analytics.shared.setConsent(personalised: personalised)
         default:
             // Required or unknown without a completed form: most conservative.
             game.setAdConsent(consent: .nonPersonalized)
             UserDefaults.standard.set(false, forKey: "adsPersonalised")
+            Analytics.shared.setConsent(personalised: false)
         }
     }
 

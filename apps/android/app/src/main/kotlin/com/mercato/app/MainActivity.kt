@@ -15,7 +15,10 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.mercato.analytics.Event
+import com.mercato.analytics.Param
 import com.mercato.app.ui.ConsentScreen
 import com.mercato.app.ui.GameScreen
 import com.mercato.app.ui.HomeScreen
@@ -131,6 +134,24 @@ fun MercatoNav(graph: AppGraph, startRoute: String? = null) {
         } else {
             onDone()
         }
+    }
+
+    // One hook for every screen rather than a call in each composable: a
+    // screen added later is counted without anyone remembering to count it.
+    // The names come from the shared vocabulary, not from the route strings,
+    // so "game/easy" cannot land in the data as a screen name iOS never uses.
+    val entry by nav.currentBackStackEntryAsState()
+    androidx.compose.runtime.LaunchedEffect(entry?.destination?.route) {
+        val name = when (entry?.destination?.route) {
+            Routes.HOME -> "home"
+            Routes.PROFILE -> "profile"
+            Routes.SETTINGS -> "settings"
+            Routes.RECAP -> "recap"
+            Routes.OFFLINE -> "offline"
+            Routes.ONBOARDING -> "onboarding"
+            else -> null // splash, consent, the game itself and the lab
+        }
+        if (name != null) graph.analytics.log(Event.SCREEN_OPENED, mapOf(Param.SCREEN to name))
     }
 
     NavHost(nav, startDestination = startRoute ?: Routes.SPLASH) {

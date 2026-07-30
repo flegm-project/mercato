@@ -8,6 +8,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import com.mercato.analytics.Event
+import com.mercato.analytics.Param
 import com.mercato.design.DesignTokens
 import uniffi.mercato_ffi.GameMode
 import uniffi.mercato_ffi.HintView
@@ -91,8 +93,12 @@ class GameViewModel(private val graph: AppGraph) : ViewModel() {
         )
         _pips.value = List(game.questionsPerRound().toInt()) { null }
         _score.value = game.score()
+        graph.analytics.log(Event.ROUND_START, mapOf(Param.MODE to modeName(gameMode)))
         nextQuestion()
     }
+
+    /** The mode as the event vocabulary spells it, not as Kotlin does. */
+    private fun modeName(m: GameMode) = if (m == GameMode.EASY) "easy" else "hardcore"
 
     private fun nextQuestion() {
         advanceJob?.cancel()
@@ -153,6 +159,7 @@ class GameViewModel(private val graph: AppGraph) : ViewModel() {
         val ui = _question.value ?: return
         if (ui.verdict != null || ui.hints.size >= 3) return
         val hint = game.nextHint() ?: return
+        graph.analytics.log(Event.HINT_TAKEN, mapOf(Param.RANK to ui.hints.size + 1))
         _question.value = ui.copy(hints = ui.hints + hint)
     }
 
@@ -203,6 +210,16 @@ class GameViewModel(private val graph: AppGraph) : ViewModel() {
             missed = game.missed(),
         )
         _question.value = null
+        graph.analytics.log(
+            Event.ROUND_END,
+            mapOf(
+                Param.MODE to modeName(mode.value),
+                Param.SCORE to s.points.toInt(),
+                Param.CORRECT to correctCount,
+                Param.STARS to stars,
+                Param.WON to (stars >= 2),
+            ),
+        )
         viewModelScope.launch {
             graph.prefs.recordRound(
                 score = s.points.toInt(),
@@ -215,7 +232,14 @@ class GameViewModel(private val graph: AppGraph) : ViewModel() {
 
     fun quitRound() {
         advanceJob?.cancel()
+        graph.analytics.log(
+            Event.ROUND_QUIT,
+            mapOf(Param.MODE to modeName(mode.value), Param.ANSWERED to correctCountSoFar()),
+        )
         _question.value = null
         _recap.value = null
     }
+
+    /** Questions already settled, which is where the player gave up. */
+    private fun correctCountSoFar() = _pips.value.count { it != null }
 }

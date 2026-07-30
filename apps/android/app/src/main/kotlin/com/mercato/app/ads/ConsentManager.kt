@@ -32,6 +32,8 @@ class ConsentManager(
     private val gameProvider: () -> Game,
     private val prefs: Prefs,
     private val scope: CoroutineScope,
+    /** Deferred, like the game: nothing here forces a creation order. */
+    private val analytics: () -> Analytics,
 ) {
 
     /** True once UMP itself collected consent (GDPR surface shown). The
@@ -97,6 +99,11 @@ class ConsentManager(
         }
         // Off the main thread: at first launch this can race the corpus
         // parsing, and the Game accessor must not block the UI.
+        // The same decision drives measurement. The app has exactly one
+        // consent surface and it stays that way: a second dialog asking about
+        // analytics would be worse for the player and would contradict what
+        // the first one promised.
+        analytics().setConsent(consent)
         scope.launch {
             gameProvider().setAdConsent(consent)
             prefs.setConsent(

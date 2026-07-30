@@ -57,6 +57,8 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import com.mercato.analytics.Event
+import com.mercato.analytics.Param
 import com.mercato.design.DesignTokens
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -570,7 +572,10 @@ fun SettingsScreen(
         // something. Notifications stays, still only stored, because it is the
         // setting a daily reminder will read.
         Column(verticalArrangement = Arrangement.spacedBy(DesignTokens.Space.sm)) {
-            ToggleRow(R.string.soundS, sound) { scope.launch { graph.prefs.setSound(it) } }
+            ToggleRow(R.string.soundS, sound) {
+                scope.launch { graph.prefs.setSound(it) }
+                graph.analytics.log(Event.SOUND_SET, mapOf(Param.ON to it))
+            }
             ToggleRow(R.string.notifS, notifications) {
                 scope.launch { graph.prefs.setNotifications(it) }
             }
@@ -589,7 +594,7 @@ fun SettingsScreen(
             },
             owned = adsRemoved,
             enabled = !adsRemoved && price != null && activity != null,
-            restore = if (adsRemoved) null else ({ scope.launch { graph.billing.restore() }; Unit }),
+            restore = if (adsRemoved) null else ({ scope.launch { graph.billing.restore(explicit = true) }; Unit }),
         ) { activity?.let { graph.billing.launchPurchase(it) } }
         Gap(DesignTokens.Space.gutter)
         // iOS spaces the link rows by 9 (Screens.swift:549).

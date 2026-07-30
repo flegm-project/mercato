@@ -1,0 +1,51 @@
+{
+  "meta": {
+    "note": "The whole event vocabulary. Both apps read the constants generated from this file, so an event cannot exist on one platform under a different name, which is the failure mode that quietly makes cross-platform numbers meaningless.",
+    "limits": "Google Analytics allows 500 distinct event names per app, 25 parameters per event and 25 user properties. Names are capped at 40 characters and parameter values at 100. Nothing here is close, and that headroom is the point: a new name is cheap, a renamed one costs the history behind it.",
+    "not-yet": "A per-question event was written and then removed. The one thing worth knowing per question is whether the dataset's own 1/2/3 difficulty tier matches how people actually do, and `QuestionView` does not carry the tier across the FFI. Without it the event is ten times the volume of round_end for something round_end already answers. Add the field to the core first, then this event."
+  },
+  "events": {
+    "round_start": {
+      "why": "The denominator for everything else. Without it, a drop in rounds finished reads exactly like a drop in rounds started.",
+      "params": { "mode": "easy | hardcore" }
+    },
+    "round_end": {
+      "why": "How well people actually do. Star counts piled on one is a difficulty problem; piled on three is a dataset that is too easy.",
+      "params": {
+        "mode": "easy | hardcore",
+        "score": "points",
+        "correct": "answers right, 0..10",
+        "stars": "0..3",
+        "won": "1 at two stars or more"
+      }
+    },
+    "round_quit": {
+      "why": "Quitting mid-round is the strongest signal that a question is unfair or the round is too long. `answered` says where they gave up.",
+      "params": { "mode": "easy | hardcore", "answered": "questions settled before quitting" }
+    },
+    "hint_taken": {
+      "why": "Hardcore only. Which rung of the ladder people stop at says which hint is the useful one.",
+      "params": { "rank": "1 nationality, 2 position, 3 surname shape" }
+    },
+    "screen_opened": {
+      "why": "Reach, not navigation. Firebase logs its own screen views; this exists so the few screens that matter are countable without reading an automatic report.",
+      "params": { "screen": "home | profile | settings | recap | offline | onboarding" }
+    },
+    "purchase_started": {
+      "why": "The top of the only funnel this app has.",
+      "params": {}
+    },
+    "purchase_done": {
+      "why": "Paired with purchase_started, the gap between them is the store's drop-off rather than ours.",
+      "params": {}
+    },
+    "purchase_restored": {
+      "why": "A restore that fires often means people are reinstalling, which is worth knowing on its own.",
+      "params": {}
+    },
+    "sound_set": {
+      "why": "Whether the cues are wanted. If most players turn them off, that is an answer about the sounds, not about the setting.",
+      "params": { "on": "1 or 0" }
+    }
+  }
+}
