@@ -25,7 +25,7 @@ export PATH="$ANDROID_HOME/platform-tools:$PATH"
 
 ROUTES=("$@")
 if [ ${#ROUTES[@]} -eq 0 ]; then
-  ROUTES=(onboarding consent home easy hardcore recap recaplose profile settings lab offline)
+  ROUTES=(onboarding consent home easy hardcore quit recap recaplose profile settings lab offline)
 fi
 
 mkdir -p "$OUT/ios" "$OUT/android"
@@ -62,7 +62,14 @@ for r in "${ROUTES[@]}"; do
   xcrun simctl terminate "$IOS_SIM" "$BID" >/dev/null 2>&1
   # A fresh container per route keeps a stored streak or consent choice from
   # one capture leaking into the next.
-  xcrun simctl launch "$IOS_SIM" "$BID" -MercatoRoute "$r" >/dev/null 2>&1
+  # The quit dialog is not a route on iOS, it is the Easy game plus a second
+  # launch argument. Android reads the same route name and opens the dialog
+  # itself, so both sides answer to `quit`.
+  if [ "$r" = quit ]; then
+    xcrun simctl launch "$IOS_SIM" "$BID" -MercatoRoute easy -MercatoQuit >/dev/null 2>&1
+  else
+    xcrun simctl launch "$IOS_SIM" "$BID" -MercatoRoute "$r" >/dev/null 2>&1
+  fi
   settle "$OUT/ios/$r.png" \
     "xcrun simctl io '$IOS_SIM' screenshot '$OUT/ios/$r.png'" && ok=ok || ok=UNSETTLED
   printf '    %-12s %s\n' "$r" "$([ -f "$OUT/ios/$r.png" ] && echo "$ok" || echo FAILED)"

@@ -1,6 +1,7 @@
 package com.mercato.app.ui
 
 import android.app.Activity
+import com.mercato.app.BuildConfig
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -36,7 +37,10 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.window.Dialog
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mercato.app.AppGraph
@@ -51,7 +55,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.ui.window.DialogProperties
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -77,7 +80,16 @@ fun GameScreen(
     val pips by vm.pips.collectAsState()
     val recap by vm.recap.collectAsState()
     val bumpToken by vm.bumpToken.collectAsState()
-    var quitAsked by remember { mutableStateOf(false) }
+    // QA: the `quit` capture route opens the dialog straight away, the way
+    // -MercatoQuit does on iOS. Without it the dialog is the one surface the
+    // parity harness could not reach, which is how both its buttons ended up
+    // the wrong height unnoticed.
+    var quitAsked by remember {
+        mutableStateOf(
+            BuildConfig.DEBUG &&
+                (context as? Activity)?.intent?.getStringExtra("route") == "quit"
+        )
+    }
 
     LaunchedEffect(mode) {
         val locale = context.resources.configuration.locales[0]?.toLanguageTag() ?: "en"
@@ -413,24 +425,36 @@ private fun StatTile(modifier: Modifier, value: String, label: String, tint: Col
     }
 }
 
-/** 06 Quit dialog: keep playing (yellow) or quit (coral). */
+/**
+ * 06 Quit dialog: keep playing (yellow) or quit (coral).
+ *
+ * Drawn in the game screen's own composition rather than in a platform
+ * `Dialog`. iOS puts it in an `.overlay` on the game's ZStack, so the card
+ * centres in the safe area; a dialog window centres in whatever the window
+ * manager hands it, and here that was the screen minus one status bar with
+ * Compose then insetting by a second, leaving the card 35dp below the iOS one.
+ * Same composition, same insets, same centre.
+ */
 @Composable
 private fun QuitDialog(onStay: () -> Unit, onQuit: () -> Unit) {
-    Dialog(
-        onDismissRequest = onStay,
-        properties = DialogProperties(usePlatformDefaultWidth = false),
+    BackHandler(onBack = onStay)
+    // The scrim covers the screen edge to edge, as iOS's does with
+    // ignoresSafeArea (Screens.swift:451); the card centres inside the safe
+    // area, as iOS's does by not opting out of it.
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(Color(0xFF060920).dim(DesignTokens.Opacity.scrim))
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onStay,
+            ),
     ) {
-        // iOS paints its own scrim, an ink navy at 78% (Screens.swift:463).
-        // The platform default was lighter and a different hue.
         Box(
             Modifier
                 .fillMaxSize()
-                .background(Color(0xFF060920).dim(DesignTokens.Opacity.scrim))
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    onClick = onStay,
-                ),
+                .windowInsetsPadding(WindowInsets.systemBars),
             contentAlignment = Alignment.Center,
         ) {
         Column(
@@ -453,15 +477,24 @@ private fun QuitDialog(onStay: () -> Unit, onQuit: () -> Unit) {
                 style = typeStyle(DesignTokens.Type.body, DesignTokens.Color.muted),
             )
             Gap(DesignTokens.Space.lg)
+            // iOS sizes both from their padding, 16 and 15 (Screens.swift:465
+            // and :476), and spaces them by 10. These two were the only
+            // InkButton call sites left without a verticalPadding, so they
+            // fell through to the 56dp fallback and came out 3 and 7dp too
+            // tall, flush against each other, with the first one's shadow at
+            // 12 where iOS draws 8.
             InkButton(
                 stringResource(R.string.quitStay), ButtonStyle.Primary,
                 fontSize = 17.sp, fontWeight = 900, tracking = -0.03f,
-                depth = 12.dp, radius = DesignTokens.Radius.button, onClick = onStay,
+                radius = DesignTokens.Radius.button, verticalPadding = 16.dp,
+                onClick = onStay,
             )
+            Gap(DesignTokens.Space.sm)
             InkButton(
                 stringResource(R.string.quitGo), ButtonStyle.Destructive,
                 fontSize = 15.sp, fontWeight = 800, tracking = -0.03f,
-                radius = DesignTokens.Radius.button, onClick = onQuit,
+                radius = DesignTokens.Radius.button, verticalPadding = 15.dp,
+                onClick = onQuit,
             )
         }
         }

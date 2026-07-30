@@ -92,6 +92,10 @@ private fun debugRoute(intent: android.content.Intent?): String? {
         "consent" -> Routes.CONSENT
         "easy" -> Routes.GAME_EASY
         "hardcore" -> Routes.GAME_HARDCORE
+        // The quit dialog sits over the Easy game, so the route is the game
+        // and GameScreen reads the same extra to open the dialog. iOS does the
+        // same with a second launch argument, -MercatoQuit.
+        "quit" -> Routes.GAME_EASY
         "recap", "recaplose" -> Routes.RECAP
         else -> null
     }
