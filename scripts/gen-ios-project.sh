@@ -23,6 +23,10 @@ node "$ROOT/scripts/gen-strings.mjs"
 node "$ROOT/scripts/gen-sounds.mjs"
 # The event vocabulary, shared with Android and compiled into the app.
 node "$ROOT/scripts/gen-analytics.mjs"
+# The project references build/icons/ios/Assets.xcassets, and build/ is
+# gitignored: without this, a fresh clone cannot even generate the project.
+# Android has run this as a Gradle task for a while; iOS never did.
+node "$ROOT/scripts/gen-app-icon.mjs"
 
 echo "==> building the core for iOS"
 "$ROOT/scripts/build-native.sh" ios

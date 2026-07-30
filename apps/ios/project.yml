@@ -6,7 +6,11 @@
 # references.
 name: Mercato
 options:
-  bundleIdPrefix: com.mercato
+  # A prefix has to be a namespace you actually control, and com.mercato is
+  # not one: it is a generic word anybody can register in the Developer
+  # portal, and if someone already has, automatic signing fails with an error
+  # that does not mention why.
+  bundleIdPrefix: com.nicogaray
   deploymentTarget:
     iOS: "17.0"
   createIntermediateGroups: true
@@ -37,6 +41,27 @@ targets:
   Mercato:
     type: application
     platform: iOS
+    # On the target, not on the project: XcodeGen writes its platform presets
+    # at target level, and a target setting beats a project one. Setting these
+    # under `settings.base` above looked right and changed nothing.
+    settings:
+      base:
+        # Stated, not derived. Left to the prefix plus the target name it came
+        # out as com.nicogaray.Mercato, capital M and all, which nobody chose
+        # and which does not match Android's com.nicogaray.mercato. It is
+        # permanent from the moment the App Store Connect record exists.
+        PRODUCT_BUNDLE_IDENTIFIER: com.nicogaray.mercato
+        # iPhone only. The preset is "1,2", which makes this a universal app:
+        # the store then wants iPad screenshots, App Review tests an
+        # iPhone-tuned layout on an iPad, and the portrait-only orientation
+        # list below is the ITMS-90474 upload rejection.
+        TARGETED_DEVICE_FAMILY: "1"
+      configs:
+        Release:
+          # The preset pins "iPhone Developer" in every configuration, so an
+          # archive resolves a development certificate and then fights
+          # -exportArchive with method: app-store.
+          CODE_SIGN_IDENTITY: "Apple Distribution"
     sources:
       - path: Sources
       # Generated, hence outside this directory: the FFI bindings, the design

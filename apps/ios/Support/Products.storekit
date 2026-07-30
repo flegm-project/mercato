@@ -23,7 +23,7 @@
           "locale": "es_ES"
         }
       ],
-      "productID": "com.mercato.removeads",
+      "productID": "com.nicogaray.mercato.removeads",
       "referenceName": "Remove ads",
       "type": "NonConsumable"
     }

@@ -54,7 +54,7 @@ energy, no subscriptions.
 - No account, fully offline gameplay; the only network use is advertising.
 - Consent: Google UMP form in the EEA/UK, ATT prompt on iOS, in-app
   personalisation choice elsewhere.
-- Single non-consumable purchase `mercato_remove_ads` (Remove ads), with
+- Single non-consumable purchase `com.nicogaray.mercato.removeads` on iOS, `mercato_remove_ads` on Play (Remove ads), with
   restore.
 - No leaderboard, no multiplayer in this version (do not mention any in
   marketing material).

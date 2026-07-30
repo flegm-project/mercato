@@ -4,7 +4,7 @@ import SwiftUI
 /// The only purchase in the app: removing ads, once, for good.
 /// See docs/MONETIZATION.md. There is no shop and no consumable.
 enum StoreProduct {
-    static let removeAds = "com.mercato.removeads"
+    static let removeAds = "com.nicogaray.mercato.removeads"
 }
 
 /// Owns the remove-ads entitlement and the StoreKit plumbing behind it.

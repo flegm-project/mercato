@@ -33,13 +33,12 @@ review fail. Everything under "Should fix" ships, but ships worse.
    the frames are a script away rather than a photo session.
 
 4. **Neither in-app purchase exists in its console.** iOS expects
-   `com.mercato.removeads` (`apps/ios/Sources/Store.swift:7`), Android expects
+   `com.nicogaray.mercato.removeads` (`apps/ios/Sources/Store.swift:7`), Android expects
    `mercato_remove_ads` (`billing/BillingManager.kt:46`). Until each is created
    and active, both apps show the "shop unavailable" state while the listing
    promises the purchase, which is a review rejection on its own. Note the
    ordering on Play: a signed build has to reach an internal track before the
-   product can be created. Also `store/listing.en.md:57` gives the reviewer the
-   Android id for the iOS build; fix all three listings.
+   product can be created. The three listings now name both ids.
 
 ### Android
 
@@ -68,40 +67,24 @@ review fail. Everything under "Should fix" ships, but ships worse.
 
 ### iOS
 
-7. **The app is built for iPhone *and* iPad but only declares portrait.**
-   `TARGETED_DEVICE_FAMILY = "1,2"` is an XcodeGen platform default, not a
-   decision: it appears in the generated `project.pbxproj` and nowhere in
-   `project.yml`. Combined with the portrait-only
-   `UISupportedInterfaceOrientations` (`apps/ios/project.yml:163`) that is the
-   `ITMS-90474` upload rejection, and if it did pass, App Review would test an
-   iPhone-tuned layout on an iPad and ask for 13" screenshots. Set
-   `TARGETED_DEVICE_FAMILY: "1"` in `project.yml` and regenerate.
+7. **Nothing builds iOS in CI, and no Release build has ever been produced on
+   this machine.** `.github/workflows/ci.yml` covers the Rust core, the
+   generated assets, a Swift smoke test and `assembleDebug`. The four items
+   below were fixed unverified by any archive. Add an `xcodegen` +
+   `xcodebuild` job, and a `bundleRelease` step on the Android job.
 
-8. **The Release configuration pins a development signing identity.**
-   `CODE_SIGN_IDENTITY = "iPhone Developer"` in both configurations, again a
-   generator default. An archive will resolve a development certificate and
-   then fight `-exportArchive` with `method: app-store`. Override
-   `CODE_SIGN_IDENTITY` for Release in `project.yml`.
-
-9. **`scripts/gen-app-icon.mjs` is called by nothing on the iOS side.** The
-   Android build runs it as a Gradle task (`build.gradle.kts:54`), but
-   `gen-ios-project.sh` does not, and `build/` is gitignored. The project
-   references `build/icons/ios/Assets.xcassets`, so a fresh clone cannot even
-   generate the project, let alone archive with an icon. It works here only
-   because the file happens to be on this machine. Add the call to
-   `gen-ios-project.sh`, next to the sounds and the strings.
-
-10. **The bundle identifier is an accident.** `com.mercato.Mercato`, derived
-    from `bundleIdPrefix` plus the target name, capital M and all, while
-    Android is `com.nicogaray.mercato`. `com.mercato` is a prefix nobody here
-    owns. It is permanent once the App Store Connect record exists, so decide
-    it now and set `PRODUCT_BUNDLE_IDENTIFIER` explicitly.
-
-11. **Nothing builds iOS in CI, and no Release build has ever been produced on
-    this machine.** `.github/workflows/ci.yml` covers the Rust core, the
-    generated assets, a Swift smoke test and `assembleDebug`. Every item above
-    is therefore unverified by any build. Add an `xcodegen` + `xcodebuild`
-    job, and a `bundleRelease` step on the Android job.
+   *Done:* the identifiers and the device family were all XcodeGen presets
+   nobody had chosen. `TARGETED_DEVICE_FAMILY` was `"1,2"`, making this a
+   universal app that declared portrait only, which is the `ITMS-90474`
+   rejection; Release pinned `CODE_SIGN_IDENTITY = "iPhone Developer"`, so an
+   archive resolved a development certificate; the bundle id was
+   `com.mercato.Mercato` under a prefix nobody owns; and the purchase was
+   `com.mercato.removeads` under the same one. They are now `"1"`, `Apple
+   Distribution`, `com.nicogaray.mercato` and `com.nicogaray.mercato.removeads`,
+   set on the target rather than the project, since a target setting is what
+   beats the preset. `gen-ios-project.sh` also runs `gen-app-icon.mjs` now: it
+   never did, and `build/` is gitignored, so a fresh clone could not generate
+   a project at all.
 
 ## Should fix
 
