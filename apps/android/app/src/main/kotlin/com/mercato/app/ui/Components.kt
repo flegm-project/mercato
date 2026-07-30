@@ -326,7 +326,7 @@ private const val STAR_CORNER_WAIST = 0.031f
  * it passes 1.41 corner-radii from the vertex where the arc passes 2.13, so
  * the points stay long and the star renders about 5% oversized.
  */
-private fun starPath(cx: Float, cy: Float, outer: Float): Path {
+internal fun starPath(cx: Float, cy: Float, outer: Float): Path {
     val pts = (0 until 10).map { i ->
         val r = if (i % 2 == 0) outer else outer * STAR_WAIST
         val a = (-90f + i * 36f) * PI.toFloat() / 180f

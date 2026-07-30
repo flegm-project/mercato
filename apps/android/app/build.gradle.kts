@@ -76,13 +76,14 @@ val genAnalytics = tasks.register<Exec>("genAnalytics") {
 // nobody had regenerated: the mark was redrawn and the phone kept the old one.
 // Generating it as part of the build is what stops that happening again.
 //
-// The onboarding illustrations, generated for both platforms at once so the
-// intro cannot drift into two different pictures of the same game.
+// The intro's geometry, generated for both platforms at once so the two
+// animations cannot drift into two different pictures of the same game. The
+// drawing itself is OnboardingArt.kt.
 val genArt = tasks.register<Exec>("genArt") {
     workingDir = repoRoot
-    commandLine("node", "scripts/gen-onboarding-art.mjs")
-    inputs.file(repoRoot.resolve("scripts/gen-onboarding-art.mjs"))
-    inputs.file(repoRoot.resolve("design/tokens.json"))
+    commandLine("node", "scripts/gen-onboarding-scenes.mjs")
+    inputs.file(repoRoot.resolve("scripts/gen-onboarding-scenes.mjs"))
+    inputs.file(repoRoot.resolve("design/onboarding.json"))
     outputs.dir(repoRoot.resolve("build/art"))
 }
 
@@ -177,11 +178,10 @@ android {
         kotlin.srcDir(repoRoot.resolve("build/bindings/kotlin"))
         kotlin.srcDir(repoRoot.resolve("build/tokens"))
         kotlin.srcDir(repoRoot.resolve("build/analytics"))
+        // The intro's geometry, shared with iOS. Drawn by OnboardingArt.kt.
+        kotlin.srcDir(repoRoot.resolve("build/art"))
         res.srcDir(repoRoot.resolve("build/strings/android"))
         res.srcDir(repoRoot.resolve("build/icons/android/res"))
-        // The onboarding illustrations. The res root is build/art/android,
-        // which holds the drawable-xxhdpi folder Android expects.
-        res.srcDir(repoRoot.resolve("build/art/android"))
         // The launch theme's colour, generated from the tokens: XML cannot read
         // the Kotlin token object, and the window is painted before any of this
         // app's code runs.

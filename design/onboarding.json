@@ -1,0 +1,169 @@
+{
+  "meta": {
+    "note": "The three intro animations, as geometry rather than as pictures. One ball crosses each frame and leaves a yellow trail that draws the idea: a pass from one club to the next, a run that settles on the right answer, a climb that bursts into stars. Both apps render this with their own vector primitives, so it costs no image bytes and stays sharp at any density.",
+    "why-shared": "The numbers live here for the same reason the design tokens do. Two hand-tuned copies of an arc are two different arcs within a month, and nobody would notice until the two stores were showing two different intros.",
+    "frame": "408x200 is the slot: 200 tall, and as wide as the column allows, which is 408 at most and 370 on a 402dp phone. The renderers scale to fill and centre, so the sides are what gets cropped. Everything that matters stays inside a 24 margin."
+  },
+  "canvas": {
+    "w": 408,
+    "h": 200
+  },
+  "loop": {
+    "durationMs": 2800,
+    "travelEnd": 0.55,
+    "accentEnd": 0.72,
+    "holdEnd": 0.88
+  },
+  "style": {
+    "trail": 8,
+    "border": 5,
+    "depth": 5,
+    "ballRadius": 14,
+    "ballBorder": 4,
+    "samples": 64
+  },
+  "panes": [
+    {
+      "id": "pass",
+      "path": {
+        "from": [
+          124,
+          102
+        ],
+        "c1": [
+          176,
+          30
+        ],
+        "c2": [
+          274,
+          30
+        ],
+        "to": [
+          326,
+          112
+        ]
+      },
+      "blocks": [
+        {
+          "x": 44,
+          "y": 74,
+          "w": 76,
+          "h": 76,
+          "r": 22
+        },
+        {
+          "x": 288,
+          "y": 74,
+          "w": 76,
+          "h": 76,
+          "r": 22
+        }
+      ],
+      "stars": [],
+      "order": [],
+      "accent": 1,
+      "accentColor": "yellow"
+    },
+    {
+      "id": "choice",
+      "path": {
+        "from": [
+          52,
+          110
+        ],
+        "c1": [
+          120,
+          176
+        ],
+        "c2": [
+          230,
+          30
+        ],
+        "to": [
+          320,
+          80
+        ]
+      },
+      "blocks": [
+        {
+          "x": 186,
+          "y": 19,
+          "w": 170,
+          "h": 34,
+          "r": 17
+        },
+        {
+          "x": 186,
+          "y": 63,
+          "w": 170,
+          "h": 34,
+          "r": 17
+        },
+        {
+          "x": 186,
+          "y": 107,
+          "w": 170,
+          "h": 34,
+          "r": 17
+        },
+        {
+          "x": 186,
+          "y": 151,
+          "w": 170,
+          "h": 34,
+          "r": 17
+        }
+      ],
+      "stars": [],
+      "order": [],
+      "accent": 1,
+      "accentColor": "green"
+    },
+    {
+      "id": "score",
+      "path": {
+        "from": [
+          54,
+          168
+        ],
+        "c1": [
+          110,
+          180
+        ],
+        "c2": [
+          190,
+          168
+        ],
+        "to": [
+          266,
+          52
+        ]
+      },
+      "blocks": [],
+      "stars": [
+        {
+          "cx": 214,
+          "cy": 70,
+          "r": 23
+        },
+        {
+          "cx": 266,
+          "cy": 52,
+          "r": 27
+        },
+        {
+          "cx": 318,
+          "cy": 70,
+          "r": 23
+        }
+      ],
+      "order": [
+        1,
+        0,
+        2
+      ],
+      "accent": -1,
+      "accentColor": "yellow"
+    }
+  ]
+}

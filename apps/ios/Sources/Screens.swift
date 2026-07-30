@@ -327,17 +327,12 @@ struct OnboardingView: View {
         }
     }
 
-    /// The pane's picture: the transfer card, the answers, the recap, each
-    /// drawn in the game's own language by scripts/gen-onboarding-art.mjs.
-    ///
-    /// `.fill` and not `.fit`: the art is 408 wide and the column is 370 on a
-    /// 402dp phone, so fitting would letterbox it inside its own card. It is
-    /// composed with a 24dp side margin so the crop never reaches anything.
+    /// The pane's picture: the pass, the answer, the three stars, each drawn
+    /// live from design/onboarding.json rather than shipped as an image. See
+    /// OnboardingArt.swift for why it moved.
     private var illustration: some View {
-        Image("onboarding_\(step + 1)")
-            .resizable()
-            .aspectRatio(contentMode: .fill)
-            .frame(height: 200)
+        OnboardingArtView(pane: step)
+            .frame(height: OnboardingScene.height)
             .frame(maxWidth: .infinity)
             .clipped()
             .solidRaised(radius: DesignTokens.Radius.card, depth: 10)
