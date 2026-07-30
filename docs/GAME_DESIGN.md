@@ -89,6 +89,27 @@ moment the last life is lost. Hints are free and requested on demand, in order:
 - This drops the prototype's balls currency, the hint/ball shop items, and the
   rewarded "double balls" video (nothing to reward without a currency).
 
+## Sound
+
+Three cues, and nothing else: **right answer**, **wrong answer**, **end of
+round**. They are synthesised by `scripts/gen-sounds.mjs` rather than recorded,
+so the repo holds the twenty lines that describe them (notes, envelope, duty
+cycle) instead of three binaries nobody can diff. Changing the wrong-answer
+note is a number in that file.
+
+The timbre is a band-limited pulse, rolled off above a couple of kHz: square
+enough to match the flat fills and hard ink borders, not so bright it shrieks
+out of a phone speaker. Both cues are a two-note figure, rising for right and
+falling for wrong; the round-over cue is a major arpeggio to the octave.
+
+- Gated by the **Sound** setting, read at the moment of playing, so the switch
+  takes effect on the next answer.
+- Mixed as ambient game feedback on both platforms: the player's own music
+  keeps playing, and the iOS silent switch mutes them.
+- **There is no vibration.** The setting existed and controlled nothing; it was
+  removed rather than implemented, since haptics on every answer of a ten
+  question round is a nuisance more than a cue.
+
 ## Localization
 
 - UI strings: EN / FR / ES (114 keys, ready in `strings/strings.json`).

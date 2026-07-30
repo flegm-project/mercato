@@ -31,6 +31,9 @@ class AppGraph(private val context: Context, private val scope: CoroutineScope) 
 
     val ads by lazy { AdsController(context, game) }
 
+    /** The three game cues, gated by the sound setting. */
+    val sounds by lazy { Sounds(context, prefs, scope) }
+
     /** Play Billing bridge for the remove-ads entitlement. */
     val billing by lazy { BillingManager(context, { game }, prefs, scope) }
 

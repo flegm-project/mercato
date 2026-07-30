@@ -157,6 +157,10 @@ class GameViewModel(private val graph: AppGraph) : ViewModel() {
     }
 
     private fun applyVerdict(resolved: QuestionUi, correct: Boolean) {
+        // Here rather than in the screens: both modes settle a question
+        // through this one function, so the cue cannot end up firing on a tap
+        // in Easy and on a submit in Hardcore but not on the keyboard's Go.
+        graph.sounds.play(if (correct) Cue.CORRECT else Cue.WRONG)
         if (correct) correctCount++
         val index = resolved.question.index.toInt() - 1
         _pips.value = _pips.value.toMutableList().also { if (index in it.indices) it[index] = correct }
@@ -177,6 +181,7 @@ class GameViewModel(private val graph: AppGraph) : ViewModel() {
     }
 
     private fun finishRound() {
+        graph.sounds.play(Cue.ROUND_OVER)
         val s = game.score()
         val total = game.questionsPerRound().toInt()
         val ratio = if (total == 0) 0f else correctCount.toFloat() / total

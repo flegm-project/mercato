@@ -28,7 +28,20 @@ val stageAssets = tasks.register<Copy>("stageAssets") {
         include("*.ttf")
         into("fonts")
     }
+    // Synthesised, not recorded: scripts/gen-sounds.mjs writes these, and
+    // genSounds below runs it, so a fresh clone builds with sound.
+    from(repoRoot.resolve("build/sounds")) {
+        include("*.wav")
+        into("sounds")
+    }
     into(layout.buildDirectory.dir("stagedAssets"))
+}
+
+val genSounds = tasks.register<Exec>("genSounds") {
+    workingDir = repoRoot
+    commandLine("node", "scripts/gen-sounds.mjs")
+    inputs.file(repoRoot.resolve("scripts/gen-sounds.mjs"))
+    outputs.dir(repoRoot.resolve("build/sounds"))
 }
 
 // The launcher icon is generated from the design tokens, like the strings and
@@ -148,6 +161,7 @@ android {
 tasks.named("preBuild") {
     dependsOn(stageAssets, genIcons)
 }
+stageAssets { dependsOn(genSounds) }
 
 dependencies {
     val composeBom = platform("androidx.compose:compose-bom:2024.09.00")

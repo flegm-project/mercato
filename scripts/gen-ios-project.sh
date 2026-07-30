@@ -18,6 +18,9 @@ command -v xcodegen >/dev/null 2>&1 || {
 echo "==> generating assets"
 node "$ROOT/scripts/gen-design-tokens.mjs"
 node "$ROOT/scripts/gen-strings.mjs"
+# The project references the three .wav files by name, so they have to exist
+# before xcodegen runs or a fresh clone generates a project that cannot build.
+node "$ROOT/scripts/gen-sounds.mjs"
 
 echo "==> building the core for iOS"
 "$ROOT/scripts/build-native.sh" ios

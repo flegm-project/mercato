@@ -201,6 +201,7 @@ struct GameView: View {
         score = game.score()
         results.append(result.correct)
         bumpToken += 1
+        Sounds.shared.play(result.correct ? .correct : .wrong)
 
         let work = DispatchWorkItem { advanceNow() }
         advanceWork = work
@@ -282,6 +283,7 @@ struct GameView: View {
         score = game.score()
         results.append(result.correct)
         bumpToken += 1
+        Sounds.shared.play(result.correct ? .correct : .wrong)
 
         // motion.auto-advance: hold the reveal long enough to read it.
         let work = DispatchWorkItem { advanceNow() }
@@ -306,6 +308,7 @@ struct GameView: View {
         score = game.score()
         if question == nil, !roundOver {
             roundOver = true
+            Sounds.shared.play(.roundOver)
             // The denominator is the fixed round length, not the number of
             // questions answered: a Hardcore round that ends early on lost lives
             // still reports the score out of the full round (e.g. 4/10).
