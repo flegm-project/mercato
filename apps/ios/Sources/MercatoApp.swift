@@ -1,7 +1,30 @@
 import SwiftUI
+import GoogleMobileAds
 
 @main
 struct MercatoApp: App {
+    /// Hand the signal handlers to Crashlytics, then configure Firebase, both
+    /// before anything else in the process.
+    ///
+    /// Two SDKs want the same signal handlers. The Mobile Ads SDK installs
+    /// `GADRegisterSignalHandlers` at load time, before any of this app's code
+    /// runs, so no ordering in Swift can beat it: Crashlytics then logs "the
+    /// signal SIGABRT has a non-Crashlytics handler ... this will interfere
+    /// with reporting" for seven signals and does not report the crash.
+    /// `disableSDKCrashReporting()` is Google's documented way out, and it
+    /// only stops the ads SDK from reporting its *own* exceptions.
+    ///
+    /// Configuring Firebase here as well is not what fixes it, but it is still
+    /// right: Analytics then counts from the first frame rather than from
+    /// whenever something first touches `Analytics.shared`.
+    ///
+    /// Android needs neither: Firebase initialises there through a content
+    /// provider, before `Application.onCreate` runs at all.
+    init() {
+        MobileAds.shared.disableSDKCrashReporting()
+        _ = Analytics.shared
+    }
+
     var body: some Scene {
         WindowGroup {
             RootView()
