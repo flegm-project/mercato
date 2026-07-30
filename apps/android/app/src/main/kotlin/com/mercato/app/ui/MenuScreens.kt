@@ -57,6 +57,9 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.Image
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import com.mercato.analytics.Event
 import com.mercato.analytics.Param
 import com.mercato.design.DesignTokens
@@ -151,10 +154,13 @@ fun Wordmark(size: TextUnit, modifier: Modifier = Modifier) {
 /** 02 Onboarding: three panes, dots, Skip, NEXT then START. */
 @Composable
 fun OnboardingScreen(onDone: () -> Unit) {
+    // Art, title, body. The drawables are generated for both platforms by
+    // scripts/gen-onboarding-art.mjs and carry no text, so one set covers all
+    // three languages.
     val panes = listOf(
-        Triple(R.string.ob_0_a, R.string.ob_0_t, R.string.ob_0_b),
-        Triple(R.string.ob_1_a, R.string.ob_1_t, R.string.ob_1_b),
-        Triple(R.string.ob_2_a, R.string.ob_2_t, R.string.ob_2_b),
+        Triple(R.drawable.onboarding_1, R.string.ob_0_t, R.string.ob_0_b),
+        Triple(R.drawable.onboarding_2, R.string.ob_1_t, R.string.ob_1_b),
+        Triple(R.drawable.onboarding_3, R.string.ob_2_t, R.string.ob_2_b),
     )
     val pager = rememberPagerState { panes.size }
     val scope = rememberCoroutineScope()
@@ -184,22 +190,24 @@ fun OnboardingScreen(onDone: () -> Unit) {
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.Start,
             ) {
-                Box(
-                    Modifier
+                // The pane's picture: the transfer card, the answers, the
+                // recap, each drawn in the game's own language by
+                // scripts/gen-onboarding-art.mjs.
+                //
+                // Crop and not Fit: the art is 408 wide and the column is 370
+                // on a 402dp phone, so fitting would letterbox it inside its
+                // own card. It is composed with a 24dp side margin so the crop
+                // never reaches anything.
+                Image(
+                    painterResource(art),
+                    contentDescription = null,
+                    modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp)
                         .solidRaised(DesignTokens.Radius.card, depth = 10.dp)
-                        .paperHatch(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    // Ink-grey on the pale hatch: white at 60 percent was
-                    // barely legible there, unlike iOS.
-                    CapsLabel(
-                        stringResource(art),
-                        color = DesignTokens.Color.clubGrey,
-                        style = DesignTokens.Type.technical,
-                    )
-                }
+                        .clip(RoundedCornerShape(DesignTokens.Radius.card)),
+                    contentScale = ContentScale.Crop,
+                )
                 // iOS: 26 under the art, 12 between title and body
                 // (Screens.swift:284).
                 Gap(26.dp)

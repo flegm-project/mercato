@@ -376,26 +376,6 @@ private fun starPath(cx: Float, cy: Float, outer: Float): Path {
 fun Modifier.inkOutlined(radius: Dp, border: Dp = 4.dp): Modifier =
     solidRaised(radius = radius, depth = 0.dp, border = border)
 
-/**
- * The pale hatch behind an onboarding illustration. The ad slots use the dark
- * navy [adHatch]; using it here made the intro art look like an ad.
- */
-fun Modifier.paperHatch(): Modifier = drawBehind {
-    drawRect(DesignTokens.Color.ivory)
-    val step = 28.dp.toPx()
-    val stripe = 14.dp.toPx()
-    var x = -size.height
-    while (x < size.width) {
-        drawLine(
-            color = Color(0xFFEFEDE3),
-            start = Offset(x, size.height),
-            end = Offset(x + size.height, 0f),
-            strokeWidth = stripe,
-        )
-        x += step
-    }
-}
-
 enum class ButtonStyle { Primary, Secondary, Destructive, Ghost }
 
 /**

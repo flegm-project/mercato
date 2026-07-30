@@ -48,17 +48,14 @@
     "obStart": "COMMENCER",
     "ob": [
       {
-        "a": "ILLUSTRATION · CARTE TRANSFERT",
         "t": "Deux clubs. Une année.",
         "b": "Chaque manche enchaîne dix transferts réels, de 1985 à aujourd'hui."
       },
       {
-        "a": "ILLUSTRATION · RÉPONSES",
         "t": "Trouve le joueur.",
         "b": "En facile, quatre propositions. En hardcore, tu écris le nom, avec trois vies."
       },
       {
-        "a": "ILLUSTRATION · SCORE",
         "t": "+3 par bonne réponse.",
         "b": "Une mauvaise réponse ne rapporte rien. Assez de bonnes réponses et la manche se termine par trois étoiles."
       }
@@ -180,17 +177,14 @@
     "obStart": "START",
     "ob": [
       {
-        "a": "ILLUSTRATION · TRANSFER CARD",
         "t": "Two clubs. One year.",
         "b": "Every round chains ten real transfers, from 1985 to today."
       },
       {
-        "a": "ILLUSTRATION · ANSWERS",
         "t": "Name the player.",
         "b": "Easy gives you four options. Hardcore makes you type it, with three lives."
       },
       {
-        "a": "ILLUSTRATION · SCORE",
         "t": "+3 per correct answer.",
         "b": "A miss scores nothing. Answer well enough and the round ends with three stars."
       }
@@ -312,17 +306,14 @@
     "obStart": "EMPEZAR",
     "ob": [
       {
-        "a": "ILUSTRACIÓN · TARJETA",
         "t": "Dos clubes. Un año.",
         "b": "Cada ronda encadena diez traspasos reales, de 1985 a hoy."
       },
       {
-        "a": "ILUSTRACIÓN · RESPUESTAS",
         "t": "Encuentra al jugador.",
         "b": "En fácil, cuatro opciones. En hardcore escribes el nombre, con tres vidas."
       },
       {
-        "a": "ILUSTRACIÓN · PUNTUACIÓN",
         "t": "+3 por acierto.",
         "b": "Un fallo no suma. Con suficientes aciertos la ronda termina con tres estrellas."
       }

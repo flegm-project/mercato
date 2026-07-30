@@ -87,6 +87,10 @@ targets:
       # Generated from the design tokens by scripts/gen-app-icon.mjs.
       - path: ../../build/icons/ios/Assets.xcassets
         group: Generated
+      # The onboarding illustrations, generated for both platforms at once by
+      # scripts/gen-onboarding-art.mjs.
+      - path: ../../build/art/ios/Onboarding.xcassets
+        group: Generated
       # Apple requires this for the required-reason APIs the app touches.
       - path: Support/PrivacyInfo.xcprivacy
         group: Resources

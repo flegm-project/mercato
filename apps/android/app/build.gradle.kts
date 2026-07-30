@@ -75,6 +75,17 @@ val genAnalytics = tasks.register<Exec>("genAnalytics") {
 // hand into src/main/res, which is how the app shipped for months with an icon
 // nobody had regenerated: the mark was redrawn and the phone kept the old one.
 // Generating it as part of the build is what stops that happening again.
+//
+// The onboarding illustrations, generated for both platforms at once so the
+// intro cannot drift into two different pictures of the same game.
+val genArt = tasks.register<Exec>("genArt") {
+    workingDir = repoRoot
+    commandLine("node", "scripts/gen-onboarding-art.mjs")
+    inputs.file(repoRoot.resolve("scripts/gen-onboarding-art.mjs"))
+    inputs.file(repoRoot.resolve("design/tokens.json"))
+    outputs.dir(repoRoot.resolve("build/art"))
+}
+
 val genIcons = tasks.register<Exec>("genIcons") {
     workingDir = repoRoot
     commandLine("node", "scripts/gen-app-icon.mjs")
@@ -168,6 +179,9 @@ android {
         kotlin.srcDir(repoRoot.resolve("build/analytics"))
         res.srcDir(repoRoot.resolve("build/strings/android"))
         res.srcDir(repoRoot.resolve("build/icons/android/res"))
+        // The onboarding illustrations. The res root is build/art/android,
+        // which holds the drawable-xxhdpi folder Android expects.
+        res.srcDir(repoRoot.resolve("build/art/android"))
         // The launch theme's colour, generated from the tokens: XML cannot read
         // the Kotlin token object, and the window is painted before any of this
         // app's code runs.
@@ -186,7 +200,7 @@ android {
 }
 
 tasks.named("preBuild") {
-    dependsOn(stageAssets, genIcons, genAnalytics)
+    dependsOn(stageAssets, genIcons, genAnalytics, genArt)
 }
 stageAssets { dependsOn(genSounds) }
 

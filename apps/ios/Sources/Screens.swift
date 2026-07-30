@@ -327,32 +327,20 @@ struct OnboardingView: View {
         }
     }
 
-    /// Placeholder art, hatched so it reads as a deliberate slot rather than a
-    /// failed image.
+    /// The pane's picture: the transfer card, the answers, the recap, each
+    /// drawn in the game's own language by scripts/gen-onboarding-art.mjs.
+    ///
+    /// `.fill` and not `.fit`: the art is 408 wide and the column is 370 on a
+    /// 402dp phone, so fitting would letterbox it inside its own card. It is
+    /// composed with a 24dp side margin so the crop never reaches anything.
     private var illustration: some View {
-        ZStack {
-            Canvas { context, size in
-                context.fill(Path(CGRect(origin: .zero, size: size)), with: .color(DesignTokens.Color.ivory))
-                var x = -size.height
-                while x < size.width + size.height {
-                    var stripe = Path()
-                    stripe.move(to: CGPoint(x: x, y: size.height))
-                    stripe.addLine(to: CGPoint(x: x + size.height, y: 0))
-                    stripe.addLine(to: CGPoint(x: x + size.height + 14, y: 0))
-                    stripe.addLine(to: CGPoint(x: x + 14, y: size.height))
-                    stripe.closeSubpath()
-                    context.fill(stripe, with: .color(Color(red: 0.937, green: 0.929, blue: 0.890)))
-                    x += 28
-                }
-            }
-            Text(L("ob.\(step).a"))
-                .typeStyle(TypeToken.technical)
-                .foregroundStyle(DesignTokens.Color.clubGrey)
-                .multilineTextAlignment(.center)
-                .padding(20)
-        }
-        .frame(height: 200)
-        .solidRaised(radius: DesignTokens.Radius.card, depth: 10)
+        Image("onboarding_\(step + 1)")
+            .resizable()
+            .aspectRatio(contentMode: .fill)
+            .frame(height: 200)
+            .frame(maxWidth: .infinity)
+            .clipped()
+            .solidRaised(radius: DesignTokens.Radius.card, depth: 10)
     }
 }
 
