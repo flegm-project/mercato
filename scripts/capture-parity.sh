@@ -18,7 +18,7 @@ set -uo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OUT="$ROOT/build/parity-shots"
 IOS_SIM="${IOS_SIM:-29FF0D80-629D-4A35-95F1-FC1E5EF7CDEB}"   # iPhone 17 Pro
-AND_PKG="com.nicogaray.mercato"
+AND_PKG="com.flegm.mercato"
 AND_ACT="com.mercato.app.MainActivity"
 export ANDROID_HOME="${ANDROID_HOME:-$HOME/Library/Android/sdk}"
 export PATH="$ANDROID_HOME/platform-tools:$PATH"

@@ -17,8 +17,8 @@ set -uo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 export ANDROID_HOME="${ANDROID_HOME:-$HOME/Library/Android/sdk}"
 export PATH="$ANDROID_HOME/platform-tools:$PATH"
-AND_PKG="com.nicogaray.mercato"
-IOS_BID="com.nicogaray.mercato"
+AND_PKG="com.flegm.mercato"
+IOS_BID="com.flegm.mercato"
 
 PLATFORM=""
 case "${1:-}" in

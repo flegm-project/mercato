@@ -59,7 +59,7 @@ pas d'énergie, pas d'abonnement.
 - Aucun compte, gameplay entièrement hors ligne ; le seul usage réseau est la publicité.
 - Consentement : formulaire Google UMP dans l'EEE/RU, invite ATT sur iOS, choix de
   personnalisation intégré à l'application partout ailleurs.
-- Achat unique non consommable `com.nicogaray.mercato.removeads` sur iOS, `mercato_remove_ads` sur Play (Supprimer les publicités), avec
+- Achat unique non consommable `com.flegm.mercato.removeads` sur iOS, `mercato_remove_ads` sur Play (Supprimer les publicités), avec
   restauration.
 - Pas de classement, pas de multijoueur dans cette version (ne pas mentionner dans
   les supports marketing).

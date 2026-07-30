@@ -33,7 +33,7 @@ review fail. Everything under "Should fix" ships, but ships worse.
    the frames are a script away rather than a photo session.
 
 4. **Neither in-app purchase exists in its console.** iOS expects
-   `com.nicogaray.mercato.removeads` (`apps/ios/Sources/Store.swift:7`), Android expects
+   `com.flegm.mercato.removeads` (`apps/ios/Sources/Store.swift:7`), Android expects
    `mercato_remove_ads` (`billing/BillingManager.kt:46`). Until each is created
    and active, both apps show the "shop unavailable" state while the listing
    promises the purchase, which is a review rejection on its own. Note the
@@ -80,7 +80,7 @@ review fail. Everything under "Should fix" ships, but ships worse.
    archive resolved a development certificate; the bundle id was
    `com.mercato.Mercato` under a prefix nobody owns; and the purchase was
    `com.mercato.removeads` under the same one. They are now `"1"`, `Apple
-   Distribution`, `com.nicogaray.mercato` and `com.nicogaray.mercato.removeads`,
+   Distribution`, `com.flegm.mercato` and `com.flegm.mercato.removeads`,
    set on the target rather than the project, since a target setting is what
    beats the preset. `gen-ios-project.sh` also runs `gen-app-icon.mjs` now: it
    never did, and `build/` is gitignored, so a fresh clone could not generate

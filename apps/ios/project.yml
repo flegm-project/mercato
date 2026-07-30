@@ -6,11 +6,12 @@
 # references.
 name: Mercato
 options:
-  # A prefix has to be a namespace you actually control, and com.mercato is
-  # not one: it is a generic word anybody can register in the Developer
-  # portal, and if someone already has, automatic signing fails with an error
-  # that does not mention why.
-  bundleIdPrefix: com.nicogaray
+  # A prefix has to be a namespace nobody else will claim, and it is public:
+  # Play puts the Android one straight in the store URL. com.mercato was a
+  # generic word anybody can register in the Developer portal, which breaks
+  # automatic signing with an error that never says why; the developer's own
+  # name would have been public on every listing. Hence a studio name.
+  bundleIdPrefix: com.flegm
   deploymentTarget:
     iOS: "17.0"
   createIntermediateGroups: true
@@ -47,10 +48,10 @@ targets:
     settings:
       base:
         # Stated, not derived. Left to the prefix plus the target name it came
-        # out as com.nicogaray.Mercato, capital M and all, which nobody chose
-        # and which does not match Android's com.nicogaray.mercato. It is
-        # permanent from the moment the App Store Connect record exists.
-        PRODUCT_BUNDLE_IDENTIFIER: com.nicogaray.mercato
+        # out as com.flegm.Mercato, capital M and all, which nobody chose and
+        # which does not match Android's com.flegm.mercato. It is permanent
+        # from the moment the App Store Connect record exists.
+        PRODUCT_BUNDLE_IDENTIFIER: com.flegm.mercato
         # iPhone only. The preset is "1,2", which makes this a universal app:
         # the store then wants iPad screenshots, App Review tests an
         # iPhone-tuned layout on an iPad, and the portrait-only orientation

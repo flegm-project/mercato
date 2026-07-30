@@ -101,7 +101,7 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.nicogaray.mercato"
+        applicationId = "com.flegm.mercato"
         minSdk = 26
         targetSdk = 36
         versionCode = 1

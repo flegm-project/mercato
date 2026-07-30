@@ -59,6 +59,6 @@ energía, sin suscripciones.
 - Sin cuenta, juego completamente sin conexión; el único uso de red es la publicidad.
 - Consentimiento: formulario Google UMP en el EEE/Reino Unido, aviso ATT en iOS,
   opción de personalización integrada en el resto.
-- Compra única no consumible `com.nicogaray.mercato.removeads` en iOS, `mercato_remove_ads` en Play (Eliminar anuncios), con restauración.
+- Compra única no consumible `com.flegm.mercato.removeads` en iOS, `mercato_remove_ads` en Play (Eliminar anuncios), con restauración.
 - Sin clasificación global ni multijugador en esta versión (no mencionar ninguno en
   material de marketing).
