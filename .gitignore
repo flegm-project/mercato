@@ -52,9 +52,12 @@ Pods/
 google-services.json
 GoogleService-Info.plist
 
-# Generated app icons (scripts/gen-app-icon.mjs); the Android copies under
-# apps/android/app/src/main/res are committed because Gradle needs them in the
-# source tree.
+# Generated app icons (scripts/gen-app-icon.mjs). Both platforms read them
+# straight out of build/: Xcode through project.yml, Gradle through an extra
+# res.srcDir. The Android copies used to be committed under
+# apps/android/app/src/main/res "because Gradle needs them in the source tree",
+# which is not true, and the app shipped for months with an icon nobody had
+# regenerated.
 
 # Android release signing: the keystore and its passwords stay out of the repo.
 keystore.properties

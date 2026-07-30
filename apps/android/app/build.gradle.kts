@@ -31,6 +31,20 @@ val stageAssets = tasks.register<Copy>("stageAssets") {
     into(layout.buildDirectory.dir("stagedAssets"))
 }
 
+// The launcher icon is generated from the design tokens, like the strings and
+// the type tokens. It used to be generated into build/icons and then copied by
+// hand into src/main/res, which is how the app shipped for months with an icon
+// nobody had regenerated: the mark was redrawn and the phone kept the old one.
+// Generating it as part of the build is what stops that happening again.
+val genIcons = tasks.register<Exec>("genIcons") {
+    workingDir = repoRoot
+    commandLine("node", "scripts/gen-app-icon.mjs")
+    inputs.file(repoRoot.resolve("scripts/gen-app-icon.mjs"))
+    inputs.file(repoRoot.resolve("design/tokens.json"))
+    inputs.file(repoRoot.resolve("design/fonts/Unbounded-Black.ttf"))
+    outputs.dir(repoRoot.resolve("build/icons/android/res"))
+}
+
 android {
     // Release signing. The keystore and its passwords never enter the repo:
     // they come from keystore.properties (git-ignored) or, in CI, from the
@@ -113,6 +127,7 @@ android {
         kotlin.srcDir(repoRoot.resolve("build/bindings/kotlin"))
         kotlin.srcDir(repoRoot.resolve("build/tokens"))
         res.srcDir(repoRoot.resolve("build/strings/android"))
+        res.srcDir(repoRoot.resolve("build/icons/android/res"))
         jniLibs.srcDir(repoRoot.resolve("build/android/jniLibs"))
         assets.srcDir(layout.buildDirectory.dir("stagedAssets"))
     }
@@ -127,7 +142,7 @@ android {
 }
 
 tasks.named("preBuild") {
-    dependsOn(stageAssets)
+    dependsOn(stageAssets, genIcons)
 }
 
 dependencies {
