@@ -96,6 +96,23 @@ knows or cares.
   automatic screen views; `screen_opened` exists so the screens that matter are
   countable without reading an automatic report.
 
+## What is set up
+
+Project `mercato-fb6ba`, both apps registered as `com.flegm.mercato`, on the
+no-cost **Spark** plan. Blaze was attached at creation by a stray URL
+parameter and was taken off again: nothing here needs a metered product, and
+Spark makes an accidental bill structurally impossible rather than merely
+unlikely.
+
+Event-level retention is **14 months**, not the 2 it defaults to. That setting
+only governs Explorations; the standard reports are kept regardless. Two months
+of raw events is not enough to compare a season to the one before it.
+
+Both AdMob apps are **linked to the project**, which is what puts ad revenue
+next to the usage numbers instead of in a separate console. The package name
+that link is bound to cannot be changed afterwards, which is the reason the
+identifiers were settled first.
+
 ## Before release
 
 Adding Firebase changes what has to be declared. Play's Data Safety form and

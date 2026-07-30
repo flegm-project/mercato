@@ -51,12 +51,19 @@ review fail. Everything under "Should fix" ships, but ships worse.
    upload keystore, keep it out of the repo, enrol in Play App Signing, and
    make the release build fail loudly when no config resolved.
 
-5b. **Firebase has to be created and its two config files dropped in.**
-   `apps/android/app/google-services.json` and the iOS
-   `GoogleService-Info.plist` are per-account and are not in the repo. Both
-   apps build and run without them and simply do not measure anything, so this
-   is not a build blocker, but shipping without it means launching blind. See
-   `docs/specs/analytics.md`.
+5b. ~~**Firebase has to be created and its two config files dropped in.**~~
+   *Done.* Project `mercato-fb6ba`, both apps registered under
+   `com.flegm.mercato`, both config files in place and gitignored, Analytics
+   and Crashlytics verified live on both platforms. The project runs on the
+   no-cost Spark plan, event-level retention is set to 14 months rather than
+   the 2 it defaults to, and both AdMob apps are linked to it, so ad revenue
+   lands next to the usage numbers. See `docs/specs/analytics.md`.
+
+   One thing to know, because it looks like a fault and is not: AdMob reports
+   **"diffusion d'annonces limitée"** on both apps, because neither is attached
+   to a store listing yet. That clears itself at publication. The AdMob app ids
+   already match what the release builds carry, checked both ways
+   (`~6149652518` Android, `~6829263654` iOS).
 
 6. **Play Console declarations are all still open.** The merged release
    manifest pulls in `AD_ID`, the three `ACCESS_ADSERVICES_*` permissions,
