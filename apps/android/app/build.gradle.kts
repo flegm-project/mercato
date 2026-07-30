@@ -128,6 +128,10 @@ android {
         kotlin.srcDir(repoRoot.resolve("build/tokens"))
         res.srcDir(repoRoot.resolve("build/strings/android"))
         res.srcDir(repoRoot.resolve("build/icons/android/res"))
+        // The launch theme's colour, generated from the tokens: XML cannot read
+        // the Kotlin token object, and the window is painted before any of this
+        // app's code runs.
+        res.srcDir(repoRoot.resolve("build/tokens/android"))
         jniLibs.srcDir(repoRoot.resolve("build/android/jniLibs"))
         assets.srcDir(layout.buildDirectory.dir("stagedAssets"))
     }

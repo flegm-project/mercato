@@ -12,7 +12,7 @@
         android:label="Mercato"
         android:allowBackup="true"
         android:supportsRtl="true"
-        android:theme="@android:style/Theme.Material.NoActionBar">
+        android:theme="@style/Theme.Mercato">
 
         <!-- AdMob application id, injected per build type from build.gradle. -->
         <meta-data

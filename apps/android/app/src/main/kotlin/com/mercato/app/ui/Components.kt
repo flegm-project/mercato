@@ -7,8 +7,13 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.ui.graphics.drawscope.translate
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.sin
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -213,6 +218,52 @@ fun Modifier.solidRaised(
             }
             clipPath(inner) { this@drawWithContent.drawContent() }
         }
+}
+
+/**
+ * A recap star, drawn rather than typed.
+ *
+ * It used to be the "★" glyph at 46, which is SF Pro's star on iOS and
+ * Roboto's on Android: two different shapes, and the one thing on that screen
+ * a player looks at first. A path is the same five points everywhere, and it
+ * carries the hard ink offset every mark in this app carries.
+ *
+ * @param earned a won star is yellow at full strength; the rest sit at
+ *   `star-off`, shadow included, the way SwiftUI shadows a translucent view.
+ */
+@Composable
+fun RecapStar(earned: Boolean, size: Dp = 42.dp, modifier: Modifier = Modifier) {
+    val fill = if (earned) DesignTokens.Color.yellow
+               else Color.White.dim(DesignTokens.Opacity.starOff)
+    val shade = if (earned) DesignTokens.Color.ink
+                else DesignTokens.Color.ink.dim(DesignTokens.Opacity.starOff)
+    Canvas(modifier.size(size)) {
+        val path = starPath(this.size.width, this.size.height)
+        translate(4f, 4f) { drawPath(path, shade) }
+        drawPath(path, fill)
+    }
+}
+
+/**
+ * A five-pointed star filling [w] by [h], first point up. The waist sits at
+ * 1/phi^2 of the outer radius, which is the ratio a pentagram makes and what
+ * every star glyph is cut from.
+ */
+private fun starPath(w: Float, h: Float): Path {
+    val cx = w / 2f
+    val cy = h / 2f
+    val outer = minOf(w, h) / 2f
+    val inner = outer * 0.382f
+    return Path().apply {
+        for (i in 0 until 10) {
+            val r = if (i % 2 == 0) outer else inner
+            val a = (-90f + i * 36f) * PI.toFloat() / 180f
+            val x = cx + r * cos(a)
+            val y = cy + r * sin(a)
+            if (i == 0) moveTo(x, y) else lineTo(x, y)
+        }
+        close()
+    }
 }
 
 /**
