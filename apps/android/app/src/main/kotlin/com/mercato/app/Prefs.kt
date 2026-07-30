@@ -26,7 +26,6 @@ class Prefs(private val context: Context) {
         val consent = stringPreferencesKey("ad_consent")
         val adsRemoved = booleanPreferencesKey("ads_removed")
         val sound = booleanPreferencesKey("sound")
-        val vibration = booleanPreferencesKey("vibration")
         val notifications = booleanPreferencesKey("notifications")
         val roundsPlayed = intPreferencesKey("rounds_played")
         val bestScore = intPreferencesKey("best_score")
@@ -46,7 +45,6 @@ class Prefs(private val context: Context) {
     val onboarded: Flow<Boolean> = context.dataStore.data.map { it[Keys.onboarded] ?: false }
     val consent: Flow<String?> = context.dataStore.data.map { it[Keys.consent] }
     val sound: Flow<Boolean> = context.dataStore.data.map { it[Keys.sound] ?: true }
-    val vibration: Flow<Boolean> = context.dataStore.data.map { it[Keys.vibration] ?: true }
     val notifications: Flow<Boolean> = context.dataStore.data.map { it[Keys.notifications] ?: false }
     val stats: Flow<Stats> = context.dataStore.data.map {
         Stats(
@@ -66,7 +64,6 @@ class Prefs(private val context: Context) {
         context.dataStore.edit { it[Keys.adsRemoved] = value }
 
     suspend fun setSound(value: Boolean) = context.dataStore.edit { it[Keys.sound] = value }
-    suspend fun setVibration(value: Boolean) = context.dataStore.edit { it[Keys.vibration] = value }
     suspend fun setNotifications(value: Boolean) =
         context.dataStore.edit { it[Keys.notifications] = value }
 

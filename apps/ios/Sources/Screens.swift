@@ -497,9 +497,17 @@ struct QuitDialog: View {
 
 // MARK: - Settings
 
-/// Sound, vibration and notification switches, plus the rows that lead back to
-/// the consent choice and the intro. The language row is read only: the game
+/// Sound and notification switches, plus the rows that lead back to the
+/// consent choice and the intro. The language row is read only: the game
 /// follows the system language and has no in-app picker.
+///
+/// There is no vibration switch. It was offered and stored, but nothing in the
+/// app ever asked for haptics, so it was a control that did nothing and told
+/// the player it did something.
+///
+/// The notification switch is kept deliberately, and is still only stored: it
+/// is the setting a daily reminder will read, and removing it now would mean
+/// asking for the permission and the preference again later.
 struct SettingsView: View {
     let onBack: () -> Void
     let onConsent: () -> Void
@@ -511,7 +519,6 @@ struct SettingsView: View {
     @ObservedObject var store: Store
 
     @AppStorage("soundOn") private var soundOn = true
-    @AppStorage("vibrationOn") private var vibrationOn = true
     @AppStorage("notificationsOn") private var notificationsOn = false
     @AppStorage("adsPersonalised") private var adsPersonalised = false
 
@@ -539,7 +546,6 @@ struct SettingsView: View {
 
                 VStack(spacing: 10) {
                     toggleRow(L("soundS"), isOn: $soundOn)
-                    toggleRow(L("vibrateS"), isOn: $vibrationOn)
                     toggleRow(L("notifS"), isOn: $notificationsOn)
                 }
                 .padding(.top, 12)

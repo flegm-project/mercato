@@ -519,7 +519,6 @@ fun SettingsScreen(
 ) {
     val scope = rememberCoroutineScope()
     val sound by graph.prefs.sound.collectAsState(initial = true)
-    val vibration by graph.prefs.vibration.collectAsState(initial = true)
     val notifications by graph.prefs.notifications.collectAsState(initial = false)
     val consent by graph.prefs.consent.collectAsState(initial = null)
     val adsRemoved by graph.billing.adsRemoved.collectAsState()
@@ -565,10 +564,13 @@ fun SettingsScreen(
         // purchase was at the head of the screen here and iOS puts it in the
         // middle (Screens.swift:540).
         Gap(12.dp)
-        // iOS spaces the three switches by 10 (Screens.swift:540).
+        // iOS spaces the switches by 10 (Screens.swift:540). Two of them, not
+        // three: vibration was stored but nothing ever asked for haptics, so
+        // it was a control that did nothing while telling the player it did
+        // something. Notifications stays, still only stored, because it is the
+        // setting a daily reminder will read.
         Column(verticalArrangement = Arrangement.spacedBy(DesignTokens.Space.sm)) {
             ToggleRow(R.string.soundS, sound) { scope.launch { graph.prefs.setSound(it) } }
-            ToggleRow(R.string.vibrateS, vibration) { scope.launch { graph.prefs.setVibration(it) } }
             ToggleRow(R.string.notifS, notifications) {
                 scope.launch { graph.prefs.setNotifications(it) }
             }
