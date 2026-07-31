@@ -135,7 +135,6 @@ for (const a of aliases) {
 // with the point being that adding to it is a decision someone has to make.
 const NAME_MAX = 21;
 const LONG_ON_PURPOSE = new Set([
-  "New England Revolution", // the club's actual name, nothing shorter is used
   "Bosnia and Herzegovina", // the country's actual name in English
 ]);
 for (const [file, rows] of [["clubs.csv", clubs], ["nationalities.csv", nationalities]]) {

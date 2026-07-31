@@ -227,9 +227,17 @@ fun GameScreen(
     }
 }
 
-/** The transfer card: kind chip + year header, origin, arrow, destination. */
+/**
+ * The transfer card: kind chip + year header, origin, arrow, destination.
+ *
+ * Internal rather than private so the instrumented tests can measure it
+ * against the real corpus. It is the block whose height everything else on
+ * this screen has to live around: a club name one character too long wraps it
+ * onto a second line, and that single line is what pushed the Hardcore
+ * controls off the bottom of a Galaxy S10.
+ */
 @Composable
-private fun TransferCard(
+internal fun TransferCard(
     ui: QuestionUi,
     compact: Boolean,
     onTap: () -> Unit,
