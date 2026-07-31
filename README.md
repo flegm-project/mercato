@@ -10,7 +10,7 @@ must name the footballer.
   fallback).
 - **Platforms**: iOS and Android, powered by a shared Rust core.
 - **Monetization**: banner/interstitial ads with a single in-app purchase to
-  remove ads (€3.99). No shop, no other purchases.
+  remove ads (€4.99). No shop, no other purchases.
 
 > Status: porting. A complete v1.0 reference kit (real data - 412 clubs, 513
 > players, 1 905 transfers - a specified matching engine, a playable web
