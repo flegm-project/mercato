@@ -73,6 +73,12 @@ jobs:
       - name: Design parity
         run: node scripts/check-design-parity.mjs
 
+      # A missing analytics parameter never fails at runtime. It shows up
+      # months later as a column of nulls, and the rounds it would have
+      # described are gone.
+      - name: Analytics spec
+        run: node scripts/check-analytics.mjs
+
       # Generated output is never committed; catch it if someone adds it.
       - name: Generated output stays untracked
         run: |

@@ -34,6 +34,7 @@ if command -v node >/dev/null 2>&1; then
   run "dataset"        node scripts/check-data.mjs
   run "compose idioms" node scripts/check-ui-idioms.mjs
   run "design parity"  node scripts/check-design-parity.mjs
+  run "analytics"      node scripts/check-analytics.mjs
 
   # The generators must not touch anything tracked. Comparing the tree against
   # empty would only report the work in progress, which is not the question:
