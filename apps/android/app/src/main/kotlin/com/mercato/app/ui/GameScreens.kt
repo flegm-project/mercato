@@ -314,7 +314,7 @@ private fun TransferCard(
                 Gap(DesignTokens.Space.sm)
                 Text(
                     ui.question.maskedName,
-                    style = typeStyle(DesignTokens.Type.maskedName, Color(0xFFD6D3C4)),
+                    style = typeStyle(DesignTokens.Type.maskedName, DesignTokens.Color.maskedName),
                     textAlign = TextAlign.Center,
                 )
             }
@@ -508,7 +508,7 @@ private fun QuitDialog(onStay: () -> Unit, onQuit: () -> Unit) {
     Box(
         Modifier
             .fillMaxSize()
-            .background(Color(0xFF060920).dim(DesignTokens.Opacity.scrim))
+            .background(DesignTokens.Color.scrim.dim(DesignTokens.Opacity.scrim))
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,

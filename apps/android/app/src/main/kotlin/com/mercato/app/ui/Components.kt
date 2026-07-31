@@ -147,13 +147,13 @@ fun Modifier.appBackground(): Modifier = drawBehind {
 
 /** Diagonal ink hatch used behind every ad slot, per the ads spec. */
 fun Modifier.adHatch(): Modifier = drawBehind {
-    drawRect(Color(0xFF0F1A66))
+    drawRect(DesignTokens.Color.blueNight)
     val step = 24.dp.toPx()
     val stripe = 12.dp.toPx()
     var x = -size.height
     while (x < size.width) {
         drawLine(
-            color = Color(0xFF12207A),
+            color = DesignTokens.Color.blueHatch,
             start = Offset(x, size.height),
             end = Offset(x + size.height, 0f),
             strokeWidth = stripe,

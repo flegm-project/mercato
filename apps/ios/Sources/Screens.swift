@@ -450,7 +450,7 @@ struct QuitDialog: View {
 
     var body: some View {
         ZStack {
-            Color(red: 0.024, green: 0.035, blue: 0.118).opacity(DesignTokens.Opacity.scrim)
+            DesignTokens.Color.scrim.opacity(DesignTokens.Opacity.scrim)
                 .ignoresSafeArea()
                 .onTapGesture(perform: onStay)
 

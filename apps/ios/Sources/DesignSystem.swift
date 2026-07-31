@@ -102,7 +102,7 @@ enum DS {
                 stripe.addLine(to: CGPoint(x: x + size.height + 11, y: 0))
                 stripe.addLine(to: CGPoint(x: x + 11, y: size.height))
                 stripe.closeSubpath()
-                context.fill(stripe, with: .color(Color(red: 0.07, green: 0.13, blue: 0.48)))
+                context.fill(stripe, with: .color(DesignTokens.Color.blueHatch))
                 x += period
             }
         }
@@ -145,7 +145,7 @@ struct SolidRaised<S: InsettableShape>: ViewModifier {
             .background(
                 ambient
                     ? shape
-                        .fill(Color(red: 0.016, green: 0.031, blue: 0.196).opacity(DesignTokens.Opacity.splashTrack))
+                        .fill(DesignTokens.Color.night.opacity(DesignTokens.Opacity.splashTrack))
                         .blur(radius: 22)
                         .offset(y: 22)
                     : nil
@@ -428,7 +428,7 @@ struct TransferCard: View {
             if let maskedName, verdict == nil, !maskedName.isEmpty {
                 Text(maskedName)
                     .typeStyle(TypeToken.maskedName)
-                    .foregroundStyle(Color(red: 0.84, green: 0.83, blue: 0.77))
+                    .foregroundStyle(DesignTokens.Color.maskedName)
                     .lineLimit(2)
                     .minimumScaleFactor(0.5)
                     .padding(.top, 10)
