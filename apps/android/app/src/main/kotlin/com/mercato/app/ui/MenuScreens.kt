@@ -194,7 +194,7 @@ fun OnboardingScreen(onDone: () -> Unit) {
                     page,
                     Modifier
                         .fillMaxWidth()
-                        .height(OnboardingScene.HEIGHT.dp)
+                        .height((OnboardingScene.HEIGHT + OnboardingScene.BORDER * 2).dp)
                         .solidRaised(DesignTokens.Radius.card, depth = 10.dp)
                         .clip(RoundedCornerShape(DesignTokens.Radius.card)),
                 )

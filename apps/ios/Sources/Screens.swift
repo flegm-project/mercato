@@ -332,7 +332,7 @@ struct OnboardingView: View {
     /// OnboardingArt.swift for why it moved.
     private var illustration: some View {
         OnboardingArtView(pane: step)
-            .frame(height: OnboardingScene.height)
+            .frame(height: OnboardingScene.height + OnboardingScene.border * 2)
             .frame(maxWidth: .infinity)
             .clipped()
             .solidRaised(radius: DesignTokens.Radius.card, depth: 10)

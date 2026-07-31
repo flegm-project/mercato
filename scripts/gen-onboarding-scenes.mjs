@@ -1,19 +1,24 @@
 // Generate the onboarding scene description for the iOS and Android apps.
 //
-// The intro used to be three PNGs. It is now three animations drawn live by
-// each platform's own vector primitives, which is why this file exists: the
-// two renderers are different code, and the only thing keeping them from
-// becoming two different animations is that neither of them owns a number.
-// Every coordinate, radius and timing comes from design/onboarding.json and
-// arrives here as a constant neither app may edit.
+// The intro used to be three PNGs, then three hand-written animations. It is
+// now one description, in design/onboarding.json, played by three renderers
+// that own no coordinate of their own: SwiftUI, Compose, and a browser page
+// for judging a change without two builds.
 //
-// This is the same arrangement as the design tokens, the strings, the sounds
-// and the analytics vocabulary: one description, two generated headers, no
-// hand-copied geometry.
+// That is the whole point of this file. Two hand-tuned copies of a scene are
+// two different scenes within a month, and nobody notices until the two stores
+// are showing two different intros.
+//
+// A piece is a shape with a keyframed track. Six properties are animatable:
+// dx, dy, dist (along the piece's own angle), scale, rot and opacity, plus
+// dash for the one drawn stroke. That set is deliberately small: it is what
+// these three scenes need, and an animation system that can express anything
+// is one nobody can validate.
 //
 // Emits:
-//   build/art/OnboardingScenes.swift   (enum OnboardingScene)
-//   build/art/OnboardingScenes.kt      (package com.mercato.art)
+//   build/art/OnboardingScenes.swift        (enum OnboardingScene)
+//   build/art/OnboardingScenes.kt           (package com.mercato.art)
+//   build/art/onboarding-preview.html       (the desk preview)
 //
 // Run: node scripts/gen-onboarding-scenes.mjs
 import fs from "fs";
@@ -23,79 +28,73 @@ const ROOT = new URL("..", import.meta.url).pathname;
 const SRC = path.join(ROOT, "design/onboarding.json");
 const OUT = path.join(ROOT, "build/art");
 
-const die = (msg) => {
-  console.error(`error: ${msg}`);
-  process.exit(1);
-};
+const die = (msg) => { console.error(`error: ${msg}`); process.exit(1); };
 
 let spec;
-try {
-  spec = JSON.parse(fs.readFileSync(SRC, "utf8"));
-} catch (e) {
-  die(`cannot read ${SRC}: ${e.message}`);
-}
+try { spec = JSON.parse(fs.readFileSync(SRC, "utf8")); }
+catch (e) { die(`cannot read ${SRC}: ${e.message}`); }
 
-const { canvas, loop, style, panes } = spec;
-if (!canvas || !loop || !style || !Array.isArray(panes)) die("missing canvas, loop, style or panes");
+const { canvas, loop, style, scenes } = spec;
+if (!canvas || !loop || !style || !Array.isArray(scenes)) die("missing canvas, loop, style or scenes");
 
-// Validation, for the same reason the analytics generator validates: a scene
-// that is subtly out of frame is a scene nobody notices is out of frame until
-// it is on a phone in a store listing.
+const EASES = new Set(["linear", "inout", "out", "back"]);
+const KINDS = new Set(["rect", "text", "star", "polyline"]);
+const COLORS = new Set(["blue-deep", "ink", "yellow", "ivory", "club-grey", "green"]);
+
 const problems = [];
-const MARGIN = 24; // the narrowest column crops 19 a side; 24 is the promise
 
-/** Every point a shape can reach, so "does it fit" is one question. */
-const extremes = (pane) => {
-  const pts = [];
-  const add = (x, y, pad = 0) => pts.push([x - pad, y - pad], [x + pad, y + pad]);
-  // The curve itself, not its hull: a cubic stays well inside its control
-  // points, and bounding by the hull would reject arcs that are comfortably in
-  // frame. Sampling is what the renderers do anyway.
-  const { from, c1, c2, to } = pane.path;
-  for (let i = 0; i <= 32; i++) {
-    const t = i / 32, u = 1 - t;
-    const w = [u * u * u, 3 * u * u * t, 3 * u * t * t, t * t * t];
-    const at = (k) => w[0] * from[k] + w[1] * c1[k] + w[2] * c2[k] + w[3] * to[k];
-    add(at(0), at(1), style.ballRadius + style.ballBorder / 2 + style.depth);
-  }
-  for (const b of pane.blocks || []) {
-    add(b.x, b.y, 0);
-    add(b.x + b.w, b.y + b.h + style.depth, 0);
-  }
-  for (const d of pane.stars || []) add(d.cx, d.cy, d.r + style.depth);
-  // Type is measured by the renderers, so bound it generously: half the point
-  // size above and below the centre, and two ems either side.
-  if (pane.label) add(pane.label.cx, pane.label.cy, pane.label.size * 1.2);
-  return pts;
-};
-
-for (const pane of panes) {
-  if (!pane.id) problems.push("a pane has no id");
-  if (!pane.path) { problems.push(`pane "${pane.id}" has no path`); continue; }
-  for (const [x, y] of extremes(pane)) {
-    if (x < MARGIN || x > canvas.w - MARGIN || y < 0 || y > canvas.h) {
-      problems.push(`pane "${pane.id}" reaches ${Math.round(x)},${Math.round(y)}, outside the ${MARGIN} margin of ${canvas.w}x${canvas.h}`);
-      break;
+// Resolve `track: "<other piece id>"` into that piece's keyframes. Three years
+// rising in turn, four shards flying apart: same motion, different delay, and
+// one copy of the numbers.
+for (const scene of scenes) {
+  const byId = Object.fromEntries(scene.pieces.map((p) => [p.id, p]));
+  for (const p of scene.pieces) {
+    if (typeof p.track === "string") {
+      const src = byId[p.track];
+      if (!src || typeof src.track === "string") {
+        problems.push(`piece "${p.id}" borrows the track of "${p.track}", which is not a piece with its own track`);
+        continue;
+      }
+      p.track = src.track;
     }
   }
-  if (pane.accent >= 0 && pane.accent >= (pane.blocks || []).length) {
-    problems.push(`pane "${pane.id}" accents block ${pane.accent}, which does not exist`);
-  }
-  if (!["yellow", "green"].includes(pane.accentColor)) {
-    problems.push(`pane "${pane.id}" wants a "${pane.accentColor}" accent; the renderers know yellow and green`);
-  }
-  for (const i of pane.order || []) {
-    if (i < 0 || i >= (pane.stars || []).length) problems.push(`pane "${pane.id}" orders star ${i}, which does not exist`);
-  }
-  if ((pane.stars || []).length && (pane.order || []).length !== pane.stars.length) {
-    problems.push(`pane "${pane.id}" has ${pane.stars.length} stars but orders ${(pane.order || []).length}`);
-  }
 }
-if (!(0 < loop.travelEnd && loop.travelEnd < loop.accentEnd && loop.accentEnd < loop.holdEnd && loop.holdEnd < 1)) {
-  problems.push("loop stages must read 0 < travelEnd < accentEnd < holdEnd < 1");
-}
-if (style.samples < 16) problems.push("fewer than 16 samples: the trail would show its corners");
 
+for (const scene of scenes) {
+  for (const p of scene.pieces) {
+    if (!KINDS.has(p.kind)) problems.push(`piece "${p.id}" is a "${p.kind}", which no renderer draws`);
+    for (const c of [p.fill, p.stroke, p.text?.fill]) {
+      if (c && !COLORS.has(c)) problems.push(`piece "${p.id}" asks for colour "${c}", which is not a token`);
+    }
+    const keys = p.track || [];
+    if (!keys.length) { problems.push(`piece "${p.id}" has no track`); continue; }
+    if (keys[0].at !== 0 || keys[keys.length - 1].at !== 1) {
+      problems.push(`piece "${p.id}" has a track that does not span the whole loop`);
+    }
+    for (let i = 1; i < keys.length; i++) {
+      if (keys[i].at <= keys[i - 1].at) problems.push(`piece "${p.id}" has keyframes out of order at ${keys[i].at}`);
+      if (keys[i].ease && !EASES.has(keys[i].ease)) {
+        problems.push(`piece "${p.id}" wants a "${keys[i].ease}" curve; the renderers know ${[...EASES].join(", ")}`);
+      }
+    }
+    // Does it stay in frame? Shapes are bounded exactly; type is not, because
+    // only the renderers can measure a face, and guessing here would either
+    // reject a scene that fits or pass one that does not.
+    if (p.kind === "text") continue;
+    for (const k of keys) {
+      const s = k.scale ?? 1, d = k.dist ?? 0, a = ((p.angle ?? 0) * Math.PI) / 180;
+      const cx = p.x + p.w / 2 + (k.dx ?? 0) + Math.cos(a) * d;
+      const cy = p.y + p.h / 2 + (k.dy ?? 0) + Math.sin(a) * d;
+      const hw = (p.w * s) / 2, hh = (p.h * s) / 2;
+      const pad = p.shadow ? style.depth : 0;
+      if ((k.opacity ?? 1) === 0) continue; // invisible off-stage is the point
+      if (cx - hw < 0 || cy - hh < 0 || cx + hw + pad > canvas.w || cy + hh + pad > canvas.h) {
+        problems.push(`piece "${p.id}" leaves the ${canvas.w}x${canvas.h} stage at ${Math.round(k.at * 100)}% of the loop`);
+        break;
+      }
+    }
+  }
+}
 if (problems.length) {
   console.error(`onboarding spec invalid: ${problems.length} problem(s)\n`);
   for (const p of problems) console.error(`  - ${p}`);
@@ -103,100 +102,102 @@ if (problems.length) {
 }
 
 const header = (lang) => `// Generated by scripts/gen-onboarding-scenes.mjs from design/onboarding.json.
-// Do not edit: the two renderers are different code drawing the same scene,
-// and this file is the only reason that stays true.
+// Do not edit: three renderers draw this scene and none of them owns a number.
 // ${lang}
 `;
 
-const n = (v) => (Number.isInteger(v) ? `${v}` : `${v}`);
-const list = (arr, f) => (arr.length ? arr.map(f).join(", ") : "");
+const n = (v) => `${v}`;
+const camel = (s) => s.replace(/-(\\w)/g, (_, c) => c.toUpperCase());
+const key = (k) => ({
+  at: k.at, dx: k.dx ?? 0, dy: k.dy ?? 0, dist: k.dist ?? 0,
+  scale: k.scale ?? 1, rot: k.rot ?? 0, opacity: k.opacity ?? 1,
+  dash: k.dash ?? 0, ease: k.ease ?? "linear",
+});
 
 // --- Swift ----------------------------------------------------------------
 
-const swiftPane = (p) => `        OnboardingPane(
-            id: "${p.id}",
-            from: CGPoint(x: ${n(p.path.from[0])}, y: ${n(p.path.from[1])}),
-            c1: CGPoint(x: ${n(p.path.c1[0])}, y: ${n(p.path.c1[1])}),
-            c2: CGPoint(x: ${n(p.path.c2[0])}, y: ${n(p.path.c2[1])}),
-            to: CGPoint(x: ${n(p.path.to[0])}, y: ${n(p.path.to[1])}),
-            blocks: [${list(p.blocks || [], (b) => `OnboardingBlock(x: ${n(b.x)}, y: ${n(b.y)}, w: ${n(b.w)}, h: ${n(b.h)}, r: ${n(b.r)})`)}],
-            stars: [${list(p.stars || [], (d) => `OnboardingDisc(cx: ${n(d.cx)}, cy: ${n(d.cy)}, r: ${n(d.r)})`)}],
-            order: [${(p.order || []).join(", ")}],
-            accent: ${p.accent},
-            accentColor: "${p.accentColor}",
-            label: ${p.label ? `OnboardingLabel(text: "${p.label.text}", cx: ${n(p.label.cx)}, cy: ${n(p.label.cy)}, size: ${n(p.label.size)})` : "nil"},
-            mark: "${p.mark || ""}"
-        )`;
+const swiftKey = (k) => {
+  const v = key(k);
+  return `OnboardingKey(at: ${n(v.at)}, dx: ${n(v.dx)}, dy: ${n(v.dy)}, dist: ${n(v.dist)}, ` +
+    `scale: ${n(v.scale)}, rot: ${n(v.rot)}, opacity: ${n(v.opacity)}, dash: ${n(v.dash)}, ease: "${v.ease}")`;
+};
+
+const swiftPiece = (p) => `            OnboardingPiece(
+                id: "${p.id}", kind: "${p.kind}",
+                x: ${n(p.x)}, y: ${n(p.y)}, w: ${n(p.w ?? 0)}, h: ${n(p.h ?? 0)},
+                radii: [${(p.r ?? [0, 0, 0, 0]).join(", ")}],
+                fill: "${p.fill ?? ""}", stroke: "${p.stroke ?? ""}",
+                border: ${n(p.border ?? 0)}, shadow: ${p.shadow ? "true" : "false"},
+                space: ${n(p.space ?? 0)}, width: ${n(p.width ?? 0)}, length: ${n(p.length ?? 0)},
+                points: [${(p.points ?? []).map((q) => `CGPoint(x: ${n(q[0])}, y: ${n(q[1])})`).join(", ")}],
+                angle: ${n(p.angle ?? 0)}, delay: ${n(p.delay ?? 0)},
+                text: ${p.text || p.kind === "text"
+                  ? `OnboardingText(value: "${(p.text ?? p).value}", size: ${n((p.text ?? p).size)}, ` +
+                    `fill: "${(p.text ?? p).fill}", tracking: ${n(p.tracking ?? 0)}, align: "${p.align ?? "center"}")`
+                  : "nil"},
+                keys: [${(p.track).map(swiftKey).join(", ")}]
+            )`;
 
 const swift = `${header("Swift")}
 import CoreGraphics
 
-/// A rounded rectangle in scene coordinates.
-struct OnboardingBlock {
-    let x: CGFloat, y: CGFloat, w: CGFloat, h: CGFloat, r: CGFloat
+/// One instant of a piece's motion. Six properties and a curve is everything
+/// these scenes ask for, which is what keeps three renderers agreeing.
+struct OnboardingKey {
+    let at: CGFloat
+    let dx: CGFloat, dy: CGFloat, dist: CGFloat
+    let scale: CGFloat, rot: CGFloat, opacity: CGFloat, dash: CGFloat
+    /// "linear", "inout", "out" or "back".
+    let ease: String
 }
 
-/// A circle in scene coordinates.
-struct OnboardingDisc {
-    let cx: CGFloat, cy: CGFloat, r: CGFloat
+/// Type set into a piece, or standing on its own.
+struct OnboardingText {
+    let value: String
+    let size: CGFloat
+    let fill: String
+    let tracking: CGFloat
+    /// "left" anchors on x, "center" on the middle of the piece.
+    let align: String
 }
 
-/// A word set in the display face, centred on its point.
-///
-/// The only type in the scene, and only ever something that reads the same in
-/// every language the app ships: a year, a digit, a question mark.
-struct OnboardingLabel {
-    let text: String
-    let cx: CGFloat, cy: CGFloat, size: CGFloat
-}
-
-/// One intro pane: the ball's cubic, the furniture it moves between, and which
-/// piece of that furniture the accent lands on.
-struct OnboardingPane {
+/// A shape and the track it follows.
+struct OnboardingPiece {
     let id: String
-    let from: CGPoint, c1: CGPoint, c2: CGPoint, to: CGPoint
-    let blocks: [OnboardingBlock]
-    let stars: [OnboardingDisc]
-    /// The order the stars arrive in, so the burst starts where the ball is.
-    let order: [Int]
-    /// Index of the block the accent fills, or -1 when the pane has none.
-    let accent: Int
-    /// What arriving means here: "yellow" for a club joined, "green" for an
-    /// answer that was right.
-    let accentColor: String
-    /// Set into the frame, or nil when the pane carries no type.
-    let label: OnboardingLabel?
-    /// Carried by the ball itself, or empty. The question mark is the player
-    /// the round is asking about.
-    let mark: String
+    /// "rect", "text", "star" or "polyline".
+    let kind: String
+    let x: CGFloat, y: CGFloat, w: CGFloat, h: CGFloat
+    /// Top-left, top-right, bottom-right, bottom-left.
+    let radii: [CGFloat]
+    let fill: String, stroke: String
+    let border: CGFloat
+    let shadow: Bool
+    /// The unit box a star or a polyline is drawn in before scaling.
+    let space: CGFloat
+    let width: CGFloat, length: CGFloat
+    let points: [CGPoint]
+    /// The direction \`dist\` travels along, in degrees, 0 being to the right.
+    let angle: CGFloat
+    /// Fraction of the loop this piece runs behind the others.
+    let delay: CGFloat
+    let text: OnboardingText?
+    let keys: [OnboardingKey]
 }
 
 enum OnboardingScene {
-    /// The drawing surface. The renderer scales to fill and centres.
+    /// The stage: the inside of the card. The card, its border and its shadow
+    /// belong to the screen around the scene.
     static let width: CGFloat = ${n(canvas.w)}
     static let height: CGFloat = ${n(canvas.h)}
 
     /// One turn of the loop, in seconds.
     static let duration: Double = ${loop.durationMs / 1000}
-    /// Fractions of the loop: the ball travels, the accent plays, everything
-    /// holds, then the trail and the ball fade so the restart is not a cut.
-    static let travelEnd: CGFloat = ${n(loop.travelEnd)}
-    static let accentEnd: CGFloat = ${n(loop.accentEnd)}
-    static let holdEnd: CGFloat = ${n(loop.holdEnd)}
 
-    static let trail: CGFloat = ${n(style.trail)}
     static let border: CGFloat = ${n(style.border)}
     static let depth: CGFloat = ${n(style.depth)}
-    static let ballRadius: CGFloat = ${n(style.ballRadius)}
-    static let ballBorder: CGFloat = ${n(style.ballBorder)}
-    /// Point size of the mark the ball carries.
-    static let markSize: CGFloat = ${n(style.markSize)}
-    /// Segments the cubic is flattened into, which is also how the trail and
-    /// the ball are kept on the same arc-length ruler on both platforms.
-    static let samples: Int = ${n(style.samples)}
 
-    static let panes: [OnboardingPane] = [
-${panes.map(swiftPane).join(",\n")}
+    static let scenes: [[OnboardingPiece]] = [
+${scenes.map((s) => `        // ${s.id}\n        [\n${s.pieces.map(swiftPiece).join(",\n")}\n        ]`).join(",\n")}
     ]
 }
 `;
@@ -204,116 +205,112 @@ ${panes.map(swiftPane).join(",\n")}
 // --- Kotlin ---------------------------------------------------------------
 
 const f = (v) => `${v}f`;
-const kotlinPane = (p) => `        OnboardingPane(
-            id = "${p.id}",
-            from = OnboardingPoint(${f(p.path.from[0])}, ${f(p.path.from[1])}),
-            c1 = OnboardingPoint(${f(p.path.c1[0])}, ${f(p.path.c1[1])}),
-            c2 = OnboardingPoint(${f(p.path.c2[0])}, ${f(p.path.c2[1])}),
-            to = OnboardingPoint(${f(p.path.to[0])}, ${f(p.path.to[1])}),
-            blocks = listOf(${list(p.blocks || [], (b) => `OnboardingBlock(${f(b.x)}, ${f(b.y)}, ${f(b.w)}, ${f(b.h)}, ${f(b.r)})`)}),
-            stars = listOf(${list(p.stars || [], (d) => `OnboardingDisc(${f(d.cx)}, ${f(d.cy)}, ${f(d.r)})`)}),
-            order = listOf(${(p.order || []).join(", ")}),
-            accent = ${p.accent},
-            accentColor = "${p.accentColor}",
-            label = ${p.label ? `OnboardingLabel("${p.label.text}", ${f(p.label.cx)}, ${f(p.label.cy)}, ${f(p.label.size)})` : "null"},
-            mark = "${p.mark || ""}",
-        )`;
+const ktKey = (k) => {
+  const v = key(k);
+  return `OnboardingKey(${f(v.at)}, ${f(v.dx)}, ${f(v.dy)}, ${f(v.dist)}, ` +
+    `${f(v.scale)}, ${f(v.rot)}, ${f(v.opacity)}, ${f(v.dash)}, "${v.ease}")`;
+};
+
+const ktPiece = (p) => `            OnboardingPiece(
+                id = "${p.id}", kind = "${p.kind}",
+                x = ${f(p.x)}, y = ${f(p.y)}, w = ${f(p.w ?? 0)}, h = ${f(p.h ?? 0)},
+                radii = listOf(${(p.r ?? [0, 0, 0, 0]).map(f).join(", ")}),
+                fill = "${p.fill ?? ""}", stroke = "${p.stroke ?? ""}",
+                border = ${f(p.border ?? 0)}, shadow = ${p.shadow ? "true" : "false"},
+                space = ${f(p.space ?? 0)}, width = ${f(p.width ?? 0)}, length = ${f(p.length ?? 0)},
+                points = listOf(${(p.points ?? []).map((q) => `OnboardingPoint(${f(q[0])}, ${f(q[1])})`).join(", ")}),
+                angle = ${f(p.angle ?? 0)}, delay = ${f(p.delay ?? 0)},
+                text = ${p.text || p.kind === "text"
+                  ? `OnboardingText("${(p.text ?? p).value}", ${f((p.text ?? p).size)}, ` +
+                    `"${(p.text ?? p).fill}", ${f(p.tracking ?? 0)}, "${p.align ?? "center"}")`
+                  : "null"},
+                keys = listOf(${(p.track).map(ktKey).join(", ")}),
+            )`;
 
 const kotlin = `${header("Kotlin")}
 package com.mercato.art
 
-/** A point in scene coordinates. */
+/** A point in stage coordinates. */
 data class OnboardingPoint(val x: Float, val y: Float)
 
-/** A rounded rectangle in scene coordinates. */
-data class OnboardingBlock(val x: Float, val y: Float, val w: Float, val h: Float, val r: Float)
-
-/** A circle in scene coordinates. */
-data class OnboardingDisc(val cx: Float, val cy: Float, val r: Float)
+/**
+ * One instant of a piece's motion. Six properties and a curve is everything
+ * these scenes ask for, which is what keeps three renderers agreeing.
+ *
+ * @param ease "linear", "inout", "out" or "back".
+ */
+data class OnboardingKey(
+    val at: Float,
+    val dx: Float, val dy: Float, val dist: Float,
+    val scale: Float, val rot: Float, val opacity: Float, val dash: Float,
+    val ease: String,
+)
 
 /**
- * A word set in the display face, centred on its point.
+ * Type set into a piece, or standing on its own.
  *
- * The only type in the scene, and only ever something that reads the same in
- * every language the app ships: a year, a digit, a question mark.
+ * @param align "left" anchors on x, "center" on the middle of the piece.
  */
-data class OnboardingLabel(val text: String, val cx: Float, val cy: Float, val size: Float)
+data class OnboardingText(
+    val value: String,
+    val size: Float,
+    val fill: String,
+    val tracking: Float,
+    val align: String,
+)
 
 /**
- * One intro pane: the ball's cubic, the furniture it moves between, and which
- * piece of that furniture the accent lands on.
+ * A shape and the track it follows.
  *
- * @param order the order the stars arrive in, so the burst starts where the
- *   ball is.
- * @param accent index of the block the accent fills, or -1 when the pane has
- *   none.
- * @param accentColor what arriving means here: "yellow" for a club joined,
- *   "green" for an answer that was right.
- * @param label set into the frame, or null when the pane carries no type.
- * @param mark carried by the ball itself, or empty. The question mark is the
- *   player the round is asking about.
+ * @param kind "rect", "text", "star" or "polyline".
+ * @param radii top-left, top-right, bottom-right, bottom-left.
+ * @param space the unit box a star or a polyline is drawn in before scaling.
+ * @param angle the direction \`dist\` travels along, in degrees, 0 being right.
+ * @param delay fraction of the loop this piece runs behind the others.
  */
-data class OnboardingPane(
+data class OnboardingPiece(
     val id: String,
-    val from: OnboardingPoint,
-    val c1: OnboardingPoint,
-    val c2: OnboardingPoint,
-    val to: OnboardingPoint,
-    val blocks: List<OnboardingBlock>,
-    val stars: List<OnboardingDisc>,
-    val order: List<Int>,
-    val accent: Int,
-    val accentColor: String,
-    val label: OnboardingLabel?,
-    val mark: String,
+    val kind: String,
+    val x: Float, val y: Float, val w: Float, val h: Float,
+    val radii: List<Float>,
+    val fill: String, val stroke: String,
+    val border: Float,
+    val shadow: Boolean,
+    val space: Float,
+    val width: Float, val length: Float,
+    val points: List<OnboardingPoint>,
+    val angle: Float,
+    val delay: Float,
+    val text: OnboardingText?,
+    val keys: List<OnboardingKey>,
 )
 
 object OnboardingScene {
-    /** The drawing surface. The renderer scales to fill and centres. */
+    /**
+     * The stage: the inside of the card. The card, its border and its shadow
+     * belong to the screen around the scene.
+     */
     const val WIDTH = ${f(canvas.w)}
     const val HEIGHT = ${f(canvas.h)}
 
     /** One turn of the loop, in milliseconds. */
     const val DURATION_MS = ${loop.durationMs}
 
-    /**
-     * Fractions of the loop: the ball travels, the accent plays, everything
-     * holds, then the trail and the ball fade so the restart is not a cut.
-     */
-    const val TRAVEL_END = ${f(loop.travelEnd)}
-    const val ACCENT_END = ${f(loop.accentEnd)}
-    const val HOLD_END = ${f(loop.holdEnd)}
-
-    const val TRAIL = ${f(style.trail)}
     const val BORDER = ${f(style.border)}
     const val DEPTH = ${f(style.depth)}
-    const val BALL_RADIUS = ${f(style.ballRadius)}
-    const val BALL_BORDER = ${f(style.ballBorder)}
 
-    /** Point size of the mark the ball carries. */
-    const val MARK_SIZE = ${f(style.markSize)}
-
-    /**
-     * Segments the cubic is flattened into, which is also how the trail and
-     * the ball are kept on the same arc-length ruler on both platforms.
-     */
-    const val SAMPLES = ${n(style.samples)}
-
-    val panes: List<OnboardingPane> = listOf(
-${panes.map(kotlinPane).join(",\n")},
+    val scenes: List<List<OnboardingPiece>> = listOf(
+${scenes.map((s) => `        // ${s.id}\n        listOf(\n${s.pieces.map(ktPiece).join(",\n")},\n        )`).join(",\n")},
     )
 }
 `;
 
-// --- Preview ---------------------------------------------------------------
+// --- Preview --------------------------------------------------------------
 //
-// A third renderer, for the desk rather than for a phone. Reviewing this scene
+// A third renderer, for the desk rather than for a phone. Judging a change
 // used to mean two builds, two installs and a screenshot per pane; this is the
-// same geometry in a browser, with a scrubber, so a change to the JSON can be
-// judged in a second. It is not shipped, and it reads the same file the two
-// apps read, so it cannot show something the apps would not.
+// same description in a browser, with a scrubber.
 const T = JSON.parse(fs.readFileSync(path.join(ROOT, "design/tokens.json"), "utf8")).color;
-
 const html = `<!doctype html>
 <meta charset="utf-8">
 <title>Mercato onboarding</title>
@@ -322,12 +319,12 @@ const html = `<!doctype html>
          font: 14px/1.5 -apple-system, system-ui, sans-serif; padding: 28px; }
   h1 { font-size: 15px; letter-spacing: .12em; text-transform: uppercase;
        opacity: .6; font-weight: 600; margin: 0 0 22px; }
-  .row { display: flex; flex-wrap: wrap; gap: 22px; }
+  .row { display: flex; flex-wrap: wrap; gap: 26px; }
   figure { margin: 0; }
-  canvas { display: block; border-radius: 26px; box-shadow: 0 10px 0 ${T.ink};
+  canvas { display: block; border-radius: 26px; box-shadow: 10px 10px 0 ${T.ink};
            outline: 5px solid ${T.ink}; }
-  figcaption { opacity: .55; margin-top: 16px; font-variant: small-caps; letter-spacing: .06em; }
-  .bar { margin-top: 26px; display: flex; align-items: center; gap: 14px; }
+  figcaption { opacity: .55; margin-top: 18px; font-variant: small-caps; letter-spacing: .06em; }
+  .bar { margin-top: 30px; display: flex; align-items: center; gap: 14px; }
   input[type=range] { width: 340px; accent-color: ${T.yellow}; }
   button { background: ${T.yellow}; color: ${T.ink}; border: 0; border-radius: 999px;
            padding: 7px 16px; font-weight: 700; cursor: pointer; }
@@ -341,22 +338,19 @@ const html = `<!doctype html>
   <code id="read">0.000</code>
 </div>
 <script>
-const SCENE = ${JSON.stringify({ canvas, loop, style, panes })};
-const C = ${JSON.stringify({
-  ink: T.ink, yellow: T.yellow, ivory: T.ivory,
-  grey: T["club-grey"], green: T.green, ground: T["blue-deep"],
-})};
+const SPEC = ${JSON.stringify({ canvas, loop, style, scenes })};
+const C = ${JSON.stringify(Object.fromEntries([...COLORS].map((k) => [k, T[k]])))};
 ${fs.readFileSync(path.join(ROOT, "scripts/onboarding-preview.js"), "utf8")}
 </script>
 `;
 
-fs.writeFileSync(path.join(OUT, "onboarding-preview.html"), html);
-
 fs.mkdirSync(OUT, { recursive: true });
 fs.writeFileSync(path.join(OUT, "OnboardingScenes.swift"), swift);
 fs.writeFileSync(path.join(OUT, "OnboardingScenes.kt"), kotlin);
+fs.writeFileSync(path.join(OUT, "onboarding-preview.html"), html);
 
 console.log(
-  `generated build/art/OnboardingScenes.{swift,kt} and onboarding-preview.html: ${panes.length} panes, ` +
+  `generated build/art/OnboardingScenes.{swift,kt} and onboarding-preview.html: ` +
+    `${scenes.length} scenes, ${scenes.reduce((a, s) => a + s.pieces.length, 0)} pieces, ` +
     `${loop.durationMs}ms loop on a ${canvas.w}x${canvas.h} stage`
 );

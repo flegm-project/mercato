@@ -1,57 +1,37 @@
 import SwiftUI
 
-/// The intro's three pictures, drawn rather than photographed.
+/// The intro's three scenes, drawn rather than shipped.
 ///
-/// One ball crosses each pane and leaves a yellow trail behind it: a pass from
-/// one club to the next, a choice landing on the right answer, a climb that
-/// bursts into stars. The three PNGs this replaced said the same three things
-/// with grey bars standing in for text, which read as an unfinished screen
-/// rather than as a picture of the game.
+/// Each one is a moment of the game held still and animated in place: the
+/// years of the mercato waiting for a name, the two shirts with the answer
+/// landing between them, the three stars at the end of a round. Nothing in
+/// them is translatable, which is what lets them carry real content instead of
+/// grey bars standing in for text.
 ///
-/// Vector and looping, so it costs no download bytes, stays sharp at any
-/// density, and can show the pass instead of the moment after it.
-///
-/// Every coordinate, radius and timing below comes from `OnboardingScene`,
-/// generated from design/onboarding.json. Android draws the same scene from
-/// the same file with its own primitives, which is the only thing keeping the
-/// two intros the same intro.
+/// Every coordinate, radius and timing comes from `OnboardingScene`, generated
+/// from design/onboarding.json. Android plays the same keyframes from the same
+/// file with its own primitives, and a browser page plays them a third time so
+/// a change can be judged without two builds. None of the three owns a number.
 struct OnboardingArtView: View {
-    /// Which pane of the intro, 0 to 2.
+    /// Which scene of the intro, 0 to 2.
     let pane: Int
 
     var body: some View {
         if let pinned = Self.pinnedPhase {
             Canvas { context, size in
-                Self.draw(&context, size: size, pane: scene, phase: pinned)
+                Self.draw(&context, size: size, pieces: pieces, phase: pinned)
             }
         } else {
             TimelineView(.animation) { timeline in
                 Canvas { context, size in
-                    Self.draw(&context, size: size, pane: scene, phase: Self.phase(at: timeline.date))
+                    Self.draw(&context, size: size, pieces: pieces, phase: Self.phase(at: timeline.date))
                 }
             }
         }
     }
 
-    /// Held still for the parity captures, and only for them.
-    ///
-    /// scripts/capture-parity.sh shoots a screen once two consecutive frames
-    /// are identical, which an animation never gives it: it would wait out its
-    /// twenty tries and then compare one arbitrary moment of the loop against
-    /// another. Pinning both platforms to the same instant of the same scene
-    /// is what makes the screen measurable at all. 0.8 is the hold, after the
-    /// accent has landed and before the fade, which is also the most complete
-    /// frame of the three.
-    private static var pinnedPhase: CGFloat? {
-        #if DEBUG
-        CommandLine.arguments.contains("-MercatoRoute") ? 0.8 : nil
-        #else
-        nil
-        #endif
-    }
-
-    private var scene: OnboardingPane {
-        OnboardingScene.panes[min(max(pane, 0), OnboardingScene.panes.count - 1)]
+    private var pieces: [OnboardingPiece] {
+        OnboardingScene.scenes[min(max(pane, 0), OnboardingScene.scenes.count - 1)]
     }
 
     /// The phase is a function of the wall clock rather than of animated
@@ -62,266 +42,235 @@ struct OnboardingArtView: View {
             .truncatingRemainder(dividingBy: OnboardingScene.duration)
         return CGFloat(t / OnboardingScene.duration)
     }
-}
 
-// MARK: - Timing
-
-private extension OnboardingArtView {
-    /// Smoothstep, clamped. Everything in this scene eases in and out of rest;
-    /// nothing snaps, which is what "boucle courte et douce" has to mean at
-    /// 2.8 seconds a turn.
-    static func ease(_ t: CGFloat) -> CGFloat {
-        let c = min(max(t, 0), 1)
-        return c * c * (3 - 2 * c)
-    }
-
-    /// Overshoot on the way in, settling exactly on 1. Used for the things
-    /// that arrive rather than travel: the badge that lights up, the stars.
-    static func pop(_ t: CGFloat) -> CGFloat {
-        let c = min(max(t, 0), 1) - 1
-        return 1 + 2.7 * c * c * c + 1.7 * c * c
-    }
-}
-
-// MARK: - The path the ball takes
-
-private extension OnboardingArtView {
-    /// The cubic flattened to a polyline, with the distance travelled at each
-    /// sample.
+    /// Held still for the parity captures, and only for them.
     ///
-    /// Flattening rather than asking each platform to trim a curve is
-    /// deliberate: `Path.trimmedPath` and Compose's `PathMeasure` do not have
-    /// to agree on where halfway is, and the ball has to sit exactly on the
-    /// end of its own trail. One ruler, computed the same way twice.
-    static func flatten(_ p: OnboardingPane) -> (points: [CGPoint], travelled: [CGFloat]) {
-        var points: [CGPoint] = []
-        for i in 0...OnboardingScene.samples {
-            let t = CGFloat(i) / CGFloat(OnboardingScene.samples)
-            let u = 1 - t
-            let (a, b, c, d) = (u * u * u, 3 * u * u * t, 3 * u * t * t, t * t * t)
-            points.append(CGPoint(
-                x: a * p.from.x + b * p.c1.x + c * p.c2.x + d * p.to.x,
-                y: a * p.from.y + b * p.c1.y + c * p.c2.y + d * p.to.y
-            ))
-        }
-        var travelled: [CGFloat] = [0]
-        for i in 1..<points.count {
-            travelled.append(travelled[i - 1] + hypot(
-                points[i].x - points[i - 1].x,
-                points[i].y - points[i - 1].y
-            ))
-        }
-        return (points, travelled)
-    }
-
-    /// The polyline up to `fraction` of its length, and where that leaves the
-    /// ball. Returned together because they are the same walk.
-    static func trail(_ p: OnboardingPane, upTo fraction: CGFloat) -> (path: Path, head: CGPoint) {
-        let (points, travelled) = flatten(p)
-        let target = travelled[travelled.count - 1] * min(max(fraction, 0), 1)
-        var path = Path()
-        path.move(to: points[0])
-        var head = points[0]
-        for i in 1..<points.count {
-            if travelled[i] >= target {
-                let span = travelled[i] - travelled[i - 1]
-                let k = span > 0 ? (target - travelled[i - 1]) / span : 0
-                head = CGPoint(
-                    x: points[i - 1].x + (points[i].x - points[i - 1].x) * k,
-                    y: points[i - 1].y + (points[i].y - points[i - 1].y) * k
-                )
-                path.addLine(to: head)
-                break
-            }
-            path.addLine(to: points[i])
-            head = points[i]
-        }
-        return (path, head)
+    /// scripts/capture-parity.sh shoots a screen once two consecutive frames
+    /// are identical, which an animation never gives it: it would wait out its
+    /// twenty tries and then compare one arbitrary moment of the loop against
+    /// another. Pinning both platforms to the same instant is what makes the
+    /// screen measurable at all. 0.78 is the one instant of the loop where
+    /// every piece of all three scenes is at rest and at full strength.
+    private static var pinnedPhase: CGFloat? {
+        #if DEBUG
+        CommandLine.arguments.contains("-MercatoRoute") ? 0.78 : nil
+        #else
+        nil
+        #endif
     }
 }
 
-// MARK: - The app's surfaces, inside a Canvas
+// MARK: - Playback
 
 private extension OnboardingArtView {
-    /// The flat fill, hard ink border and offset ink shadow every surface in
-    /// this app wears. Built from three fills rather than a stroke: a stroke
-    /// straddles its path, so a 5 border would put 2.5 of it outside the
-    /// shape and the badges would not line up with the app's own cards.
-    static func raised(_ context: GraphicsContext, _ shape: Path, _ inset: Path, fill: Color) {
-        context.fill(shape.offsetBy(dx: OnboardingScene.depth, dy: OnboardingScene.depth),
-                     with: .color(DesignTokens.Color.ink))
-        context.fill(shape, with: .color(DesignTokens.Color.ink))
-        context.fill(inset, with: .color(fill))
+    /// Cubic-bezier easing, solved for x then read for y, the way CSS does it.
+    ///
+    /// Newton on the x polynomial rather than a lookup table: the curves here
+    /// overshoot, so a table fine enough to keep the overshoot smooth is
+    /// larger than the eight iterations it replaces.
+    static func bezier(_ x1: CGFloat, _ y1: CGFloat, _ x2: CGFloat, _ y2: CGFloat, _ t: CGFloat) -> CGFloat {
+        let cx = 3 * x1, bx = 3 * (x2 - x1) - cx, ax = 1 - cx - bx
+        let cy = 3 * y1, by = 3 * (y2 - y1) - cy, ay = 1 - cy - by
+        var u = t
+        for _ in 0..<8 {
+            let x = ((ax * u + bx) * u + cx) * u - t
+            let d = (3 * ax * u + 2 * bx) * u + cx
+            if abs(x) < 1e-5 || d == 0 { break }
+            u -= x / d
+        }
+        u = min(max(u, 0), 1)
+        return ((ay * u + by) * u + cy) * u
     }
 
-    static func disc(_ c: CGPoint, _ r: CGFloat) -> Path {
-        Path(ellipseIn: CGRect(x: c.x - r, y: c.y - r, width: r * 2, height: r * 2))
+    /// The four curves the spec is allowed to name.
+    static func ease(_ name: String, _ t: CGFloat) -> CGFloat {
+        let c = min(max(t, 0), 1)
+        switch name {
+        case "inout": return bezier(0.42, 0, 0.58, 1, c)
+        case "out": return bezier(0, 0, 0.58, 1, c)
+        case "back": return bezier(0.3, 1.3, 0.4, 1, c)
+        default: return c
+        }
     }
 
-    static func raisedDisc(_ context: GraphicsContext, at c: CGPoint, r: CGFloat, border: CGFloat, fill: Color) {
-        raised(context, disc(c, r), disc(c, r - border), fill: fill)
+    struct State {
+        var dx: CGFloat = 0, dy: CGFloat = 0, dist: CGFloat = 0
+        var scale: CGFloat = 1, rot: CGFloat = 0, opacity: CGFloat = 1, dash: CGFloat = 0
     }
 
-    static func raisedBlock(_ context: GraphicsContext, _ b: OnboardingBlock, fill: Color) {
-        let e = OnboardingScene.border
-        raised(
-            context,
-            Path(roundedRect: CGRect(x: b.x, y: b.y, width: b.w, height: b.h), cornerRadius: b.r, style: .continuous),
-            Path(roundedRect: CGRect(x: b.x + e, y: b.y + e, width: b.w - e * 2, height: b.h - e * 2),
-                 cornerRadius: b.r - e, style: .continuous),
-            fill: fill
+    /// The piece's state at `phase`, its own delay already taken off.
+    static func sample(_ piece: OnboardingPiece, _ phase: CGFloat) -> State {
+        var t = (phase - piece.delay).truncatingRemainder(dividingBy: 1)
+        if t < 0 { t += 1 }
+        let keys = piece.keys
+        var i = 0
+        while i < keys.count - 2 && keys[i + 1].at <= t { i += 1 }
+        let a = keys[i], b = keys[min(i + 1, keys.count - 1)]
+        let span = b.at - a.at
+        let k = span > 0 ? ease(b.ease, (t - a.at) / span) : 0
+        let mix = { (x: CGFloat, y: CGFloat) in x + (y - x) * k }
+        return State(
+            dx: mix(a.dx, b.dx), dy: mix(a.dy, b.dy), dist: mix(a.dist, b.dist),
+            scale: mix(a.scale, b.scale), rot: mix(a.rot, b.rot),
+            opacity: mix(a.opacity, b.opacity), dash: mix(a.dash, b.dash)
         )
     }
+}
 
-    /// A word in the display face, centred on its point, with the app's ink
-    /// shadow under it.
-    ///
-    /// `.center` anchors on the text's own layout box, which is the one thing
-    /// Compose can also anchor on, so the two platforms agree without either
-    /// of them measuring a glyph.
-    static func label(_ context: GraphicsContext, _ text: String, at c: CGPoint,
-                      size: CGFloat, fill: Color) {
-        var t = context.resolve(Text(text).font(DS.unbounded(size)))
-        let d = OnboardingScene.depth
-        t.shading = .color(DesignTokens.Color.ink)
-        context.draw(t, at: CGPoint(x: c.x + d, y: c.y + d), anchor: .center)
-        t.shading = .color(fill)
-        context.draw(t, at: c, anchor: .center)
+// MARK: - Shapes
+
+private extension OnboardingArtView {
+    static func color(_ token: String) -> Color {
+        switch token {
+        case "ink": return DesignTokens.Color.ink
+        case "yellow": return DesignTokens.Color.yellow
+        case "ivory": return DesignTokens.Color.ivory
+        case "club-grey": return DesignTokens.Color.clubGrey
+        case "green": return DesignTokens.Color.green
+        default: return DesignTokens.Color.blueDeep
+        }
     }
 
-    /// The recap's star, at whatever size the scene asks for.
-    ///
-    /// This is the SF Pro glyph and not a path, because on iOS the glyph *is*
-    /// the reference: `RecapStar` on Android is a reproduction of it, measured
-    /// off this exact face. Drawing a second star here would give the app two
-    /// stars that are nearly the same.
-    ///
-    /// `r` is the sharp pentagram radius, the same number Android's
-    /// `starPath` takes, so the two scenes agree on size. The glyph's ink sits
-    /// 0.0348em above the centre of its cell (Components.kt records the
-    /// measurement), which is the only reason this is not a plain draw at the
-    /// centre point.
-    static func star(_ context: GraphicsContext, at c: CGPoint, r: CGFloat, fill: Color, shade: Color) {
-        let em = r / 0.524
-        var text = context.resolve(Text("\u{2605}").font(.system(size: em)))
-        let at = CGPoint(x: c.x, y: c.y + em * 0.0348)
-        let d = OnboardingScene.depth
-        text.shading = .color(shade)
-        context.draw(text, at: CGPoint(x: at.x + d, y: at.y + d), anchor: .center)
-        text.shading = .color(fill)
-        context.draw(text, at: at, anchor: .center)
+    /// The app's rounded rectangle, with the four corners stated separately:
+    /// a shirt is a card whose bottom is fully round.
+    static func rect(_ r: CGRect, _ radii: [CGFloat]) -> Path {
+        UnevenRoundedRectangle(
+            topLeadingRadius: max(0, radii[0]),
+            bottomLeadingRadius: max(0, radii[3]),
+            bottomTrailingRadius: max(0, radii[2]),
+            topTrailingRadius: max(0, radii[1]),
+            style: .continuous
+        ).path(in: r)
+    }
+
+    /// The recap's star, so the intro's stars and the recap's stars are one
+    /// shape. Same construction as `RecapStar` on Android: the sharp pentagram
+    /// with every corner replaced by a tangent arc.
+    static func star(_ c: CGPoint, _ outer: CGFloat) -> Path {
+        let waist: CGFloat = 0.392, tip: CGFloat = 0.0665, valley: CGFloat = 0.031
+        let pts = (0..<10).map { i -> CGPoint in
+            let r = i % 2 == 0 ? outer : outer * waist
+            let a = CGFloat(-90 + i * 36) * .pi / 180
+            return CGPoint(x: c.x + r * cos(a), y: c.y + r * sin(a))
+        }
+        var path = Path()
+        for i in 0..<10 {
+            let p = pts[i], prev = pts[(i + 9) % 10], next = pts[(i + 1) % 10]
+            let len = { (a: CGPoint, b: CGPoint) in hypot(b.x - a.x, b.y - a.y) }
+            let unit = { (a: CGPoint, b: CGPoint) -> CGPoint in
+                let l = len(a, b); return CGPoint(x: (b.x - a.x) / l, y: (b.y - a.y) / l)
+            }
+            let u = unit(p, prev), v = unit(p, next)
+            let half = acos(min(max(u.x * v.x + u.y * v.y, -1), 1)) / 2
+            let corner = outer * (i % 2 == 0 ? tip : valley)
+            let trim = min(corner / tan(half), min(len(p, prev), len(p, next)) / 2)
+            let a = CGPoint(x: p.x + u.x * trim, y: p.y + u.y * trim)
+            let b = CGPoint(x: p.x + v.x * trim, y: p.y + v.y * trim)
+            let k = 4.0 / 3.0 * tan((.pi - 2 * half) / 4) * tan(half)
+            if i == 0 { path.move(to: a) } else { path.addLine(to: a) }
+            path.addCurve(
+                to: b,
+                control1: CGPoint(x: a.x + (p.x - a.x) * k, y: a.y + (p.y - a.y) * k),
+                control2: CGPoint(x: b.x + (p.x - b.x) * k, y: b.y + (p.y - b.y) * k)
+            )
+        }
+        path.closeSubpath()
+        return path
     }
 }
 
-// MARK: - The scene
+// MARK: - Drawing
 
 private extension OnboardingArtView {
-    static func draw(_ context: inout GraphicsContext, size: CGSize, pane: OnboardingPane, phase: CGFloat) {
+    static func draw(_ context: inout GraphicsContext, size: CGSize,
+                     pieces: [OnboardingPiece], phase: CGFloat) {
         context.fill(Path(CGRect(origin: .zero, size: size)), with: .color(DesignTokens.Color.blueDeep))
 
-        // Scale to fill and centre. The slot is 200 tall and between 370 and
-        // 408 wide, so fitting would letterbox the art inside its own card;
-        // filling crops the side margin instead, which is why nothing is
-        // allowed within 24 of the edge.
-        let s = max(size.width / OnboardingScene.width, size.height / OnboardingScene.height)
+        // The stage is the inside of the card, so the border the screen draws
+        // around this view is taken off first. Then scale to fill and centre:
+        // the stage is 190 tall and between 360 and 398 wide, so fitting would
+        // letterbox the scene inside its own card, where filling crops the
+        // side margin instead. Nothing in the scene comes near the sides.
+        let b = OnboardingScene.border
+        let stage = CGSize(width: size.width - b * 2, height: size.height - b * 2)
+        let s = max(stage.width / OnboardingScene.width, stage.height / OnboardingScene.height)
         context.translateBy(
-            x: (size.width - OnboardingScene.width * s) / 2,
-            y: (size.height - OnboardingScene.height * s) / 2
+            x: b + (stage.width - OnboardingScene.width * s) / 2,
+            y: b + (stage.height - OnboardingScene.height * s) / 2
         )
         context.scaleBy(x: s, y: s)
 
-        let travel = ease(phase / OnboardingScene.travelEnd)
-        let land = (phase - OnboardingScene.travelEnd)
-            / (OnboardingScene.accentEnd - OnboardingScene.travelEnd)
-        // The trail and the ball fade out over the last stretch so the loop
-        // restarts on an empty frame rather than cutting back to the start.
-        let alpha = 1 - ease((phase - OnboardingScene.holdEnd) / (1 - OnboardingScene.holdEnd))
-
-        let (path, head) = trail(pane, upTo: travel)
-
-        drawFurniture(context, pane: pane, land: land, alpha: alpha)
-        if let l = pane.label {
-            label(context, l.text, at: CGPoint(x: l.cx, y: l.cy), size: l.size,
-                  fill: DesignTokens.Color.yellow)
-        }
-
-        var fading = context
-        fading.opacity = alpha
-        drawTrail(fading, path)
-        if pane.stars.isEmpty {
-            drawBall(fading, at: head, scale: 1, mark: pane.mark)
-        } else {
-            // The climb does not stop at the top, it becomes the stars.
-            drawBall(fading, at: head, scale: 1 - ease(land / 0.4), mark: pane.mark)
-        }
+        for piece in pieces { drawPiece(context, piece, sample(piece, phase)) }
     }
 
-    static func drawTrail(_ context: GraphicsContext, _ path: Path) {
-        let stroke = StrokeStyle(lineWidth: OnboardingScene.trail, lineCap: .round, lineJoin: .round)
-        context.stroke(
-            path.offsetBy(dx: OnboardingScene.depth, dy: OnboardingScene.depth),
-            with: .color(DesignTokens.Color.ink), style: stroke
+    static func drawPiece(_ context: GraphicsContext, _ p: OnboardingPiece, _ st: State) {
+        guard st.opacity > 0.001, st.scale > 0.001 else { return }
+        let a = p.angle * .pi / 180
+        let centre = CGPoint(
+            x: p.x + p.w / 2 + st.dx + cos(a) * st.dist,
+            y: p.y + p.h / 2 + st.dy + sin(a) * st.dist
         )
-        context.stroke(path, with: .color(DesignTokens.Color.yellow), style: stroke)
-    }
 
-    static func drawBall(_ context: GraphicsContext, at c: CGPoint, scale: CGFloat, mark: String) {
-        guard scale > 0.01 else { return }
-        raisedDisc(context, at: c, r: OnboardingScene.ballRadius * scale,
-                   border: OnboardingScene.ballBorder * scale, fill: DesignTokens.Color.ivory)
-        guard !mark.isEmpty else { return }
-        // No shadow on the mark: it sits inside a 20-wide face, and an offset
-        // copy of itself at that size reads as a smudge rather than as depth.
-        var t = context.resolve(
-            Text(mark).font(DS.unbounded(OnboardingScene.markSize * scale))
-        )
-        t.shading = .color(DesignTokens.Color.ink)
-        context.draw(t, at: c, anchor: .center)
-    }
-}
+        var g = context
+        g.opacity = st.opacity
+        g.translateBy(x: centre.x, y: centre.y)
+        g.rotate(by: .degrees(st.rot))
+        g.scaleBy(x: st.scale, y: st.scale)
 
-// MARK: - What each pane is made of
+        let d = OnboardingScene.depth
+        switch p.kind {
+        case "text":
+            guard let t = p.text else { return }
+            let anchor: UnitPoint = t.align == "left" ? .leading : .center
+            var resolved = context.resolve(
+                Text(t.value).font(DS.unbounded(t.size)).tracking(t.tracking * t.size)
+            )
+            resolved.shading = .color(DesignTokens.Color.ink)
+            g.draw(resolved, at: CGPoint(x: d, y: d), anchor: anchor)
+            resolved.shading = .color(color(t.fill))
+            g.draw(resolved, at: .zero, anchor: anchor)
 
-private extension OnboardingArtView {
-    /// Everything that is already in frame when the ball sets off, plus what
-    /// the arrival does to it.
-    ///
-    /// `land` runs 0 to 1 across the accent stage and is left unclamped here:
-    /// the easings clamp it themselves, and passing the raw value is what lets
-    /// the accent be an overshoot rather than a fade.
-    static func drawFurniture(_ context: GraphicsContext, pane: OnboardingPane, land: CGFloat, alpha: CGFloat) {
-        var lit = context
-        lit.opacity = ease(land) * alpha
+        case "star":
+            // The outline is stated in the piece's own unit box, so it
+            // thickens with the star instead of staying a hairline on the big
+            // one. 1.631 is the star's ink width over its sharp radius.
+            let path = star(.zero, p.w / 1.631)
+            g.fill(path, with: .color(color(p.fill)))
+            g.stroke(path, with: .color(color(p.stroke)),
+                     style: StrokeStyle(lineWidth: p.border * p.w / p.space, lineJoin: .round))
 
-        // "Deux clubs. Une année." Two badges; the ball leaves one and the
-        // other lights up. "Quatre réponses." Four rows; the ball settles on
-        // one and it turns green. The same shape and the same accent either
-        // way, which is why there is one loop rather than two.
-        let accent = pane.accentColor == "green"
-            ? DesignTokens.Color.green
-            : DesignTokens.Color.yellow
-        for (i, block) in pane.blocks.enumerated() {
-            raisedBlock(context, block, fill: DesignTokens.Color.clubGrey)
-            guard i == pane.accent else { continue }
-            raisedBlock(lit, block, fill: accent)
-        }
+        case "polyline":
+            let k = p.w / p.space
+            var path = Path()
+            for (i, q) in p.points.enumerated() {
+                let pt = CGPoint(x: q.x * k - p.w / 2, y: q.y * k - p.h / 2)
+                if i == 0 { path.move(to: pt) } else { path.addLine(to: pt) }
+            }
+            g.stroke(path, with: .color(color(p.stroke)), style: StrokeStyle(
+                lineWidth: p.width * k, lineCap: .round, lineJoin: .round,
+                dash: [p.length * k, p.length * k], dashPhase: st.dash * k
+            ))
 
-        // "Trois étoiles." The three slots sit there dim, exactly as the recap
-        // shows them, and fill in from the one the ball climbed to outwards.
-        for (i, slot) in pane.stars.enumerated() {
-            let c = CGPoint(x: slot.cx, y: slot.cy)
-            star(context, at: c, r: slot.r,
-                 fill: .white.opacity(DesignTokens.Opacity.starOff),
-                 shade: DesignTokens.Color.ink.opacity(DesignTokens.Opacity.starOff))
-            // Staggered by rank in `order`, so the burst starts at the star
-            // the trail arrives at instead of reading left to right.
-            let rank = CGFloat(pane.order.firstIndex(of: i) ?? 0)
-            let grow = pop((land - rank * 0.17) / 0.66)
-            guard grow > 0.01 else { continue }
-            var arriving = context
-            arriving.opacity = alpha
-            star(arriving, at: c, r: slot.r * grow,
-                 fill: DesignTokens.Color.yellow, shade: DesignTokens.Color.ink)
+        default:
+            let box = CGRect(x: -p.w / 2, y: -p.h / 2, width: p.w, height: p.h)
+            if p.shadow {
+                g.fill(rect(box.offsetBy(dx: d, dy: d), p.radii), with: .color(DesignTokens.Color.ink))
+            }
+            if p.border > 0 {
+                // Three fills rather than a stroke: a stroke straddles its
+                // path, so half a 5 border would sit outside the shape and the
+                // pieces would not line up with the app's own cards.
+                g.fill(rect(box, p.radii), with: .color(DesignTokens.Color.ink))
+                g.fill(rect(box.insetBy(dx: p.border, dy: p.border), p.radii.map { $0 - p.border }),
+                       with: .color(color(p.fill)))
+            } else {
+                g.fill(rect(box, p.radii), with: .color(color(p.fill)))
+            }
+            if let t = p.text {
+                var resolved = context.resolve(Text(t.value).font(DS.unbounded(t.size)))
+                resolved.shading = .color(color(t.fill))
+                g.draw(resolved, at: .zero, anchor: .center)
+            }
         }
     }
 }

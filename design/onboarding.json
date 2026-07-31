@@ -1,182 +1,149 @@
 {
   "meta": {
-    "note": "The three intro animations, as geometry rather than as pictures. Each one shows the game rather than describing it: the question being asked, the answer being picked, the stars landing. Both apps render this with their own vector primitives, so it costs no image bytes and stays sharp at any density.",
-    "why-shared": "The numbers live here for the same reason the design tokens do. Two hand-tuned copies of an arc are two different arcs within a month, and nobody would notice until the two stores were showing two different intros.",
-    "frame": "408x200 is the slot: 200 tall, and as wide as the column allows, which is 408 at most and 370 on a 402dp phone. The renderers scale to fill and centre, so the sides are what gets cropped. Everything that matters stays inside a 24 margin.",
-    "why-a-year": "A year is the same word in every language the app ships, which is why the first pane can carry real content where a grey bar standing in for text would only say \"unfinished\". 2017 is a real transfer, and the ball crossing the frame with a question mark on it is the player the round asks you to name."
+    "note": "The three intro scenes, as data rather than as pictures or as code. Each one is a moment of the game held still and animated in place: the years of the mercato waiting for a name, the two shirts with the answer landing between them, the three stars at the end of a round.",
+    "why-shared": "The numbers live here for the same reason the design tokens do. Two hand-tuned copies of a scene are two different scenes within a month, and nobody would notice until the two stores were showing two different intros. iOS, Android and the desk preview all read this file; none of them owns a coordinate.",
+    "frame": "The stage is the inside of the card, 398x190, origin just inside the 5 border. The card itself, its border and its shadow are drawn by the screen around the scene, not by the scene.",
+    "no-words": "Nothing here is translatable. Years, a question mark, a score and shapes read the same in the three languages the app ships, which is what lets the intro carry real content instead of grey bars standing in for text."
   },
-  "canvas": {
-    "w": 408,
-    "h": 200
-  },
-  "loop": {
-    "durationMs": 2800,
-    "travelEnd": 0.55,
-    "accentEnd": 0.72,
-    "holdEnd": 0.88
-  },
-  "style": {
-    "trail": 8,
-    "border": 5,
-    "depth": 5,
-    "ballRadius": 14,
-    "ballBorder": 4,
-    "samples": 64,
-    "markSize": 16
-  },
-  "panes": [
+
+  "canvas": { "w": 398, "h": 190 },
+  "loop": { "durationMs": 3000 },
+  "style": { "border": 5, "depth": 5, "font": "display", "weight": 900 },
+
+  "scenes": [
     {
-      "id": "pass",
-      "path": {
-        "from": [
-          124,
-          128
-        ],
-        "c1": [
-          176,
-          66
-        ],
-        "c2": [
-          274,
-          66
-        ],
-        "to": [
-          326,
-          136
-        ]
-      },
-      "blocks": [
-        {
-          "x": 44,
-          "y": 98,
-          "w": 76,
-          "h": 76,
-          "r": 22
-        },
-        {
-          "x": 288,
-          "y": 98,
-          "w": 76,
-          "h": 76,
-          "r": 22
-        }
-      ],
-      "stars": [],
-      "order": [],
-      "accent": 1,
-      "accentColor": "yellow",
-      "label": {
-        "text": "2017",
-        "cx": 204,
-        "cy": 42,
-        "size": 34
-      },
-      "mark": "?"
+      "id": "millesime",
+      "pieces": [
+        { "id": "y1998", "kind": "text", "value": "1998", "x": 24, "y": 95, "size": 64,
+          "tracking": -0.035, "align": "left", "fill": "yellow", "shadow": true, "delay": 0,
+          "track": [
+            { "at": 0.00, "opacity": 0, "dy": 26 },
+            { "at": 0.08, "opacity": 1, "dy": 0, "ease": "inout" },
+            { "at": 0.26, "opacity": 1, "dy": 0 },
+            { "at": 0.34, "opacity": 0, "dy": -26, "ease": "inout" },
+            { "at": 1.00, "opacity": 0, "dy": -26 }
+          ] },
+        { "id": "y2009", "kind": "text", "value": "2009", "x": 24, "y": 95, "size": 64,
+          "tracking": -0.035, "align": "left", "fill": "yellow", "shadow": true, "delay": 0.3333,
+          "track": "y1998" },
+        { "id": "y1985", "kind": "text", "value": "1985", "x": 24, "y": 95, "size": 64,
+          "tracking": -0.035, "align": "left", "fill": "yellow", "shadow": true, "delay": 0.6667,
+          "track": "y1998" },
+        { "id": "tile", "kind": "rect", "x": 276, "y": 53, "w": 84, "h": 84, "r": [24, 24, 24, 24],
+          "fill": "ivory", "border": 5, "shadow": true,
+          "text": { "value": "?", "size": 46, "fill": "ink" },
+          "track": [
+            { "at": 0.00, "scale": 1, "dy": 0 },
+            { "at": 0.38, "scale": 1.09, "dy": -5, "ease": "inout" },
+            { "at": 0.62, "scale": 1, "dy": 0, "ease": "inout" },
+            { "at": 1.00, "scale": 1, "dy": 0 }
+          ] }
+      ]
     },
     {
-      "id": "choice",
-      "path": {
-        "from": [
-          52,
-          110
-        ],
-        "c1": [
-          120,
-          176
-        ],
-        "c2": [
-          230,
-          30
-        ],
-        "to": [
-          320,
-          80
-        ]
-      },
-      "blocks": [
-        {
-          "x": 186,
-          "y": 19,
-          "w": 170,
-          "h": 34,
-          "r": 17
-        },
-        {
-          "x": 186,
-          "y": 63,
-          "w": 170,
-          "h": 34,
-          "r": 17
-        },
-        {
-          "x": 186,
-          "y": 107,
-          "w": 170,
-          "h": 34,
-          "r": 17
-        },
-        {
-          "x": 186,
-          "y": 151,
-          "w": 170,
-          "h": 34,
-          "r": 17
-        }
-      ],
-      "stars": [],
-      "order": [],
-      "accent": 1,
-      "accentColor": "green",
-      "label": null,
-      "mark": ""
+      "id": "faceaface",
+      "pieces": [
+        { "id": "shirtLeft", "kind": "rect", "x": 34, "y": 50, "w": 92, "h": 104,
+          "r": [18, 18, 46, 46], "fill": "club-grey", "border": 5, "shadow": true, "delay": 0,
+          "track": [
+            { "at": 0.00, "dy": 0 },
+            { "at": 0.50, "dy": -6, "ease": "inout" },
+            { "at": 1.00, "dy": 0, "ease": "inout" }
+          ] },
+        { "id": "shirtRight", "kind": "rect", "x": 282, "y": 50, "w": 92, "h": 104,
+          "r": [18, 18, 46, 46], "fill": "yellow", "border": 5, "shadow": true, "delay": 0.10,
+          "track": "shirtLeft" },
+        { "id": "yearPill", "kind": "rect", "x": 146, "y": 18, "w": 116, "h": 46,
+          "r": [14, 14, 14, 14], "fill": "ink", "border": 0, "shadow": false,
+          "text": { "value": "1998", "size": 30, "fill": "yellow" },
+          "track": [{ "at": 0.00 }, { "at": 1.00 }] },
+        { "id": "discAsk", "kind": "rect", "x": 157, "y": 83, "w": 94, "h": 94,
+          "r": [47, 47, 47, 47], "fill": "ivory", "border": 5, "shadow": true,
+          "text": { "value": "?", "size": 48, "fill": "ink" },
+          "track": [
+            { "at": 0.00, "scale": 1, "opacity": 1 },
+            { "at": 0.32, "scale": 1, "opacity": 1 },
+            { "at": 0.44, "scale": 0.45, "opacity": 0, "ease": "inout" },
+            { "at": 0.88, "scale": 0.45, "opacity": 0 },
+            { "at": 1.00, "scale": 1, "opacity": 1, "ease": "inout" }
+          ] },
+        { "id": "discOk", "kind": "rect", "x": 157, "y": 83, "w": 94, "h": 94,
+          "r": [47, 47, 47, 47], "fill": "green", "border": 5, "shadow": true,
+          "track": [
+            { "at": 0.00, "scale": 0.4, "opacity": 0 },
+            { "at": 0.38, "scale": 0.4, "opacity": 0 },
+            { "at": 0.50, "scale": 1.12, "opacity": 1, "ease": "back" },
+            { "at": 0.58, "scale": 1, "opacity": 1, "ease": "back" },
+            { "at": 0.86, "scale": 1, "opacity": 1 },
+            { "at": 0.96, "scale": 0.4, "opacity": 0, "ease": "back" },
+            { "at": 1.00, "scale": 0.4, "opacity": 0 }
+          ] },
+        { "id": "check", "kind": "polyline", "x": 176, "y": 102, "w": 56, "h": 56, "space": 44,
+          "points": [[12.7, 29.2], [24.2, 40.7], [43.3, 16.5]],
+          "stroke": "ink", "width": 8.9, "length": 48,
+          "track": [
+            { "at": 0.00, "dash": 48, "opacity": 0 },
+            { "at": 0.48, "dash": 48, "opacity": 0 },
+            { "at": 0.54, "dash": 48, "opacity": 1, "ease": "out" },
+            { "at": 0.70, "dash": 0, "opacity": 1, "ease": "out" },
+            { "at": 0.86, "dash": 0, "opacity": 1 },
+            { "at": 0.94, "dash": 48, "opacity": 0, "ease": "out" },
+            { "at": 1.00, "dash": 48, "opacity": 0 }
+          ] }
+      ]
     },
     {
-      "id": "score",
-      "path": {
-        "from": [
-          54,
-          168
-        ],
-        "c1": [
-          110,
-          180
-        ],
-        "c2": [
-          190,
-          168
-        ],
-        "to": [
-          266,
-          52
-        ]
-      },
-      "blocks": [],
-      "stars": [
-        {
-          "cx": 214,
-          "cy": 70,
-          "r": 23
-        },
-        {
-          "cx": 266,
-          "cy": 52,
-          "r": 27
-        },
-        {
-          "cx": 318,
-          "cy": 70,
-          "r": 23
-        }
-      ],
-      "order": [
-        1,
-        0,
-        2
-      ],
-      "accent": -1,
-      "accentColor": "yellow",
-      "label": null,
-      "mark": ""
+      "id": "eclat",
+      "pieces": [
+        { "id": "starLeft", "kind": "star", "x": 69, "y": 32, "w": 74, "h": 74,
+          "fill": "yellow", "stroke": "ink", "border": 5, "space": 60, "delay": 0,
+          "track": [
+            { "at": 0.00, "dy": -96, "rot": -24, "opacity": 0 },
+            { "at": 0.06, "dy": -96, "rot": -24, "opacity": 0 },
+            { "at": 0.24, "dy": 9, "rot": 5, "opacity": 1, "ease": "back" },
+            { "at": 0.34, "dy": 0, "rot": 0, "opacity": 1, "ease": "back" },
+            { "at": 0.80, "dy": 0, "rot": 0, "opacity": 1 },
+            { "at": 0.94, "dy": -96, "rot": -24, "opacity": 0, "ease": "back" },
+            { "at": 1.00, "dy": -96, "rot": -24, "opacity": 0 }
+          ] },
+        { "id": "starMid", "kind": "star", "x": 155, "y": 18, "w": 88, "h": 88,
+          "fill": "yellow", "stroke": "ink", "border": 5, "space": 60, "delay": 0.0467,
+          "track": "starLeft" },
+        { "id": "starRight", "kind": "star", "x": 255, "y": 32, "w": 74, "h": 74,
+          "fill": "yellow", "stroke": "ink", "border": 5, "space": 60, "delay": 0.0933,
+          "track": "starLeft" },
+        { "id": "shardUp", "kind": "rect", "x": 199, "y": 78, "w": 15, "h": 15,
+          "r": [0, 0, 0, 0], "fill": "green", "border": 5, "shadow": false,
+          "angle": -90, "delay": 0,
+          "track": [
+            { "at": 0.00, "dist": 0, "scale": 0, "opacity": 0 },
+            { "at": 0.34, "dist": 0, "scale": 0, "opacity": 0 },
+            { "at": 0.42, "dist": 22, "scale": 1, "opacity": 1, "ease": "out" },
+            { "at": 0.66, "dist": 52, "scale": 0.5, "opacity": 0, "ease": "out" },
+            { "at": 1.00, "dist": 52, "scale": 0.5, "opacity": 0 }
+          ] },
+        { "id": "shardRight", "kind": "rect", "x": 199, "y": 78, "w": 15, "h": 15,
+          "r": [0, 0, 0, 0], "fill": "yellow", "border": 5, "shadow": false,
+          "angle": 0, "delay": 0.0267, "track": "shardUp" },
+        { "id": "shardDown", "kind": "rect", "x": 199, "y": 78, "w": 15, "h": 15,
+          "r": [0, 0, 0, 0], "fill": "yellow", "border": 5, "shadow": false,
+          "angle": 90, "delay": 0.0533, "track": "shardUp" },
+        { "id": "shardLeft", "kind": "rect", "x": 199, "y": 78, "w": 15, "h": 15,
+          "r": [0, 0, 0, 0], "fill": "green", "border": 5, "shadow": false,
+          "angle": 180, "delay": 0.08, "track": "shardUp" },
+        { "id": "score", "kind": "rect", "x": 131, "y": 116, "w": 136, "h": 58,
+          "r": [29, 29, 29, 29], "fill": "ivory", "border": 5, "shadow": true,
+          "text": { "value": "9/10", "size": 32, "fill": "ink" },
+          "track": [
+            { "at": 0.00, "scale": 0.55, "opacity": 0 },
+            { "at": 0.44, "scale": 0.55, "opacity": 0 },
+            { "at": 0.56, "scale": 1.14, "opacity": 1, "ease": "back" },
+            { "at": 0.64, "scale": 1, "opacity": 1, "ease": "back" },
+            { "at": 0.86, "scale": 1, "opacity": 1 },
+            { "at": 0.96, "scale": 0.55, "opacity": 0, "ease": "back" },
+            { "at": 1.00, "scale": 0.55, "opacity": 0 }
+          ] }
+      ]
     }
   ]
 }
