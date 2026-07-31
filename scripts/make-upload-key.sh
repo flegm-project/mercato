@@ -44,6 +44,10 @@ keytool -genkeypair -v \
   -keyalg RSA -keysize 4096 -validity 10000 \
   -dname "CN=Flegm, O=Flegm, C=FR"
 
+# keytool creates the keystore with the process umask, which on macOS leaves it
+# world-readable. The password is the only thing protecting it, so narrow this.
+chmod 600 "$KEYSTORE"
+
 echo
 echo "==> Writing $PROPS"
 echo "    This file is git-ignored. It is the only place the password is"
