@@ -375,7 +375,7 @@ struct TransferCard: View {
         // ivory, each only where it belongs. A full-bounds ivory fill would sit
         // behind the ink header too, and its antialiased clip edge then traced
         // a pale arc through the top corners where no ivory should exist.
-        .solidRaised(radius: DesignTokens.Radius.card, depth: 11, outline: edge, ambient: true)
+        .solidRaised(radius: DesignTokens.Radius.card, depth: DesignTokens.Depth.card, outline: edge, ambient: true)
     }
 
     private var header: some View {
@@ -507,7 +507,7 @@ struct GuessField: View {
             // field never becomes first responder.
             .contentShape(Rectangle())
             .background(background)
-            .solidRaised(radius: DesignTokens.Radius.card, depth: 10)
+            .solidRaised(radius: DesignTokens.Radius.card, depth: DesignTokens.Depth.field)
             .disabled(verdict != nil)
     }
 

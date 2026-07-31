@@ -110,8 +110,15 @@ const isHexColor = (v) => typeof v === "string" && HEX_RE.test(v);
 // structural fact about the token families themselves (what unit a design
 // token is measured in), not a hardcoded value: the numbers still flow
 // straight from tokens.json untouched.
-const DIMENSION_GROUPS = new Set(["radius", "space"]);
-const DIMENSION_KEYS = new Set(["hairline", "standard", "heavy", "column-max", "tap-min"]);
+const DIMENSION_GROUPS = new Set(["radius", "space", "depth"]);
+const DIMENSION_KEYS = new Set([
+  "hairline",
+  "standard",
+  "heavy",
+  "column-max",
+  "tap-min",
+  "compact-height",
+]);
 
 function isDimension(tokenPath) {
   if (DIMENSION_GROUPS.has(tokenPath[0])) return true;

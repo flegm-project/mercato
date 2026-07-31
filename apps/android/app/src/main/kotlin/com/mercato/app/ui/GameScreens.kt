@@ -39,6 +39,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.ime
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.ui.unit.dp
@@ -91,14 +93,26 @@ fun GameScreen(
         )
     }
 
+    // The recap of the round this screen instance started, as opposed to the
+    // one still sitting in the shared ViewModel from the round before. Coming
+    // back here from the recap ("REJOUER"), the flow still holds the old recap
+    // at first composition, and startRound clearing it does not reach
+    // collectAsState within the same frame. The interstitial effect below then
+    // fired on that stale value and bounced straight back to the recap, which
+    // then found its own recap null and rendered nothing: the button looked
+    // dead. Gating on a round this screen actually started is what makes the
+    // effect immune to whatever the ViewModel was holding on arrival.
+    var roundStarted by remember(mode) { mutableStateOf(false) }
+
     LaunchedEffect(mode) {
         val locale = context.resources.configuration.locales[0]?.toLanguageTag() ?: "en"
         vm.startRound(mode, locale)
+        roundStarted = true
         graph.ads.preloadInterstitial()
     }
     // 07 Interstitial: shown at the round break, gate willing, then recap.
-    LaunchedEffect(recap) {
-        if (recap != null) {
+    LaunchedEffect(recap, roundStarted) {
+        if (roundStarted && recap != null) {
             val activity = context as? Activity
             if (activity != null) {
                 graph.ads.maybeShowInterstitial(activity) { onRoundOver() }
@@ -117,8 +131,30 @@ fun GameScreen(
     // moment the keyboard does. Nothing scrolls, and the question stays on
     // screen while it is being answered.
     BoxWithConstraints(Modifier.fillMaxSize()) {
-    val compactCard = maxHeight < 620.dp
-    ScreenColumn {
+    // Measured against the height left once the keyboard has taken its share.
+    // Edge-to-edge (forced from targetSdk 35) stopped the window shrinking
+    // under the IME, so maxHeight stayed the full screen and the compact card
+    // never engaged on the one screen it was written for.
+    val imeHeight = with(LocalDensity.current) {
+        WindowInsets.ime.getBottom(this).toDp()
+    }
+    // The height actually left to lay out in, true on both device families
+    // without asking which one this is.
+    //
+    // Below Android 15 the window still shrinks under the keyboard, as
+    // adjustResize in the manifest asks: maxHeight already excludes it and the
+    // ime inset reads zero, so the subtraction is a no-op. From Android 15
+    // edge-to-edge is forced, the window keeps its full height and the
+    // keyboard shows up only as that inset. One expression covers both, where
+    // reading the inset alone was dead code on everything older than 15, this
+    // S10 included, and a version check would be one more thing to revisit.
+    val available = maxHeight - imeHeight
+    val tight = available < DesignTokens.Layout.compactHeight
+    val compactCard = tight
+    // Compact first, and scroll only for what compact could not absorb. On a
+    // two-line club name with three hint chips out, even the compact card
+    // leaves the column taller than the screen.
+    ScreenColumn(scrollable = tight) {
         // iOS pads the column by the gutter top and bottom (GameView.swift:56).
         Gap(DesignTokens.Space.gutter)
         Row(
@@ -162,11 +198,18 @@ fun GameScreen(
         TransferCard(q, compact = compactCard, onTap = vm::advance)
         // No ad slot during a question (parity with iOS): the answers zone
         // floats centered between the card and the bottom edge. iOS holds at
-        // least 12 either side of it (GameView.swift:47).
-        Gap(12.dp)
-        Spacer(Modifier.weight(1f))
+        // least 12 either side of it (GameView.swift:47). With the keyboard up
+        // there is no slack to float in, and a weighted spacer cannot live in
+        // a scrolling column anyway.
+        //
+        // Plus the card's own shadow: it is painted below the layout box, so a
+        // bare 12 here showed as 1. Every gap on this screen is stated as the
+        // space wanted plus the shadow it has to clear, which is what makes
+        // them look equal rather than merely read equal in the source.
+        Gap(DesignTokens.Space.answers + DesignTokens.Depth.card)
+        if (!tight) Spacer(Modifier.weight(1f))
         if (mode == GameMode.EASY) EasyAnswers(q, vm) else HardcoreAnswers(q, vm)
-        Spacer(Modifier.weight(1f))
+        if (!tight) Spacer(Modifier.weight(1f))
         Gap(12.dp)
         Gap(DesignTokens.Space.gutter)
     }
@@ -186,7 +229,12 @@ fun GameScreen(
 
 /** The transfer card: kind chip + year header, origin, arrow, destination. */
 @Composable
-private fun TransferCard(ui: QuestionUi, compact: Boolean, onTap: () -> Unit) {
+private fun TransferCard(
+    ui: QuestionUi,
+    compact: Boolean,
+    onTap: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val borderColor = when (ui.verdict) {
         true -> DesignTokens.Color.greenDeep
         false -> DesignTokens.Color.coralDeep
@@ -195,10 +243,14 @@ private fun TransferCard(ui: QuestionUi, compact: Boolean, onTap: () -> Unit) {
     // Outline and solid drop shadow, both following the verdict, as iOS. The
     // card was flat here while iOS showed it raised.
     Column(
-        Modifier
+        modifier
             .fillMaxWidth()
-            .solidRaised(DesignTokens.Radius.card, depth = 11.dp, outline = borderColor)
-            .background(DesignTokens.Color.ivory)
+            .solidRaised(DesignTokens.Radius.card, depth = DesignTokens.Depth.card, outline = borderColor)
+            // No card-wide background: the header paints ink and the body
+            // paints ivory, each only where it belongs. A full-bounds ivory
+            // fill sits behind the ink header too, and its antialiased clip
+            // edge then traces a pale arc through the top corners where no
+            // ivory should exist. iOS fixed this in 79fb14b; this is the port.
             .clickable(onClick = onTap),
     ) {
         Row(
@@ -220,6 +272,7 @@ private fun TransferCard(ui: QuestionUi, compact: Boolean, onTap: () -> Unit) {
         Column(
             Modifier
                 .fillMaxWidth()
+                .background(DesignTokens.Color.ivory)
                 // iOS: 18 horizontal, 14 top, 16 bottom (DesignSystem.swift:441).
                 .padding(
                     start = 18.dp,
@@ -309,8 +362,11 @@ private fun EasyAnswers(ui: QuestionUi, vm: GameViewModel) {
 private fun HardcoreAnswers(ui: QuestionUi, vm: GameViewModel) {
     var text by remember(ui.question.index) { mutableStateOf("") }
     // iOS spaces the hints, the warning, the field and the controls by 12
-    // (GameView.swift:115).
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    // (GameView.swift:115). Spelled out one gap at a time rather than through
+    // spacedBy, because the blocks here do not all end where their layout box
+    // does: the guess field carries a shadow and the hint chips do not, so a
+    // single arrangement value produced two visibly different gaps.
+    Column {
         if (ui.hints.isNotEmpty()) {
             Row(
                 Modifier.fillMaxWidth(),
@@ -318,6 +374,7 @@ private fun HardcoreAnswers(ui: QuestionUi, vm: GameViewModel) {
             ) {
                 ui.hints.forEach { HintChip(it) }
             }
+            Gap(DesignTokens.Space.answers)
         }
         ui.rejection?.let {
             Text(
@@ -328,6 +385,7 @@ private fun HardcoreAnswers(ui: QuestionUi, vm: GameViewModel) {
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center,
             )
+            Gap(DesignTokens.Space.answers)
         }
         GuessField(
             value = text,
@@ -336,6 +394,9 @@ private fun HardcoreAnswers(ui: QuestionUi, vm: GameViewModel) {
             verdict = ui.verdict,
             onSubmit = { vm.submitGuess(text) },
         )
+        // The field is raised too, so its shadow is added the same way the
+        // card's is above.
+        Gap(DesignTokens.Space.answers + DesignTokens.Depth.field)
         // iOS pads both controls by 22 like the guess field above them, so the
         // row is 78 tall, and splits the width 38/62 either side of an 11dp
         // gap (DesignSystem.swift:533). Android left them at the default 56.
@@ -388,8 +449,11 @@ private fun HintChip(hint: HintView) {
     // Ivory face with ink text: the colours were inverted against iOS.
     Box(
         Modifier
-            .background(DesignTokens.Color.ivory, RoundedCornerShape(DesignTokens.Radius.chip))
-            .border(4.dp, DesignTokens.Color.ink, RoundedCornerShape(DesignTokens.Radius.chip))
+            .solidFill(
+                radius = DesignTokens.Radius.chip,
+                fill = DesignTokens.Color.ivory,
+                border = DesignTokens.Border.standard,
+            )
             .padding(horizontal = 15.dp, vertical = 7.dp),
     ) {
         Text(

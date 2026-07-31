@@ -6,8 +6,11 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.ui.graphics.drawscope.translate
@@ -53,6 +56,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.clipPath
@@ -221,6 +225,42 @@ fun Modifier.solidRaised(
             }
             clipPath(inner) { this@drawWithContent.drawContent() }
         }
+}
+
+/**
+ * A bordered fill, for the surfaces whose content is drawn by children rather
+ * than clipped: buttons, chips, pips, toggles.
+ *
+ * Same reasoning as [solidRaised], and the same bug if you skip it. Painting
+ * the fill across the whole shape and then stroking the border on top leaves
+ * the outermost pixel shared between the two antialiased edges, so neither is
+ * opaque and the pale fill shows through as a hairline all the way round. Here
+ * the border colour is laid across the whole shape first and the fill is inset
+ * by the border width, so the fill's soft edge lands on solid outline and the
+ * only thing touching the background is the outline itself.
+ *
+ * Only for opaque fills: an alpha fill would let the outline show through the
+ * middle, and a transparent one cannot punch back out. Ghost buttons keep
+ * [Modifier.border].
+ */
+fun Modifier.solidFill(
+    radius: Dp?,
+    fill: Color,
+    border: Dp = DesignTokens.Border.heavy,
+    outline: Color = DesignTokens.Color.ink,
+): Modifier = drawBehind {
+    val r = radius?.toPx() ?: (size.height / 2f)
+    val b = border.toPx()
+    drawRoundRect(color = outline, size = size, cornerRadius = CornerRadius(r))
+    drawRoundRect(
+        color = fill,
+        topLeft = Offset(b, b),
+        size = Size(
+            (size.width - 2 * b).coerceAtLeast(0f),
+            (size.height - 2 * b).coerceAtLeast(0f),
+        ),
+        cornerRadius = CornerRadius((r - b).coerceAtLeast(0f)),
+    )
 }
 
 /**
@@ -436,8 +476,12 @@ fun InkButton(
                 .offset(y = if (pressed && enabled) 5.dp else 0.dp)
                 .fillMaxWidth()
                 .then(if (verticalPadding == null) Modifier.height(height) else Modifier)
-                .background(fill, shape)
-                .border(borderWidth, borderColor, shape)
+                .then(
+                    // Ghost has no fill to inset, and its border is a dim white
+                    // that is meant to let the screen through.
+                    if (style == ButtonStyle.Ghost) Modifier.border(borderWidth, borderColor, shape)
+                    else Modifier.solidFill(radius, fill, borderWidth, borderColor)
+                )
                 .clickable(
                     interactionSource = interaction,
                     indication = null,
@@ -525,8 +569,7 @@ fun ProgressPips(results: List<Boolean?>, liveIndex: Int, modifier: Modifier = M
                 Modifier
                     .weight(1f)
                     .height(9.dp)
-                    .background(fill, CircleShape)
-                    .border(3.dp, DesignTokens.Color.ink, CircleShape)
+                    .solidFill(radius = null, fill = fill, border = DesignTokens.Border.hairline)
             )
         }
     }
@@ -633,8 +676,11 @@ fun MercatoToggle(checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
     Box(
         Modifier
             .size(width = 52.dp, height = 30.dp)
-            .background(track, RoundedCornerShape(DesignTokens.Radius.tile))
-            .border(3.dp, DesignTokens.Color.ink, RoundedCornerShape(DesignTokens.Radius.tile))
+            .solidFill(
+                radius = DesignTokens.Radius.tile,
+                fill = track,
+                border = DesignTokens.Border.hairline,
+            )
             .toggleable(
                 value = checked,
                 role = Role.Switch,
@@ -652,8 +698,11 @@ fun MercatoToggle(checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
             Modifier
                 .offset(x = shift)
                 .size(22.dp)
-                .background(DesignTokens.Color.ivory, CircleShape)
-                .border(3.dp, DesignTokens.Color.ink, CircleShape)
+                .solidFill(
+                    radius = null,
+                    fill = DesignTokens.Color.ivory,
+                    border = DesignTokens.Border.hairline,
+                )
         )
     }
 }
@@ -735,17 +784,50 @@ private fun RowScope.TabCell(
 @Composable
 fun ScreenColumn(
     modifier: Modifier = Modifier,
+    /**
+     * Let the column scroll rather than clip when its content is taller than
+     * the room left.
+     *
+     * Off everywhere by default, and deliberately: these screens are composed
+     * to fit, and a screen that fits should not move under the thumb. The
+     * exception is the game screen with the keyboard up, where the card, the
+     * hint chips and the buttons together can outgrow what remains. Clipping
+     * there loses whichever block came last, and there is no defensible
+     * choice between them: without the buttons the round cannot be played,
+     * without the card there is nothing to answer. Squeezing the card instead
+     * was worse still, since it dropped the destination club and left a
+     * question with no readable transfer in it.
+     */
+    scrollable: Boolean = false,
     content: @Composable androidx.compose.foundation.layout.ColumnScope.() -> Unit,
 ) {
+    val scrollState = androidx.compose.foundation.rememberScrollState()
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
         androidx.compose.foundation.layout.Column(
             modifier
                 .widthIn(max = DesignTokens.Layout.columnMax)
-                .fillMaxSize()
+                .fillMaxWidth()
                 // iOS gets the safe area for free; without this the top bar
                 // sat under the status bar and the tab bar under the gesture
                 // handle.
-                .windowInsetsPadding(WindowInsets.systemBars)
+                //
+                // The keyboard is part of that safe area since targetSdk 35,
+                // which forces edge-to-edge: the window no longer shrinks under
+                // the IME the way adjustResize used to make it, so the manifest
+                // flag alone leaves the keyboard sitting on top of the bottom
+                // of the column. On the Hardcore screen that meant the hint and
+                // submit buttons were simply covered. Taking the union with the
+                // IME inset gives the column back the behaviour the layout was
+                // written against.
+                .windowInsetsPadding(WindowInsets.systemBars.union(WindowInsets.ime))
+                // The scroll sits inside the inset padding, so the keyboard
+                // shortens the viewport rather than scrolling away with the
+                // content. fillMaxSize is the non-scrolling case only: a
+                // scrollable column has to be free to be taller than its box.
+                .then(
+                    if (scrollable) Modifier.verticalScroll(scrollState)
+                    else Modifier.fillMaxSize()
+                )
                 .padding(horizontal = DesignTokens.Space.gutter),
             content = content,
         )
@@ -803,7 +885,7 @@ fun GuessField(
     BoxWithConstraints(
         modifier
             .fillMaxWidth()
-            .solidRaised(radius = DesignTokens.Radius.card, depth = 10.dp)
+            .solidRaised(radius = DesignTokens.Radius.card, depth = DesignTokens.Depth.field)
             .background(fill)
     ) {
         val density = LocalDensity.current
