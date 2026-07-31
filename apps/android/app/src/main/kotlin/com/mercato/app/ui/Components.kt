@@ -557,7 +557,7 @@ fun AnswerButton(
 /** One pip per question: green/coral for played, yellow live, dim pending. */
 @Composable
 fun ProgressPips(results: List<Boolean?>, liveIndex: Int, modifier: Modifier = Modifier) {
-    Row(modifier, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+    Row(modifier, horizontalArrangement = Arrangement.spacedBy(DesignTokens.Space.pip)) {
         results.forEachIndexed { i, r ->
             val fill = when {
                 r == true -> DesignTokens.Color.green
@@ -578,7 +578,7 @@ fun ProgressPips(results: List<Boolean?>, liveIndex: Int, modifier: Modifier = M
 /** Three dots, coral while available, dimmed once spent. Hardcore only. */
 @Composable
 fun LivesRow(livesLeft: Int, modifier: Modifier = Modifier, total: Int = 3) {
-    Row(modifier, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+    Row(modifier, horizontalArrangement = Arrangement.spacedBy(DesignTokens.Space.pip)) {
         repeat(total) { i ->
             Box(
                 Modifier
@@ -588,7 +588,7 @@ fun LivesRow(livesLeft: Int, modifier: Modifier = Modifier, total: Int = 3) {
                         else DesignTokens.Color.ink.dim(DesignTokens.Opacity.control),
                         CircleShape,
                     )
-                    .border(3.dp, DesignTokens.Color.ink, CircleShape)
+                    .border(DesignTokens.Border.hairline, DesignTokens.Color.ink, CircleShape)
             )
         }
     }
@@ -728,7 +728,7 @@ fun MercatoTabBar(
             // their label. Claiming the bar back is what this is for.
             .systemGestureExclusion()
             .padding(inset),
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        horizontalArrangement = Arrangement.spacedBy(DesignTokens.Space.xs),
     ) {
         tabs.forEachIndexed { i, label ->
             // The outer corners follow the bar's own, pulled in by the inset;

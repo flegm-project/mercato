@@ -217,7 +217,7 @@ fun OnboardingScreen(onDone: () -> Unit) {
                     stringResource(title),
                     style = typeStyle(DesignTokens.Type.screenTitle, DesignTokens.Color.ivory),
                 )
-                Gap(12.dp)
+                Gap(DesignTokens.Space.block)
                 Text(
                     stringResource(body),
                     style = typeStyle(
@@ -277,7 +277,7 @@ fun ConsentScreen(graph: AppGraph, fromSettings: Boolean, onDone: () -> Unit) {
 
     ScreenColumn {
         // iOS pads the column by 20 top and bottom (Screens.swift:435).
-        Gap(20.dp)
+        Gap(DesignTokens.Space.section)
         Spacer(Modifier.weight(1f))
         Column(
             Modifier
@@ -291,7 +291,7 @@ fun ConsentScreen(graph: AppGraph, fromSettings: Boolean, onDone: () -> Unit) {
                 style = typeStyle(DesignTokens.Type.consentTitle, DesignTokens.Color.ink),
             )
             // iOS: 12 under the title, 16 above the bullets (Screens.swift:372).
-            Gap(12.dp)
+            Gap(DesignTokens.Space.block)
             Text(
                 // iOS: Figtree 14.5/600 in muted, and the bullet text in ink.
                 // The two colours were swapped on Android.
@@ -302,7 +302,7 @@ fun ConsentScreen(graph: AppGraph, fromSettings: Boolean, onDone: () -> Unit) {
             listOf(R.string.cnPoints_0, R.string.cnPoints_1, R.string.cnPoints_2).forEach {
                 Row(
                     Modifier.padding(vertical = 4.5.dp),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    horizontalArrangement = Arrangement.spacedBy(DesignTokens.Space.sm),
                 ) {
                     Text(
                         "·",
@@ -335,7 +335,7 @@ fun ConsentScreen(graph: AppGraph, fromSettings: Boolean, onDone: () -> Unit) {
             depth = 9.dp, verticalPadding = 19.dp,
         ) { choose(true) }
         // iOS spaces the actions and the footnote by 11 (Screens.swift:403).
-        Gap(11.dp)
+        Gap(DesignTokens.Space.control)
         InkButton(
             stringResource(R.string.cnRefuse), ButtonStyle.Secondary,
             fontSize = 15.sp, fontWeight = 800, tracking = -0.03f,
@@ -352,7 +352,7 @@ fun ConsentScreen(graph: AppGraph, fromSettings: Boolean, onDone: () -> Unit) {
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center,
         )
-        Gap(20.dp)
+        Gap(DesignTokens.Space.section)
     }
 }
 
@@ -374,7 +374,7 @@ fun HomeScreen(graph: AppGraph, onPlay: (GameMode) -> Unit, onProfile: () -> Uni
         ModeButton(R.string.l3, DesignTokens.Color.ivory) { onPlay(GameMode.HARDCORE) }
         Spacer(Modifier.weight(1f))
         MenuBanner(graph.ads)
-        Gap(8.dp)
+        Gap(DesignTokens.Space.chip)
         MercatoTabBar(
             tabs = listOf(stringResource(R.string.tPlay), stringResource(R.string.tProfile)),
             selected = 0,
@@ -413,7 +413,7 @@ fun ProfileScreen(graph: AppGraph, onPlayTab: () -> Unit, onSettings: () -> Unit
         // iOS pads the column by the gutter on both axes, then the title by 8
         // and the banner by 16 (Profile.swift:49).
         Gap(DesignTokens.Space.gutter)
-        Gap(8.dp)
+        Gap(DesignTokens.Space.chip)
         Text(
             stringResource(R.string.profile),
             style = typeStyle(DesignTokens.Type.panelTitle, DesignTokens.Color.ivory),
@@ -464,14 +464,14 @@ fun ProfileScreen(graph: AppGraph, onPlayTab: () -> Unit, onSettings: () -> Unit
                 if (stats.answered == 0) "-"
                 else "${(stats.correct * 100) / stats.answered}%"
             // iOS spaces the four rows by 12 (Profile.swift:70).
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(DesignTokens.Space.block)) {
                 StatRow(R.string.stPlayed, "${stats.roundsPlayed}")
                 StatRow(R.string.stBest, "${stats.bestScore}")
                 StatRow(R.string.stStreak, "${stats.bestStreak}")
                 StatRow(R.string.stAcc, accuracy)
             }
         }
-        Gap(20.dp)
+        Gap(DesignTokens.Space.section)
         InkButton(
             stringResource(R.string.settings), ButtonStyle.Secondary,
             fontSize = 16.sp, fontWeight = 900, tracking = -0.03f,
@@ -566,7 +566,7 @@ fun SettingsScreen(
                         fontSize = 20.sp,
                     ))
             }
-            Gap(12.dp)
+            Gap(DesignTokens.Space.block)
             Text(
                 stringResource(R.string.settings),
                 style = typeStyle(DesignTokens.Type.panelTitle, DesignTokens.Color.ivory),
@@ -575,7 +575,7 @@ fun SettingsScreen(
         // The switches come first, then the purchase, then the link rows: the
         // purchase was at the head of the screen here and iOS puts it in the
         // middle (Screens.swift:540).
-        Gap(12.dp)
+        Gap(DesignTokens.Space.block)
         // iOS spaces the switches by 10 (Screens.swift:540). Two of them, not
         // three: vibration was stored but nothing ever asked for haptics, so
         // it was a control that did nothing while telling the player it did
@@ -640,7 +640,7 @@ fun SettingsScreen(
         Gap(DesignTokens.Space.gutter)
         Spacer(Modifier.weight(1f))
         MenuBanner(graph.ads)
-        Gap(12.dp)
+        Gap(DesignTokens.Space.block)
         Text(
             "MERCATO ${BuildConfig.VERSION_NAME}",
             style = typeStyle(
@@ -770,7 +770,7 @@ private fun LinkRow(
         Modifier
             .fillMaxWidth()
             .background(DesignTokens.Color.ink.dim(DesignTokens.Opacity.row), shape)
-            .border(3.dp, Color.White.dim(DesignTokens.Opacity.borderRow), shape)
+            .border(DesignTokens.Border.hairline, Color.White.dim(DesignTokens.Opacity.borderRow), shape)
             .clip(shape)
             .let { if (onClick != null) it.clickable(onClick = onClick) else it }
             .padding(horizontal = 16.dp, vertical = 14.dp),

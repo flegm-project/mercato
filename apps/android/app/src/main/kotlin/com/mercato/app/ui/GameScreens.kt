@@ -159,7 +159,7 @@ fun GameScreen(
         Gap(DesignTokens.Space.gutter)
         Row(
             Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(DesignTokens.Space.block),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             val closeLabel = stringResource(R.string.a11yClose)
@@ -206,11 +206,11 @@ fun GameScreen(
         // bare 12 here showed as 1. Every gap on this screen is stated as the
         // space wanted plus the shadow it has to clear, which is what makes
         // them look equal rather than merely read equal in the source.
-        Gap(DesignTokens.Space.answers + DesignTokens.Depth.card)
+        Gap(DesignTokens.Space.block + DesignTokens.Depth.card)
         if (!tight) Spacer(Modifier.weight(1f))
         if (mode == GameMode.EASY) EasyAnswers(q, vm) else HardcoreAnswers(q, vm)
         if (!tight) Spacer(Modifier.weight(1f))
-        Gap(12.dp)
+        Gap(DesignTokens.Space.block)
         Gap(DesignTokens.Space.gutter)
     }
     }
@@ -370,11 +370,11 @@ private fun HardcoreAnswers(ui: QuestionUi, vm: GameViewModel) {
         if (ui.hints.isNotEmpty()) {
             Row(
                 Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(DesignTokens.Space.chip),
             ) {
                 ui.hints.forEach { HintChip(it) }
             }
-            Gap(DesignTokens.Space.answers)
+            Gap(DesignTokens.Space.block)
         }
         ui.rejection?.let {
             Text(
@@ -385,7 +385,7 @@ private fun HardcoreAnswers(ui: QuestionUi, vm: GameViewModel) {
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center,
             )
-            Gap(DesignTokens.Space.answers)
+            Gap(DesignTokens.Space.block)
         }
         GuessField(
             value = text,
@@ -396,11 +396,11 @@ private fun HardcoreAnswers(ui: QuestionUi, vm: GameViewModel) {
         )
         // The field is raised too, so its shadow is added the same way the
         // card's is above.
-        Gap(DesignTokens.Space.answers + DesignTokens.Depth.field)
+        Gap(DesignTokens.Space.block + DesignTokens.Depth.field)
         // iOS pads both controls by 22 like the guess field above them, so the
         // row is 78 tall, and splits the width 38/62 either side of an 11dp
         // gap (DesignSystem.swift:533). Android left them at the default 56.
-        Row(horizontalArrangement = Arrangement.spacedBy(11.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(DesignTokens.Space.control)) {
             Box(Modifier.weight(0.38f)) {
                 InkButton(
                     "${stringResource(R.string.hint)} (${3 - ui.hints.size})",
@@ -593,7 +593,7 @@ fun RecapScreen(
         // so the pitch comes out at the measured 59.3dp.
         Row(
             Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
+            horizontalArrangement = Arrangement.spacedBy(DesignTokens.Space.block, Alignment.CenterHorizontally),
         ) {
             // Drawn, not typed: "★" is SF Pro's star on iOS and Roboto's here,
             // two different shapes on the one thing a player looks at first.
@@ -626,7 +626,7 @@ fun RecapScreen(
                 Modifier
                     .fillMaxWidth()
                     .padding(top = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(11.dp),
+                horizontalArrangement = Arrangement.spacedBy(DesignTokens.Space.control),
             ) {
                 StatTile(
                     Modifier.weight(1f),
@@ -678,7 +678,7 @@ fun RecapScreen(
         // Display slot lives below the actions, never above the primary CTA.
         Gap(24.dp)
         RecapRectangle(graph.ads)
-        Gap(20.dp)
+        Gap(DesignTokens.Space.section)
     }
 }
 

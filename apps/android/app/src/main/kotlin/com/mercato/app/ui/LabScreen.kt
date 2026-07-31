@@ -76,7 +76,7 @@ fun LabScreen(graph: AppGraph, onBack: () -> Unit) {
                         DesignTokens.Color.ink.dim(DesignTokens.Opacity.control),
                         RoundedCornerShape(DesignTokens.Radius.control),
                     )
-                    .border(4.dp, DesignTokens.Color.ink, RoundedCornerShape(DesignTokens.Radius.control))
+                    .border(DesignTokens.Border.standard, DesignTokens.Color.ink, RoundedCornerShape(DesignTokens.Radius.control))
                     .clickable(onClick = onBack),
                 contentAlignment = Alignment.Center,
             ) {

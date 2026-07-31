@@ -48,7 +48,7 @@ fun OfflineScreen(onRetry: () -> Unit) {
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center,
         )
-        Gap(12.dp)
+        Gap(DesignTokens.Space.block)
         Text(
             stringResource(R.string.offB),
             style = typeStyle(
