@@ -63,21 +63,18 @@ ever storing it: `*.jks` and `keystore.properties` are both gitignored, and
 environment, leaving the release build unsigned rather than failing when
 neither exists.
 
-Generate it outside the repository:
+Run, in your own terminal:
 
-    keytool -genkeypair -v \
-      -keystore ~/mercato-upload.jks \
-      -alias mercato-upload \
-      -keyalg RSA -keysize 4096 -validity 10000 \
-      -dname "CN=Flegm, O=Flegm, C=FR"
+    ./scripts/make-upload-key.sh
 
-`keytool` asks for the password twice and writes nothing else. Then create
-`apps/android/keystore.properties`, which git already ignores:
+It creates `~/mercato-upload.jks`, refuses to overwrite one that already
+exists, and writes `apps/android/keystore.properties` with the password you
+type. Nothing else sees that password: the script takes no argument, echoes
+nothing, and the file it writes is git-ignored.
 
-    storeFile=/Users/<you>/mercato-upload.jks
-    storePassword=<the password>
-    keyAlias=mercato-upload
-    keyPassword=<the password>
+The key's parameters live in that script rather than in a document, because
+alias, algorithm, size and validity are choices, and in ten years the script
+is the only place they will still be written down.
 
 Then back it up somewhere that is not this machine, and enrol in Play App
 Signing when the first bundle is uploaded, so Google holds the app signing key
