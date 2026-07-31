@@ -216,11 +216,17 @@ fun MercatoNav(graph: AppGraph, startRoute: String? = null) {
         composable(Routes.RECAP) {
             RecapScreen(graph, vm,
                 onPlayAgain = { mode ->
+                    // Before the navigate, not after: see clearRecap.
+                    vm.clearRecap()
                     nav.navigate(if (mode == GameMode.EASY) Routes.GAME_EASY else Routes.GAME_HARDCORE) {
                         popUpTo(Routes.HOME)
                     }
                 },
-                onHome = { nav.popBackStack(Routes.HOME, inclusive = false) })
+                onHome = {
+                    // Same reason: Home then PLAY lands on the game screen too.
+                    vm.clearRecap()
+                    nav.popBackStack(Routes.HOME, inclusive = false)
+                })
         }
         composable(Routes.PROFILE) {
             ProfileScreen(graph,

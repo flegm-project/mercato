@@ -230,6 +230,21 @@ class GameViewModel(private val graph: AppGraph) : ViewModel() {
         }
     }
 
+    /**
+     * Drop the finished round's recap on the way out of the recap screen.
+     *
+     * The ViewModel is activity-scoped, so the recap outlives the screen that
+     * showed it. Leaving it in place meant the next game screen composed with
+     * a non-null recap already in hand, and its "round is over" effect fired
+     * before the new round had replaced it: the app bounced straight back to a
+     * recap that no longer had anything to show. Clearing it here, before the
+     * navigation rather than during the next screen's first frame, is what
+     * removes the race instead of narrowing it.
+     */
+    fun clearRecap() {
+        _recap.value = null
+    }
+
     fun quitRound() {
         advanceJob?.cancel()
         graph.analytics.log(
