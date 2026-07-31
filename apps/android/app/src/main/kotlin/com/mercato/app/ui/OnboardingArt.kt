@@ -202,14 +202,16 @@ private fun DrawScope.drawScene(
     drawRect(DesignTokens.Color.blueDeep)
 
     // The stage is the inside of the card, so the border the screen draws
-    // around this view is taken off first. Then scale to fill and centre: the
-    // stage is 190 tall and between 360 and 398 wide, so fitting would
-    // letterbox the scene inside its own card, where filling crops the side
-    // margin instead. Nothing in the scene comes near the sides.
+    // around this view is taken off first. Then scale to *fit*, not to fill: a
+    // 402dp phone leaves 360 for a 398 stage, and filling cropped 19 off each
+    // side, which put the first digit of the year 5dp from the card's own
+    // border. Fitting letterboxes instead, and the letterbox is invisible
+    // because the band it leaves is the same blue-deep the stage is painted
+    // with.
     val b = OnboardingScene.BORDER
     val stageW = size.width - b * 2f
     val stageH = size.height - b * 2f
-    val s = max(stageW / OnboardingScene.WIDTH, stageH / OnboardingScene.HEIGHT)
+    val s = min(stageW / OnboardingScene.WIDTH, stageH / OnboardingScene.HEIGHT)
     translate(
         b + (stageW - OnboardingScene.WIDTH * s) / 2f,
         b + (stageH - OnboardingScene.HEIGHT * s) / 2f,
@@ -256,11 +258,17 @@ private fun DrawScope.drawPiece(
                         )
                     }
                     "polyline" -> {
+                        // Centred on the ink, not on the box it was authored
+                        // in. A check mark does not sit in the middle of its
+                        // own viewBox, so mapping that box onto the piece left
+                        // it low and to the right of the disc it is drawn in.
                         val k = p.w / p.space
+                        val midX = (p.points.minOf { it.x } + p.points.maxOf { it.x }) / 2f
+                        val midY = (p.points.minOf { it.y } + p.points.maxOf { it.y }) / 2f
                         val path = Path().apply {
                             p.points.forEachIndexed { i, q ->
-                                val px = q.x * k - p.w / 2f
-                                val py = q.y * k - p.h / 2f
+                                val px = (q.x - midX) * k
+                                val py = (q.y - midY) * k
                                 if (i == 0) moveTo(px, py) else lineTo(px, py)
                             }
                         }

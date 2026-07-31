@@ -299,7 +299,7 @@ struct RootView: View {
         case "settings": route = .settings
         case "offline": route = .offline
         case "lab": route = .lab
-        case "onboarding": seenOnboarding = false; route = .onboarding
+        case "onboarding", "onboarding2", "onboarding3": seenOnboarding = false; route = .onboarding
         case "consent": route = .consent
         case "easy": route = .game(.easy)
         case "hardcore": route = .game(.hardcore)

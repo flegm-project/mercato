@@ -25,7 +25,7 @@ export PATH="$ANDROID_HOME/platform-tools:$PATH"
 
 ROUTES=("$@")
 if [ ${#ROUTES[@]} -eq 0 ]; then
-  ROUTES=(onboarding consent home easy hardcore quit recap recaplose profile settings lab offline)
+  ROUTES=(onboarding onboarding2 onboarding3 consent home easy hardcore quit recap recaplose profile settings lab offline)
 fi
 
 mkdir -p "$OUT/ios" "$OUT/android"

@@ -262,9 +262,28 @@ struct RecapView: View {
 /// Three panes explaining the game, skippable. Shown once on first launch.
 struct OnboardingView: View {
     let onDone: () -> Void
-    @State private var step = 0
+    @State private var step = OnboardingView.debugStep
 
     private let steps = 3
+
+    /// Which pane a capture opens on. The three scenes are three different
+    /// pictures, and only the first was reachable without swiping, so the
+    /// other two were never measured against Android at all.
+    /// scripts/capture-parity.sh asks for them as `onboarding2` and
+    /// `onboarding3`; Android reads the same names.
+    private static var debugStep: Int {
+        #if DEBUG
+        let args = CommandLine.arguments
+        guard let i = args.firstIndex(of: "-MercatoRoute"), i + 1 < args.count else { return 0 }
+        switch args[i + 1] {
+        case "onboarding2": return 1
+        case "onboarding3": return 2
+        default: return 0
+        }
+        #else
+        0
+        #endif
+    }
 
     var body: some View {
         ZStack {

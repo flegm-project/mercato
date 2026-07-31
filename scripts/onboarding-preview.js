@@ -133,7 +133,12 @@ function drawPiece(ctx, p, st) {
   }
 
   if (p.kind === "polyline") {
+    // Centred on the ink, not on the box it was authored in. A check mark does
+    // not sit in the middle of its own viewBox.
     const k = p.w / p.space;
+    const xs = p.points.map((q) => q[0]), ys = p.points.map((q) => q[1]);
+    const midX = (Math.min(...xs) + Math.max(...xs)) / 2;
+    const midY = (Math.min(...ys) + Math.max(...ys)) / 2;
     ctx.lineWidth = p.width * k;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
@@ -142,7 +147,7 @@ function drawPiece(ctx, p, st) {
     ctx.lineDashOffset = st.dash * k;
     ctx.beginPath();
     p.points.forEach((q, i) => {
-      const x = q[0] * k - p.w / 2, y = q[1] * k - p.h / 2;
+      const x = (q[0] - midX) * k, y = (q[1] - midY) * k;
       if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
     });
     ctx.stroke();

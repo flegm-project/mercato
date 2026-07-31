@@ -187,13 +187,15 @@ private extension OnboardingArtView {
         context.fill(Path(CGRect(origin: .zero, size: size)), with: .color(DesignTokens.Color.blueDeep))
 
         // The stage is the inside of the card, so the border the screen draws
-        // around this view is taken off first. Then scale to fill and centre:
-        // the stage is 190 tall and between 360 and 398 wide, so fitting would
-        // letterbox the scene inside its own card, where filling crops the
-        // side margin instead. Nothing in the scene comes near the sides.
+        // around this view is taken off first. Then scale to *fit*, not to
+        // fill: a 402pt phone leaves 360 for a 398 stage, and filling cropped
+        // 19 off each side, which put the first digit of the year 5 points
+        // from the card's own border. Fitting letterboxes instead, and the
+        // letterbox is invisible because the band it leaves is the same
+        // blue-deep the stage is painted with.
         let b = OnboardingScene.border
         let stage = CGSize(width: size.width - b * 2, height: size.height - b * 2)
-        let s = max(stage.width / OnboardingScene.width, stage.height / OnboardingScene.height)
+        let s = min(stage.width / OnboardingScene.width, stage.height / OnboardingScene.height)
         context.translateBy(
             x: b + (stage.width - OnboardingScene.width * s) / 2,
             y: b + (stage.height - OnboardingScene.height * s) / 2
@@ -240,10 +242,16 @@ private extension OnboardingArtView {
                      style: StrokeStyle(lineWidth: p.border * p.w / p.space, lineJoin: .round))
 
         case "polyline":
+            // Centred on the ink, not on the box it was authored in. A check
+            // mark does not sit in the middle of its own viewBox, so mapping
+            // that box onto the piece left it low and to the right of the disc
+            // it is drawn inside.
             let k = p.w / p.space
+            let xs = p.points.map(\.x), ys = p.points.map(\.y)
+            let mid = CGPoint(x: (xs.min()! + xs.max()!) / 2, y: (ys.min()! + ys.max()!) / 2)
             var path = Path()
             for (i, q) in p.points.enumerated() {
-                let pt = CGPoint(x: q.x * k - p.w / 2, y: q.y * k - p.h / 2)
+                let pt = CGPoint(x: (q.x - mid.x) * k, y: (q.y - mid.y) * k)
                 if i == 0 { path.move(to: pt) } else { path.addLine(to: pt) }
             }
             g.stroke(path, with: .color(color(p.stroke)), style: StrokeStyle(

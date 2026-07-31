@@ -91,7 +91,7 @@ private fun debugRoute(intent: android.content.Intent?): String? {
         "settings" -> Routes.SETTINGS
         "offline" -> Routes.OFFLINE
         "lab" -> Routes.LAB
-        "onboarding" -> Routes.ONBOARDING
+        "onboarding", "onboarding2", "onboarding3" -> Routes.ONBOARDING
         "consent" -> Routes.CONSENT
         "easy" -> Routes.GAME_EASY
         "hardcore" -> Routes.GAME_HARDCORE

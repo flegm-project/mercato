@@ -46,12 +46,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.app.Activity
 import com.mercato.app.AppGraph
 import com.mercato.app.BuildConfig
 import com.mercato.app.MenuBanner
 import com.mercato.app.Prefs
 import com.mercato.app.R
 import java.util.Locale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.TextStyle
@@ -159,7 +161,17 @@ fun OnboardingScreen(onDone: () -> Unit) {
         R.string.ob_1_t to R.string.ob_1_b,
         R.string.ob_2_t to R.string.ob_2_b,
     )
-    val pager = rememberPagerState { panes.size }
+    // Which pane a capture opens on. The three scenes are three different
+    // pictures, and only the first was reachable without swiping, so the other
+    // two were never measured against iOS at all. iOS reads the same names
+    // from its own launch argument.
+    val activity = LocalContext.current as? Activity
+    val start = if (!BuildConfig.DEBUG) 0 else when (activity?.intent?.getStringExtra("route")) {
+        "onboarding2" -> 1
+        "onboarding3" -> 2
+        else -> 0
+    }
+    val pager = rememberPagerState(initialPage = start) { panes.size }
     val scope = rememberCoroutineScope()
 
     ScreenColumn {
