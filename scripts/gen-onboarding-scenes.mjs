@@ -63,6 +63,9 @@ const extremes = (pane) => {
     add(b.x + b.w, b.y + b.h + style.depth, 0);
   }
   for (const d of pane.stars || []) add(d.cx, d.cy, d.r + style.depth);
+  // Type is measured by the renderers, so bound it generously: half the point
+  // size above and below the centre, and two ems either side.
+  if (pane.label) add(pane.label.cx, pane.label.cy, pane.label.size * 1.2);
   return pts;
 };
 
@@ -120,7 +123,9 @@ const swiftPane = (p) => `        OnboardingPane(
             stars: [${list(p.stars || [], (d) => `OnboardingDisc(cx: ${n(d.cx)}, cy: ${n(d.cy)}, r: ${n(d.r)})`)}],
             order: [${(p.order || []).join(", ")}],
             accent: ${p.accent},
-            accentColor: "${p.accentColor}"
+            accentColor: "${p.accentColor}",
+            label: ${p.label ? `OnboardingLabel(text: "${p.label.text}", cx: ${n(p.label.cx)}, cy: ${n(p.label.cy)}, size: ${n(p.label.size)})` : "nil"},
+            mark: "${p.mark || ""}"
         )`;
 
 const swift = `${header("Swift")}
@@ -134,6 +139,15 @@ struct OnboardingBlock {
 /// A circle in scene coordinates.
 struct OnboardingDisc {
     let cx: CGFloat, cy: CGFloat, r: CGFloat
+}
+
+/// A word set in the display face, centred on its point.
+///
+/// The only type in the scene, and only ever something that reads the same in
+/// every language the app ships: a year, a digit, a question mark.
+struct OnboardingLabel {
+    let text: String
+    let cx: CGFloat, cy: CGFloat, size: CGFloat
 }
 
 /// One intro pane: the ball's cubic, the furniture it moves between, and which
@@ -150,6 +164,11 @@ struct OnboardingPane {
     /// What arriving means here: "yellow" for a club joined, "green" for an
     /// answer that was right.
     let accentColor: String
+    /// Set into the frame, or nil when the pane carries no type.
+    let label: OnboardingLabel?
+    /// Carried by the ball itself, or empty. The question mark is the player
+    /// the round is asking about.
+    let mark: String
 }
 
 enum OnboardingScene {
@@ -170,6 +189,8 @@ enum OnboardingScene {
     static let depth: CGFloat = ${n(style.depth)}
     static let ballRadius: CGFloat = ${n(style.ballRadius)}
     static let ballBorder: CGFloat = ${n(style.ballBorder)}
+    /// Point size of the mark the ball carries.
+    static let markSize: CGFloat = ${n(style.markSize)}
     /// Segments the cubic is flattened into, which is also how the trail and
     /// the ball are kept on the same arc-length ruler on both platforms.
     static let samples: Int = ${n(style.samples)}
@@ -194,6 +215,8 @@ const kotlinPane = (p) => `        OnboardingPane(
             order = listOf(${(p.order || []).join(", ")}),
             accent = ${p.accent},
             accentColor = "${p.accentColor}",
+            label = ${p.label ? `OnboardingLabel("${p.label.text}", ${f(p.label.cx)}, ${f(p.label.cy)}, ${f(p.label.size)})` : "null"},
+            mark = "${p.mark || ""}",
         )`;
 
 const kotlin = `${header("Kotlin")}
@@ -209,6 +232,14 @@ data class OnboardingBlock(val x: Float, val y: Float, val w: Float, val h: Floa
 data class OnboardingDisc(val cx: Float, val cy: Float, val r: Float)
 
 /**
+ * A word set in the display face, centred on its point.
+ *
+ * The only type in the scene, and only ever something that reads the same in
+ * every language the app ships: a year, a digit, a question mark.
+ */
+data class OnboardingLabel(val text: String, val cx: Float, val cy: Float, val size: Float)
+
+/**
  * One intro pane: the ball's cubic, the furniture it moves between, and which
  * piece of that furniture the accent lands on.
  *
@@ -218,6 +249,9 @@ data class OnboardingDisc(val cx: Float, val cy: Float, val r: Float)
  *   none.
  * @param accentColor what arriving means here: "yellow" for a club joined,
  *   "green" for an answer that was right.
+ * @param label set into the frame, or null when the pane carries no type.
+ * @param mark carried by the ball itself, or empty. The question mark is the
+ *   player the round is asking about.
  */
 data class OnboardingPane(
     val id: String,
@@ -230,6 +264,8 @@ data class OnboardingPane(
     val order: List<Int>,
     val accent: Int,
     val accentColor: String,
+    val label: OnboardingLabel?,
+    val mark: String,
 )
 
 object OnboardingScene {
@@ -253,6 +289,9 @@ object OnboardingScene {
     const val DEPTH = ${f(style.depth)}
     const val BALL_RADIUS = ${f(style.ballRadius)}
     const val BALL_BORDER = ${f(style.ballBorder)}
+
+    /** Point size of the mark the ball carries. */
+    const val MARK_SIZE = ${f(style.markSize)}
 
     /**
      * Segments the cubic is flattened into, which is also how the trail and

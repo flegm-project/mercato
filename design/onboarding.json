@@ -1,8 +1,9 @@
 {
   "meta": {
-    "note": "The three intro animations, as geometry rather than as pictures. One ball crosses each frame and leaves a yellow trail that draws the idea: a pass from one club to the next, a run that settles on the right answer, a climb that bursts into stars. Both apps render this with their own vector primitives, so it costs no image bytes and stays sharp at any density.",
+    "note": "The three intro animations, as geometry rather than as pictures. Each one shows the game rather than describing it: the question being asked, the answer being picked, the stars landing. Both apps render this with their own vector primitives, so it costs no image bytes and stays sharp at any density.",
     "why-shared": "The numbers live here for the same reason the design tokens do. Two hand-tuned copies of an arc are two different arcs within a month, and nobody would notice until the two stores were showing two different intros.",
-    "frame": "408x200 is the slot: 200 tall, and as wide as the column allows, which is 408 at most and 370 on a 402dp phone. The renderers scale to fill and centre, so the sides are what gets cropped. Everything that matters stays inside a 24 margin."
+    "frame": "408x200 is the slot: 200 tall, and as wide as the column allows, which is 408 at most and 370 on a 402dp phone. The renderers scale to fill and centre, so the sides are what gets cropped. Everything that matters stays inside a 24 margin.",
+    "why-a-year": "A year is the same word in every language the app ships, which is why the first pane can carry real content where a grey bar standing in for text would only say \"unfinished\". 2017 is a real transfer, and the ball crossing the frame with a question mark on it is the player the round asks you to name."
   },
   "canvas": {
     "w": 408,
@@ -20,7 +21,8 @@
     "depth": 5,
     "ballRadius": 14,
     "ballBorder": 4,
-    "samples": 64
+    "samples": 64,
+    "markSize": 16
   },
   "panes": [
     {
@@ -28,32 +30,32 @@
       "path": {
         "from": [
           124,
-          102
+          128
         ],
         "c1": [
           176,
-          30
+          66
         ],
         "c2": [
           274,
-          30
+          66
         ],
         "to": [
           326,
-          112
+          136
         ]
       },
       "blocks": [
         {
           "x": 44,
-          "y": 74,
+          "y": 98,
           "w": 76,
           "h": 76,
           "r": 22
         },
         {
           "x": 288,
-          "y": 74,
+          "y": 98,
           "w": 76,
           "h": 76,
           "r": 22
@@ -62,7 +64,14 @@
       "stars": [],
       "order": [],
       "accent": 1,
-      "accentColor": "yellow"
+      "accentColor": "yellow",
+      "label": {
+        "text": "2017",
+        "cx": 204,
+        "cy": 42,
+        "size": 34
+      },
+      "mark": "?"
     },
     {
       "id": "choice",
@@ -117,7 +126,9 @@
       "stars": [],
       "order": [],
       "accent": 1,
-      "accentColor": "green"
+      "accentColor": "green",
+      "label": null,
+      "mark": ""
     },
     {
       "id": "score",
@@ -163,7 +174,9 @@
         2
       ],
       "accent": -1,
-      "accentColor": "yellow"
+      "accentColor": "yellow",
+      "label": null,
+      "mark": ""
     }
   ]
 }

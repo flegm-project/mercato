@@ -83,6 +83,19 @@ function starPath(ctx, cx, cy, outer) {
   ctx.closePath();
 }
 
+/** A word in the display face, centred on its point, with the ink shadow. */
+function label(ctx, value, cx, cy, size, fill, alpha) {
+  ctx.globalAlpha = alpha;
+  ctx.font = `900 ${size}px Unbounded, system-ui, sans-serif`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = C.ink;
+  ctx.fillText(value, cx + S.depth, cy + S.depth);
+  ctx.fillStyle = fill;
+  ctx.fillText(value, cx, cy);
+  ctx.globalAlpha = 1;
+}
+
 function star(ctx, cx, cy, r, fill, shade, alpha) {
   ctx.globalAlpha = alpha;
   ctx.save(); ctx.translate(S.depth, S.depth); starPath(ctx, cx, cy, r); ctx.fillStyle = shade; ctx.fill(); ctx.restore();
@@ -125,12 +138,22 @@ function drawScene(ctx, p, phase) {
   trail(ctx, p, travel); ctx.strokeStyle = C.yellow; ctx.stroke();
   ctx.globalAlpha = 1;
 
+  if (p.label) label(ctx, p.label.text, p.label.cx, p.label.cy, p.label.size, C.yellow, alpha);
+
   const shrink = (p.stars || []).length ? 1 - ease(land / 0.4) : 1;
   if (shrink > 0.01) {
     raised(ctx, (inset) => {
       ctx.beginPath();
       ctx.arc(head[0], head[1], (S.ballRadius - (inset ? S.ballBorder : 0)) * shrink, 0, 7);
     }, C.ivory, alpha);
+    if (p.mark) {
+      ctx.globalAlpha = alpha;
+      ctx.font = `900 ${S.markSize * shrink}px Unbounded, system-ui, sans-serif`;
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillStyle = C.ink;
+      ctx.fillText(p.mark, head[0], head[1]);
+      ctx.globalAlpha = 1;
+    }
   }
 }
 

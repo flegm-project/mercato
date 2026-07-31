@@ -9,6 +9,7 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
@@ -24,6 +25,14 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.TextUnitType
 import com.mercato.app.BuildConfig
 import com.mercato.art.OnboardingBlock
 import com.mercato.art.OnboardingPane
@@ -54,6 +63,12 @@ import kotlin.math.max
 @Composable
 fun OnboardingArt(pane: Int, modifier: Modifier = Modifier) {
     val scene = OnboardingScene.panes[pane.coerceIn(0, OnboardingScene.panes.lastIndex)]
+    // The scene's only type is a year and a question mark, both of which read
+    // the same in the three languages the app ships. Measuring is what lets
+    // this centre on the same box SwiftUI's `anchor: .center` centres on.
+    val measurer = rememberTextMeasurer()
+    val display = LocalFonts.current.display
+    val face = remember(display) { TextStyle(fontFamily = display, fontWeight = FontWeight.Black) }
     // Held still for the parity captures, and only for them.
     //
     // scripts/capture-parity.sh shoots a screen once two consecutive frames are
@@ -67,7 +82,7 @@ fun OnboardingArt(pane: Int, modifier: Modifier = Modifier) {
     val pinned = BuildConfig.DEBUG &&
         (context as? Activity)?.intent?.getStringExtra("route") != null
     if (pinned) {
-        Canvas(modifier) { drawScene(scene, PINNED_PHASE) }
+        Canvas(modifier) { drawScene(scene, PINNED_PHASE, measurer, face) }
     } else {
         // Linear and restarting: the shape of the motion is in the easings
         // below, not in the animation curve, so that the two platforms only
@@ -82,7 +97,7 @@ fun OnboardingArt(pane: Int, modifier: Modifier = Modifier) {
             ),
             label = "phase",
         )
-        Canvas(modifier) { drawScene(scene, phase) }
+        Canvas(modifier) { drawScene(scene, phase, measurer, face) }
     }
 }
 
@@ -213,6 +228,46 @@ private fun DrawScope.raisedBlock(b: OnboardingBlock, fill: Color, alpha: Float)
  * [r] is the sharp pentagram radius, which is also the number iOS derives its
  * point size from.
  */
+/**
+ * A word in the display face, centred on its point.
+ *
+ * Centring on the measured layout box is deliberate: it is the same box
+ * SwiftUI's `anchor: .center` centres on, so neither platform has to measure a
+ * glyph for the two to land in the same place.
+ */
+private fun DrawScope.text(
+    measurer: TextMeasurer,
+    face: TextStyle,
+    value: String,
+    cx: Float,
+    cy: Float,
+    size: Float,
+    color: Color,
+    alpha: Float,
+) {
+    val laid = measurer.measure(
+        AnnotatedString(value),
+        face.copy(color = color.copy(alpha = color.alpha * alpha),
+                  fontSize = TextUnit(size / density, TextUnitType.Sp)),
+    )
+    drawText(laid, topLeft = Offset(cx - laid.size.width / 2f, cy - laid.size.height / 2f))
+}
+
+/** The same word with the app's ink shadow under it. */
+private fun DrawScope.label(
+    measurer: TextMeasurer,
+    face: TextStyle,
+    value: String,
+    cx: Float,
+    cy: Float,
+    size: Float,
+    color: Color,
+) {
+    val d = OnboardingScene.DEPTH
+    text(measurer, face, value, cx + d, cy + d, size, DesignTokens.Color.ink, 1f)
+    text(measurer, face, value, cx, cy, size, color, 1f)
+}
+
 private fun DrawScope.star(cx: Float, cy: Float, r: Float, fill: Color, shade: Color, alpha: Float) {
     val path = starPath(cx, cy, r)
     translate(OnboardingScene.DEPTH, OnboardingScene.DEPTH) { drawPath(path, shade, alpha = alpha) }
@@ -221,7 +276,12 @@ private fun DrawScope.star(cx: Float, cy: Float, r: Float, fill: Color, shade: C
 
 // --- The scene --------------------------------------------------------------
 
-private fun DrawScope.drawScene(pane: OnboardingPane, phase: Float) {
+private fun DrawScope.drawScene(
+    pane: OnboardingPane,
+    phase: Float,
+    measurer: TextMeasurer,
+    face: TextStyle,
+) {
     drawRect(DesignTokens.Color.blueDeep)
 
     // Scale to fill and centre. The slot is 200 tall and between 370 and 408
@@ -243,6 +303,9 @@ private fun DrawScope.drawScene(pane: OnboardingPane, phase: Float) {
 
             val (path, head) = trail(pane, travel)
             drawFurniture(pane, land, alpha)
+            pane.label?.let {
+                label(measurer, face, it.text, it.cx, it.cy, it.size, DesignTokens.Color.yellow)
+            }
             drawTrail(path, alpha)
             // On the last pane the climb does not stop at the top, it becomes
             // the stars.
@@ -255,6 +318,15 @@ private fun DrawScope.drawScene(pane: OnboardingPane, phase: Float) {
                     DesignTokens.Color.ivory,
                     alpha,
                 )
+                // No shadow on the mark: it sits inside a 20-wide face, and an
+                // offset copy of itself at that size reads as a smudge rather
+                // than as depth.
+                if (pane.mark.isNotEmpty()) {
+                    text(
+                        measurer, face, pane.mark, head.x, head.y,
+                        OnboardingScene.MARK_SIZE * shrink, DesignTokens.Color.ink, alpha,
+                    )
+                }
             }
         }
     }

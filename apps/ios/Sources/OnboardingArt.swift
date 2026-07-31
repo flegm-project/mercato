@@ -173,6 +173,22 @@ private extension OnboardingArtView {
         )
     }
 
+    /// A word in the display face, centred on its point, with the app's ink
+    /// shadow under it.
+    ///
+    /// `.center` anchors on the text's own layout box, which is the one thing
+    /// Compose can also anchor on, so the two platforms agree without either
+    /// of them measuring a glyph.
+    static func label(_ context: GraphicsContext, _ text: String, at c: CGPoint,
+                      size: CGFloat, fill: Color) {
+        var t = context.resolve(Text(text).font(DS.unbounded(size)))
+        let d = OnboardingScene.depth
+        t.shading = .color(DesignTokens.Color.ink)
+        context.draw(t, at: CGPoint(x: c.x + d, y: c.y + d), anchor: .center)
+        t.shading = .color(fill)
+        context.draw(t, at: c, anchor: .center)
+    }
+
     /// The recap's star, at whatever size the scene asks for.
     ///
     /// This is the SF Pro glyph and not a path, because on iOS the glyph *is*
@@ -224,15 +240,19 @@ private extension OnboardingArtView {
         let (path, head) = trail(pane, upTo: travel)
 
         drawFurniture(context, pane: pane, land: land, alpha: alpha)
+        if let l = pane.label {
+            label(context, l.text, at: CGPoint(x: l.cx, y: l.cy), size: l.size,
+                  fill: DesignTokens.Color.yellow)
+        }
 
         var fading = context
         fading.opacity = alpha
         drawTrail(fading, path)
         if pane.stars.isEmpty {
-            drawBall(fading, at: head, scale: 1)
+            drawBall(fading, at: head, scale: 1, mark: pane.mark)
         } else {
             // The climb does not stop at the top, it becomes the stars.
-            drawBall(fading, at: head, scale: 1 - ease(land / 0.4))
+            drawBall(fading, at: head, scale: 1 - ease(land / 0.4), mark: pane.mark)
         }
     }
 
@@ -245,10 +265,18 @@ private extension OnboardingArtView {
         context.stroke(path, with: .color(DesignTokens.Color.yellow), style: stroke)
     }
 
-    static func drawBall(_ context: GraphicsContext, at c: CGPoint, scale: CGFloat) {
+    static func drawBall(_ context: GraphicsContext, at c: CGPoint, scale: CGFloat, mark: String) {
         guard scale > 0.01 else { return }
         raisedDisc(context, at: c, r: OnboardingScene.ballRadius * scale,
                    border: OnboardingScene.ballBorder * scale, fill: DesignTokens.Color.ivory)
+        guard !mark.isEmpty else { return }
+        // No shadow on the mark: it sits inside a 20-wide face, and an offset
+        // copy of itself at that size reads as a smudge rather than as depth.
+        var t = context.resolve(
+            Text(mark).font(DS.unbounded(OnboardingScene.markSize * scale))
+        )
+        t.shading = .color(DesignTokens.Color.ink)
+        context.draw(t, at: c, anchor: .center)
     }
 }
 

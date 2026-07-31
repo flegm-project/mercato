@@ -48,16 +48,16 @@
     "obStart": "COMMENCER",
     "ob": [
       {
-        "t": "Deux clubs. Une année.",
-        "b": "Chaque manche enchaîne dix transferts réels, de 1985 à aujourd'hui."
+        "t": "Tu te souviens de ce transfert ?",
+        "b": "Dix vrais transferts par manche, de 1985 à aujourd'hui."
       },
       {
-        "t": "Trouve le joueur.",
-        "b": "En facile, quatre propositions. En hardcore, tu écris le nom, avec trois vies."
+        "t": "Deux clubs, une année, un nom.",
+        "b": "Quatre propositions en facile. En hardcore tu écris le nom, et tu n'as que trois vies."
       },
       {
-        "t": "+3 par bonne réponse.",
-        "b": "Une mauvaise réponse ne rapporte rien. Assez de bonnes réponses et la manche se termine par trois étoiles."
+        "t": "Vise les trois étoiles.",
+        "b": "+3 par bonne réponse, rien pour une erreur. Neuf sur dix et la manche est parfaite."
       }
     ],
     "cnTitle": "Publicité et données",
@@ -177,16 +177,16 @@
     "obStart": "START",
     "ob": [
       {
-        "t": "Two clubs. One year.",
-        "b": "Every round chains ten real transfers, from 1985 to today."
+        "t": "Remember this transfer?",
+        "b": "Ten real transfers a round, from 1985 to today."
       },
       {
-        "t": "Name the player.",
-        "b": "Easy gives you four options. Hardcore makes you type it, with three lives."
+        "t": "Two clubs, one year, one name.",
+        "b": "Easy gives you four options. Hardcore makes you type it, and you get three lives."
       },
       {
-        "t": "+3 per correct answer.",
-        "b": "A miss scores nothing. Answer well enough and the round ends with three stars."
+        "t": "Go for three stars.",
+        "b": "+3 for a right answer, nothing for a miss. Nine out of ten and the round is perfect."
       }
     ],
     "cnTitle": "Ads and data",
@@ -306,16 +306,16 @@
     "obStart": "EMPEZAR",
     "ob": [
       {
-        "t": "Dos clubes. Un año.",
-        "b": "Cada ronda encadena diez traspasos reales, de 1985 a hoy."
+        "t": "¿Te acuerdas de este fichaje?",
+        "b": "Diez fichajes reales por ronda, de 1985 a hoy."
       },
       {
-        "t": "Encuentra al jugador.",
-        "b": "En fácil, cuatro opciones. En hardcore escribes el nombre, con tres vidas."
+        "t": "Dos clubes, un año, un nombre.",
+        "b": "En fácil tienes cuatro opciones. En hardcore escribes el nombre, y solo tienes tres vidas."
       },
       {
-        "t": "+3 por acierto.",
-        "b": "Un fallo no suma. Con suficientes aciertos la ronda termina con tres estrellas."
+        "t": "Ve a por las tres estrellas.",
+        "b": "+3 por acierto, nada por un fallo. Nueve de diez y la ronda es perfecta."
       }
     ],
     "cnTitle": "Publicidad y datos",
