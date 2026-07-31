@@ -20,17 +20,16 @@ which is the personal account, name included. Both apps now point at:
 
     https://flegm-project.github.io/mercato/privacy
 
-That URL does not resolve yet. To make it resolve:
+Done: the organisation exists, this repository was transferred into it, and
+Pages is enabled on `main` from `/docs`. `flegm` itself was taken by an
+unrelated GitHub user, hence `flegm-project`.
 
-1. Create a free GitHub organisation named `flegm-project` (`flegm` itself is taken by an unrelated user).
-2. Transfer this repository into it (Settings → General → Transfer ownership).
-   Transferring rather than copying keeps the history, the issues and the
-   remote; GitHub leaves a redirect behind, so nothing breaks meanwhile.
-3. Enable Pages on the transferred repo: Settings → Pages → Source: deploy from
-   a branch, branch `main`, folder `/docs`.
-4. Check that `https://flegm-project.github.io/mercato/privacy` serves the page.
+The URL still 404s, and only because the page it points at is not committed
+yet. See the next section: it comes back the moment there is an address to
+print on it.
 
-The repository name stays `mercato`, so the path does not change.
+The repository name stayed `mercato`, so the path did not change, and GitHub
+left a redirect behind the old owner, so old clones and links keep working.
 
 ## 2. The contact address — needs a neutral mailbox
 
