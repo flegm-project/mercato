@@ -90,7 +90,7 @@ Remaining:
 
 - AdMob per `specs/ads.md`: sponsor board, interstitial (1/round), banner on
   menus, recap rectangle. Consent (UMP) + iOS ATT. **No rewarded ads.**
-- **Remove-ads only** (€3.99, StoreKit 2 / Play Billing non-consumable) +
+- **Remove-ads only** (€4.99, StoreKit 2 / Play Billing non-consumable) +
   restore. No shop, no other products.
 - **Exit**: no ads after purchase (verified fresh install + restore).
 
