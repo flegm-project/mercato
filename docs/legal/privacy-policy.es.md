@@ -86,7 +86,7 @@ actualización" cambiará antes del lanzamiento de dicha versión.
 
 ## Contacto
 
-Preguntas sobre esta política: garaynico.ng@gmail.com
+Preguntas sobre esta política: {{contact}}
 
 ---
 

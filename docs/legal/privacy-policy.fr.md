@@ -85,7 +85,7 @@ sera modifiée avant la publication de cette version.
 
 ## Contact
 
-Questions sur cette politique : garaynico.ng@gmail.com
+Questions sur cette politique : {{contact}}
 
 ---
 

@@ -84,7 +84,7 @@ changed before that version ships.
 
 ## Contact
 
-Questions about this policy: garaynico.ng@gmail.com
+Questions about this policy: {{contact}}
 
 ---
 

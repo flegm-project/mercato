@@ -15,6 +15,30 @@ import path from "path";
 
 const ROOT = new URL("..", import.meta.url).pathname;
 const OUT = path.join(ROOT, "docs/privacy");
+
+// The contact address lives in one file rather than three times in three
+// languages, and the build refuses to publish the placeholder. A privacy
+// policy is the one page whose whole job is to be read by a stranger, and the
+// address on it is printed on both store listings: a personal one puts a real
+// name in front of every player, which is exactly what the studio namespace
+// exists to avoid.
+const CONTACT_FILE = path.join(ROOT, "docs/legal/contact.txt");
+const PLACEHOLDER = "REPLACE-ME@example.invalid";
+let contact;
+try {
+  contact = fs.readFileSync(CONTACT_FILE, "utf8").trim();
+} catch {
+  console.error(`error: ${CONTACT_FILE} is missing; it holds the address the policy prints`);
+  process.exit(1);
+}
+if (!contact || contact === PLACEHOLDER) {
+  console.error(
+    "error: docs/legal/contact.txt still holds the placeholder.\n" +
+      "       Put a neutral address there before publishing: the three policies\n" +
+      "       print it, and both stores show it on the listing."
+  );
+  process.exit(1);
+}
 const T = JSON.parse(fs.readFileSync(path.join(ROOT, "design/tokens.json"), "utf8")).color;
 
 const LANGS = [
@@ -56,6 +80,11 @@ function toHtml(md) {
       out.push(`<h${level}>${inline(heading[2])}</h${level}>`);
       continue;
     }
+    if (/^(-{3,}|\*{3,}|_{3,})$/.test(line.trim())) {
+      closeList();
+      out.push("<hr>");
+      continue;
+    }
     const item = /^[-*]\s+(.*)$/.exec(line);
     if (item) {
       if (!inList) {
@@ -82,7 +111,9 @@ function toHtml(md) {
 }
 
 const sections = LANGS.map(({ code }) => {
-  const md = fs.readFileSync(path.join(ROOT, `docs/legal/privacy-policy.${code}.md`), "utf8");
+  const md = fs
+    .readFileSync(path.join(ROOT, `docs/legal/privacy-policy.${code}.md`), "utf8")
+    .replaceAll("{{contact}}", contact);
   return `<section data-lang="${code}" hidden>\n${toHtml(md)}\n</section>`;
 }).join("\n");
 
