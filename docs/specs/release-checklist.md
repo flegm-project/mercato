@@ -12,19 +12,21 @@ review fail. Everything under "Should fix" ships, but ships worse.
 
 ### Shared
 
-1. **The privacy policy URL is a 404.** `apps/ios/Sources/AppLinks.swift:8`
-   and `apps/android/.../AppLinks.kt:8` both point at
-   `https://nicogaray7.github.io/mercato/privacy`. GitHub Pages is not enabled
-   on the repository at all, so that host answers 404 for every path. The page
-   itself exists (`docs/privacy/index.html`, written by
-   `scripts/gen-privacy-site.mjs`) and is simply never published. Both stores
-   require a reachable policy for an app with ads and a purchase, and the
-   Settings row currently opens a dead page. Enable Pages on `main` / `docs`,
-   or host it elsewhere and change the two constants.
+1. **The privacy policy URL is still a 404, for a smaller reason than before.**
+   Both apps now point at `https://flegm-project.github.io/mercato/privacy`,
+   the repository has moved into that organisation, and Pages is serving from
+   `main` / `docs`. What is missing is the page: `docs/privacy/index.html` was
+   deleted because the committed copy printed a personal address, and
+   `scripts/gen-privacy-site.mjs` refuses to write a new one while
+   `docs/legal/contact.txt` holds its placeholder. So this closes the moment
+   item 2 does. Both stores require a reachable policy for an app with ads and
+   a purchase, and the Settings row still opens a dead page until then. See
+   publishing-identity.md.
 
 2. **No support URL and no contact address exist anywhere.** App Store Connect
-   requires one. Decide what it is (a mail address is enough) and put it next
-   to the privacy policy so both are published together.
+   requires one, and the privacy policy needs the same address. One neutral
+   mailbox answers both: put it in `docs/legal/contact.txt`, run
+   `node scripts/gen-privacy-site.mjs`, commit the page it writes.
 
 3. **No store assets.** `store/` holds three listing texts and nothing else.
    Needed: iPhone 6.9" screenshots, Play phone screenshots, a 512x512 Play
