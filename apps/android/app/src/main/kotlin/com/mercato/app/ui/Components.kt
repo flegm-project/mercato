@@ -35,6 +35,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.systemGestureExclusion
 import androidx.compose.foundation.selection.toggleable
@@ -852,9 +853,22 @@ fun CapsLabel(
  */
 fun Color.dim(opacity: Double): Color = copy(alpha = opacity.toFloat())
 
-/** Vertical spacer shorthand. */
+/**
+ * Vertical spacer shorthand.
+ *
+ * Vertical, and only vertical. Dropped into a Row this sets a height and no
+ * width, so it silently does nothing: no error, no warning, just two elements
+ * touching. That is how the Settings title came to sit against its back arrow
+ * and stay there across commits. check-ui-idioms now fails on it; prefer
+ * [Arrangement.spacedBy] on the Row, which cannot fail quietly, and keep
+ * [GapW] for the odd row where one gap has to differ from the rest.
+ */
 @Composable
 fun Gap(height: Dp) = androidx.compose.foundation.layout.Spacer(Modifier.height(height))
+
+/** Horizontal spacer shorthand, the [Gap] of a Row. */
+@Composable
+fun GapW(width: Dp) = androidx.compose.foundation.layout.Spacer(Modifier.width(width))
 
 /**
  * Hardcore free-text entry, the single most important control of that mode.

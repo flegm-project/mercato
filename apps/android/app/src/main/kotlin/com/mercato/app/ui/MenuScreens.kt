@@ -547,6 +547,7 @@ fun SettingsScreen(
         Gap(DesignTokens.Space.gutter)
         Row(
             Modifier.height(46.dp),
+            horizontalArrangement = Arrangement.spacedBy(DesignTokens.Space.block),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             val backLabel = stringResource(R.string.a11yBack)
@@ -566,7 +567,6 @@ fun SettingsScreen(
                         fontSize = 20.sp,
                     ))
             }
-            Gap(DesignTokens.Space.block)
             Text(
                 stringResource(R.string.settings),
                 style = typeStyle(DesignTokens.Type.panelTitle, DesignTokens.Color.ivory),

@@ -64,7 +64,10 @@ fun LabScreen(graph: AppGraph, onBack: () -> Unit) {
 
     ScreenColumn(Modifier.verticalScroll(rememberScrollState())) {
         Gap(DesignTokens.Space.xl)
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(DesignTokens.Space.sm),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             val backLabel = stringResource(R.string.a11yBack)
             // iOS renders the chevron in the system face inside a 38x38 ink
             // box (Lab.swift:50); a bare 30px Unbounded glyph read as text.
@@ -90,7 +93,6 @@ fun LabScreen(graph: AppGraph, onBack: () -> Unit) {
                     ),
                 )
             }
-            Gap(DesignTokens.Space.sm)
             Text(
                 stringResource(R.string.labT),
                 style = typeStyle(DesignTokens.Type.panelTitle, DesignTokens.Color.ivory),
