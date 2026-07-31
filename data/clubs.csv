@@ -1,11 +1,11 @@
 id,name_en,name_fr,name_es,notoriety
 Q10308,Real Zaragoza,Real Saragosse,Real Zaragoza,66
-Q10315,Real Sociedad,Real Sociedad,Real Sociedad de Fútbol,80
+Q10315,Real Sociedad,Real Sociedad,Real Sociedad,80
 Q10286,Osasuna,Osasuna,Osasuna,68
 Q10300,Rayo Vallecano,Rayo Vallecano,Rayo Vallecano,69
 Q101859,Wolfsburg,Wolfsburg,Wolfsburgo,81
 Q10319,Real Valladolid,Real Valladolid,Real Valladolid,64
-Q101959,Borussia Mönchengladbach,Borussia Mönchengladbach,Borussia Mönchengladbach,84
+Q101959,Mönchengladbach,Mönchengladbach,Mönchengladbach,84
 Q10329,Sevilla,Sevilla,Sevilla,86
 Q102720,Hertha BSC,Hertha BSC,Hertha BSC,73
 Q10333,Valencia,Valence,Valencia,92
@@ -18,27 +18,27 @@ Q105254,1. FSV Mainz,1. FSV Mayence,1. FSV Mainz,65
 Q11963,Hércules,Hércules Alicante,Hércules,48
 Q105853,Karlsruher,Karlsruher,Karlsruher,57
 Q105861,Bochum,Bochum,Bochum,59
-Q11971,Sociedad Deportiva Huesca,SD Huesca,Sociedad Deportiva Huesca,49
-Q11979,UD Las Palmas,Unión Deportiva Las Palmas,Unión Deportiva Las Palmas,59
+Q11971,Huesca,SD Huesca,Huesca,49
+Q11979,UD Las Palmas,Las Palmas,Las Palmas,59
 Q106394,Freiburg,Fribourg,Friburgo,71
 Q12217,Real Madrid Castilla,Real Madrid Castilla,Real Madrid Castilla,47
 Q12236,Racing de Santander,Racing de Santander,Racing de Santander,59
 Q126334,RC Strasbourg Alsace,RC Strasbourg Alsace,Racing Estrasburgo,57
-Q12278,Sporting de Gijón,Sporting Gijón,Real Sporting de Gijón,63
+Q12278,Sporting de Gijón,Sporting Gijón,Sporting de Gijón,63
 Q12297,Villarreal,Villarreal,Villarreal,81
-Q1023532,Atlas,Atlas,Club Atlas de Guadalajara,36
+Q1023532,Atlas,Atlas,Atlas,36
 Q1044651,Vegalta Sendai,Vegalta Sendai,Vegalta Sendai,36
 Q1046367,Shandong Taishan,Shandong Taishan,Shandong Taishan,37
 Q1051013,Paris,Paris,Paris,39
 Q1051238,Sagan Tosu,Sagan Tosu,Sagan Tosu,38
-Q1056948,Al-Duhail,Al-Duhail Sports Club,Al-Duhail,37
+Q1056948,Al-Duhail,Al-Duhail,Al-Duhail,37
 Q1059186,Rotor Volgograd,Rotor Volgograd,Rotor Volgogrado,37
 Q1062259,Yokohama,Yokohama,Yokohama,36
 Q1120838,Como 1907,Côme 1907,Como 1907,54
-Q1128631,Leeds United,Leeds United,Leeds United Association,84
+Q1128631,Leeds United,Leeds United,Leeds United,84
 Q1130849,Liverpool,Liverpool,Liverpool,132
 Q1139095,Wydad Athletic Club,Wydad Athletic Club,Wydad Casablanca,41
-Q1143000,Pumas UNAM,Club Universidad Nacional,Club Universidad Nacional,40
+Q1143000,Pumas UNAM,Pumas UNAM,Pumas,40
 Q124007617,Sturm Graz,Sturm Graz,Sturm Graz,51
 Q128446,Porto,Porto,Oporto,93
 Q131209,FK Austria Wien,FK Austria Vienne,FK Austria Viena,58
@@ -49,12 +49,12 @@ Q15755,Augsburg,Augsbourg,Augsburgo,74
 Q13391,Lecce,Lecce,Lecce,58
 Q15789,Bayern Munich,Bayern Munich,Bayern de Múnich,124
 Q1543,AC Milan,Milan AC,Milan,123
-Q131499,Benfica,Benfica,Sport Lisboa e Benfica,90
+Q131499,Benfica,Benfica,Benfica,90
 Q1457,U.C. Sampdoria,UC Sampdoria,Unione Sampdoria,83
 Q136433,PFC CSKA Sofia,PFC CSKA Sofia,PFC CSKA Sofia,49
 Q131603,1860 München,Munich 1860,1860 Múnich,58
-Q15799,Club Atlético River Plate,Club Atlético River Plate,Club Atlético River Plate,76
-Q132885,Olympique de Marseille,Olympique de Marseille,Olympique de Marsella,84
+Q15799,River Plate,River Plate,River Plate,76
+Q132885,Marseille,Marseille,Marsella,84
 Q134241,Feyenoord Rotterdam,Feyenoord Rotterdam,Feyenoord Rotterdam,84
 Q134255,Górnik Zabrze,Górnik Zabrze,Górnik Zabrze,63
 Q138248,Sint-Truidense V.V,K Saint-Trond VV,Sint-Truidense,41
@@ -62,7 +62,7 @@ Q15786,1. Nürnberg,1. Nuremberg,1. Núremberg,65
 Q1346756,Dinamo Batumi,Dinamo Batoumi,Dinamo Batumi,39
 Q141971,1. Union Berlin,1. Union Berlin,Unión Berlín,67
 Q142005,Hansa Rostock,Hansa Rostock,Hansa Rostock,53
-Q15214308,Orlando City,Orlando City Soccer Club,Orlando City Soccer Club,41
+Q15214308,Orlando City,Orlando City,Orlando City,41
 Q16320,Peñarol,Peñarol,Peñarol,61
 Q16344,Perugia,Pérouse,Perugia,47
 Q13361030,New York City,New York City,New York City,46
@@ -72,32 +72,32 @@ Q18656,Manchester United,Manchester United,Manchester United,147
 Q17479,Flamengo,Flamengo,Flamengo,89
 Q18662,Cardiff City,Cardiff City,Cardiff City,70
 Q18661,Middlesbrough,Middlesbrough,Middlesbrough,70
-Q18659,Swansea City A,Swansea City,Swansea City Association,80
+Q18659,Swansea City A,Swansea City,Swansea City,80
 Q17497,Dinamo Moscow,Dynamo Moscou,Dinamo Moscú,68
 Q18708,Fulham,Fulham,Fulham,84
-Q167615,Montréal,Montréal,Club de Foot Montréal,44
+Q167615,Montréal,Montréal,CF Montréal,44
 Q18711,Aston Villa,Aston Villa,Aston Villa,101
 Q18716,Newcastle United,Newcastle United,Newcastle United,96
 Q170040,Rubin Kazan,Rubin Kazan,Rubin Kazán,70
 Q18723,Queens Park Rangers,QP Rangers,Queens Park Rangers,69
-Q18739,Sunderland A,Sunderland,Sunderland Association,80
+Q18739,Sunderland A,Sunderland,Sunderland,80
 Q170703,Boca Juniors,Boca Juniors,Boca Juniors,80
 Q18741,Tottenham,Tottenham,Tottenham,102
 Q18729,Reading,Reading,Reading,67
 Q18732,Southampton,Southampton,Southampton,83
 Q18736,Stoke City,Stoke City,Stoke City,74
-Q172476,Girondins de Bordeaux,Girondins de Bordeaux,Girondins de Burdeos,71
-Q172567,Beşiktaş . (Football),Beşiktaş,Beşiktaş Jimnastik Kulübü,85
+Q172476,Bordeaux,Bordeaux,Girondins de Burdeos,71
+Q172567,Beşiktaş,Beşiktaş,Beşiktaş,85
 Q172803,GNK Dinamo Zagreb,Dinamo Zagreb,GNK Dinamo Zagreb,69
 Q172969,Shakhtar Donetsk,Chakhtar Donetsk,FK Shajtar Donetsk,71
-Q173009,FK Crvena zvezda,Étoile rouge Belgrade,Estrella Roja de Belgrado,71
-Q175687,Dnipro,FK Dnipro,Dnipro Dnipropetrovsk,48
+Q173009,FK Crvena zvezda,Étoile rouge,Estrella Roja,71
+Q175687,Dnipro,FK Dnipro,Dnipro,48
 Q176371,PFC CSKA Moscow,CSKA Moscou,PFC CSKA Moscú,75
 Q179075,Dynamo Kyiv,Dynamo Kiev,Dinamo de Kiev,84
 Q179658,FCSB,FCSB,Steaua de Bucarest,70
 Q180305,Monaco,Monaco,Monaco,84
 Q181216,HNK Hajduk Split,HNK Hajduk Split,HNK Hajduk Split,61
-Q182876,AJ Auxerre,AJ Auxerre,Association de la Jeunesse Auxerroise,55
+Q182876,AJ Auxerre,AJ Auxerre,Auxerre,55
 Q185163,OGC Nice,OGC Nice,OGC Niza,65
 Q186785,Rosenborg BK,Rosenborg Ballklub,Rosenborg Ballklub,62
 Q16844931,Inter Miami,Inter Miami,Inter de Miami,62
@@ -111,7 +111,7 @@ Q19571,Brentford,Brentford,Brentford,65
 Q1893,Bologna . 1909,Bologne 1909,Bologna 1909,85
 Q1900,Cagliari,Cagliari,Cagliari,76
 Q2018,Catania,Catania,Catania,55
-Q2037,ChievoVerona,Associazione ChievoVerona,Associazione ChievoVerona,57
+Q2037,ChievoVerona,Chievo Vérone,Chievo,57
 Q19580,Coventry City,Coventry City,Coventry City,58
 Q2052,Fiorentina,Fiorentina,Fiorentina,93
 Q18747,West Ham United,West Ham United,West Ham United,84
@@ -126,7 +126,7 @@ Q18750,Wigan Athletic,Wigan Athletic,Wigan Athletic,69
 Q19353,Anzhi Makhachkala,Anji Makhatchkala,Anzhí Majachkalá,51
 Q19444,Birmingham City,Birmingham City,Birmingham City,73
 Q19451,Bolton Wanderers,Bolton Wanderers,Bolton Wanderers,70
-Q19453,Brighton & Hove Albion,Brighton & Hove,Brighton & Hove Albion,72
+Q19453,Brighton,Brighton & Hove,Brighton,72
 Q19612,Preston North End,Preston North End,Preston North End,53
 Q19442,Barnsley,Barnsley,Barnsley,57
 Q19626,Shrewsbury Town,Shrewsbury Town,Shrewsbury Town,38
@@ -137,20 +137,20 @@ Q19458,Burnley,Burnley,Burnley,78
 Q19456,Bristol City,Bristol City,Bristol City,50
 Q19467,Crystal Palace,Crystal Palace,Crystal Palace,82
 Q19470,Derby County,Derby County,Derby County,63
-Q19477,Hull City A,Hull City,Hull City Association,69
+Q19477,Hull City A,Hull City,Hull City,69
 Q19481,Leicester City,Leicester City,Leicester City,94
 Q19487,Millwall,Millwall,Millwall,51
 Q19490,Nottingham Forest,Nottingham Forest,Nottingham Forest,78
-Q19500,Wolverhampton Wanderers,Wolverhampton Wanderers,Wolverhampton Wanderers,84
+Q19500,Wolverhampton,Wolverhampton,Wolverhampton,84
 Q19509,Stade Rennais,Stade rennais,Stade Rennais,59
 Q19512,Sochaux-Montbéliard,Sochaux-Montbéliard,Sochaux-Montbéliard,49
 Q19513,Montpellier Hérault,Montpellier Hérault,Montpellier Hérault,57
-Q19516,Lille,Lille,Lille Olympique Sporting Club,71
+Q19516,Lille,Lille,Lille,71
 Q19518,Toulouse,Toulouse,Toulouse,55
-Q187528,R. Anderlecht,RSC Anderlecht,Royal Sporting Club Anderlecht,69
-Q188277,Cruzeiro E.C,Cruzeiro EC,Cruzeiro Esporte Clube,56
-Q188656,FK Partizan,Partizan Belgrade,F. K. Partizan Belgrado,65
-Q188841,Fortaleza E.C,Fortaleza Esporte Clube,Fortaleza Esporte Clube,53
+Q187528,R. Anderlecht,RSC Anderlecht,Anderlecht,69
+Q188277,Cruzeiro E.C,Cruzeiro EC,Cruzeiro,56
+Q188656,FK Partizan,Partizan Belgrade,Partizan,65
+Q188841,Fortaleza E.C,Fortaleza,Fortaleza,53
 Q190561,Standard Liège,Standard de Liège,Standard Lieja,64
 Q189671,Basel,Bâle,Basilea,68
 Q190916,Club Brugge,Club Bruges,Club Brujas,67
@@ -162,19 +162,19 @@ Q192597,Hibernian,Hibernian,Hibernian,54
 Q192641,Trabzonspor,Trabzonspor,Trabzonspor,61
 Q192873,Dundee United,Dundee United,Dundee United,54
 Q193377,Stade Malherbe Caen,Stade Malherbe Caen,Stade Malherbe Caen,48
-Q193481,Sparta Prague,Sparta Prague,Athletic Club Sparta Praga,54
+Q193481,Sparta Prague,Sparta Prague,Sparta de Praga,54
 Q193749,Legia Warsaw,Legia Varsovie,Legia de Varsovia,61
-Q196107,Vancouver Whitecaps,Whitecaps de Vancouver,Vancouver Whitecaps,42
+Q196107,Vancouver Whitecaps,Vancouver Whitecaps,Vancouver Whitecaps,42
 Q198032,Esporte Clube Bahia,EC Bahia,Esporte Clube Bahia,39
 Q200321,Heerenveen,Heerenveen,Heerenveen,54
 Q201567,IFK Göteborg,IFK Göteborg,IFK Göteborg,56
 Q201584,AEK Athens,AEK Athens F.C.,AEK Athens F.C.,58
 Q203573,Bursaspor,Bursaspor,Bursaspor,52
-Q204220,New York Red Bulls,Red Bulls de New York,New York Red Bulls,54
-Q204357,LA Galaxy,Galaxy de Los Angeles,Los Angeles Galaxy,59
+Q204220,New York Red Bulls,New York Red Bulls,New York Red Bulls,54
+Q204357,LA Galaxy,LA Galaxy,Los Angeles Galaxy,59
 Q204881,Malmö FF,Malmö FF,Malmö FF,66
 Q204888,PAOK,PAOK Salonique,PAOK Salónica,61
-Q207373,Club Social y Deportivo Colo Colo,Colo-Colo,Club Social y Deportivo Colo Colo,90
+Q207373,Colo-Colo,Colo-Colo,Colo-Colo,90
 Q19828435,Minnesota United,Minnesota United,Minnesota United,36
 Q2074,Genoa CFC,Genoa CFC,Genoa Cricket &,84
 Q22707,TSG 1899 Hoffenheim,TSG 1899 Hoffenheim,TSG 1899 Hoffenheim,73
@@ -182,7 +182,7 @@ Q207503,Helsingborgs IF,Helsingborgs IF,Helsingborgs IF,43
 Q208228,Stade de Reims,Stade de Reims,Stade de Reims,59
 Q24711,Groningen,Groningue,Groningen,57
 Q24689,VVV-Venlo,VVV Venlo,VVV-Venlo,43
-Q208584,Helsingin Jalkapalloklubi,HJK Helsinki,HJK Helsinki,52
+Q208584,HJK Helsinki,HJK Helsinki,HJK Helsinki,52
 Q208399,Bastia,Bastia,Bastia,49
 Q208552,Molde FK,Molde FK,Molde FK,57
 Q212269,Valenciennes,Valenciennes,Valenciennes,43
@@ -195,7 +195,7 @@ Q209895,Sparta Rotterdam,Sparta Rotterdam,Sparta Rotterdam,54
 Q214992,Aalesunds FK,Aalesunds FK,Aalesunds FK,37
 Q215163,Vélez Sarsfield,Vélez Sarsfield,Vélez Sarsfield,50
 Q213161,FK Čukarički,FK Čukarički,FK Čukarički Stankom,37
-Q214940,Estudiantes de La Plata,Estudiantes de La Plata,Club Estudiantes de La Plata,51
+Q214940,Estudiantes,Estudiantes,Estudiantes,51
 Q216032,K.R.C. Genk,KRC Genk,KRC Genk,57
 Q214978,Independiente,Independiente,Independiente,56
 Q216503,C.S. Marítimo,Club Sport Marítimo,Club Sport Marítimo,46
@@ -206,12 +206,12 @@ Q218334,Figueirense,Figueirense,Figueirense,36
 Q218372,Stade Brestois 29,Stade brestois 29,Stade Brestois 29,54
 Q218883,Urawa Red Diamonds,Urawa Red Diamonds,Urawa Red Diamonds,49
 Q219703,Boavista,Boavista,Boavista,47
-Q219929,FK Željezničar Sarajevo,FK Željezničar Sarajevo,FK Željezničar Sarajevo,45
-Q220621,Argentinos Juniors,Argentinos Juniors,Asociación Atlética Argentinos Juniors,46
+Q219929,Željezničar,Željezničar,Željezničar,45
+Q220621,Argentinos Juniors,Argentinos Juniors,Argentinos Juniors,46
 Q221525,Metz,Metz,Metz,59
 Q221602,AIK Fotboll,AIK Solna,AIK Estocolmo,50
 Q221671,Slovan Liberec,Slovan Liberec,Slovan Liberec,42
-Q221695,Grêmio FBPA,Gremio Foot-Ball Porto Alegrense,Grêmio Foot-Ball Porto Alegrense,59
+Q221695,Grêmio FBPA,Grêmio,Grêmio,59
 Q223450,Vitória S.C.,Vitória e,Vitória e,49
 Q221882,Newell's Old Boys,Newell's Old Boys,Newell’s Old Boys,52
 Q238593,D.C. United,D.C. United,D.C. United,52
@@ -225,31 +225,31 @@ Q2710,Delfino Pescara 1936,Delfino Pescara,Pescara,52
 Q2798,Udinese,Udinese,Udinese,78
 Q2714,Watford,Watford,Watford,73
 Q2739,Roma,AS Rome,Roma,102
-Q276533,Racing Club,Racing Club de Avellaneda,Racing Club,54
+Q276533,Racing Club,Racing Club,Racing Club,54
 Q2768,Torino,Torino,Torino,83
-Q270051,Ajaccio,Athletic club ajaccien,Athletic Club Ajaccien,46
-Q270995,Clube Atlético Mineiro,Atlético Mineiro,Clube Atlético Mineiro,57
-Q274465,E.C. Vitória,Esporte Clube Vitória,Esporte Clube Vitória,39
+Q270051,Ajaccio,AC Ajaccio,AC Ajaccio,46
+Q270995,Atlético Mineiro,Atlético Mineiro,Atlético Mineiro,57
+Q274465,E.C. Vitória,Vitória,Vitória,39
 Q29103,Kuban Krasnodar,Kouban Krasnodar,Kubán Krasnodar,102
-Q274778,Krylia Sovetov Samara,Krylia Sovetov Samara,PFC Krylia Sovetov Samara,49
+Q274778,Krylia Sovetov,Krylia Sovetov,Krylia Sovetov,49
 Q283545,Al Sadd Sports Club,Al-Sadd,Al-Sadd Sports Club,50
 Q29115,Lokomotiv Moscow,Lokomotiv Moscou,Lokomotiv Moscú,70
-Q29108,Zenit Saint Petersburg,Zénith Saint-Pétersbourg,Zenit de San Petersburgo,82
+Q29108,Zenit,Zénith,Zenit,82
 Q29112,Spartak Moscow,Spartak Moscou,Spartak de Moscú,71
 Q29390,R. Messina,ACR Messine,ACR Messina,35
 Q286191,Al Qadsiah,Al-Qadsiah,Al-Qadsiah,37
 Q289482,Monza,Monza,Monza,51
 Q289613,Pisa,Pisa,Pisa Sporting Club,41
 Q298217,Avellino 1912,Avellino,Avellino,36
-Q301431,Aarhus Gymnastikforening,AGF Aarhus,Aarhus GF,47
+Q301431,AGF Aarhus,AGF Aarhus,Aarhus GF,47
 Q308683,Chicago Fire,Fire de Chicago,Chicago Fire,43
-Q309095,New England Revolution,Revolution de la Nouvelle-Angleterre,New England Revolution,45
-Q309400,Boulogne,Boulogne CO,Union Sportive de Boulogne,35
+Q309095,New England,New England Revolution,New England,45
+Q309400,Boulogne,Boulogne CO,Boulogne,35
 Q309480,Al Ittihad,Ittihad,Al-Ittihad,54
 Q311268,Al-Rayyan,Al-Rayyan,Al-Rayyan,38
 Q2636005,Al-Shabab,Al-Shabab Riyad,Al-Shabab,39
 Q316789,Melbourne Victory,Melbourne Victory,Melbourne Victory,43
-Q31932,NK Olimpija Ljubljana,NK Olimpija Ljubljana,NK Olimpija Ljubljana,46
+Q31932,Olimpija,Olimpija,Olimpija,46
 Q32494,Schalke,Schalke,Schalke,87
 Q318348,N.E.C,NEC Nimègue,NEC Nijmegen,46
 Q33748,Hannover 96,Hanovre 96,Hannover 96,69
@@ -257,12 +257,12 @@ Q321061,Sion,Sion,Sion,49
 Q327238,Toronto,Toronto,Toronto,43
 Q35933,Corinthians Paulista,Corinthians Paulista,Corinthians Paulista,102
 Q38568,São Paulo,São Paulo,São Paulo,93
-Q328658,Le Havre,Le Havre,Le Havre Athletic Club Football Association,48
+Q328658,Le Havre,Le Havre,Le Havre,48
 Q329471,Baník Ostrava,Baník Ostrava,Baník Ostrava,41
 Q328332,FK Mladá Boleslav,FK Mladá Boleslav,FK Mladá Boleslav,40
 Q38245,Eintracht Frankfurt,Eintracht Francfort,Eintracht Frankfurt,103
 Q330143,Sydney FC,Sydney FC,Sydney FC,53
-Q332524,Junior de Barranquilla,Junior Barranquilla,Junior de Barranquilla,37
+Q332524,Junior,Junior Barranquilla,Junior,37
 Q332605,Atlético Nacional,Atletico Nacional,Atlético Nacional,45
 Q332642,NAC Breda,NAC Breda,NAC Breda,41
 Q371136,Paços de Ferreira,Paços de Ferreira,Paços de Ferreira,46
@@ -274,12 +274,12 @@ Q4512,Stuttgart,Stuttgart,Stuttgart,85
 Q41420,Borussia Dortmund,Borussia Dortmund,Borussia Dortmund,99
 Q43710,Antalyaspor,Antalyaspor,Antalyaspor Kulübü,44
 Q44441,Al Ahli FC,Al-Ahli,Al Ahli FC,49
-Q391984,Millonarios,Club Deportivo Los Millonarios,Millonarios,38
+Q391984,Millonarios,Millonarios,Millonarios,38
 Q392310,LASK Linz,LASK,LASK,50
 Q420594,Kairat,Kaïrat Almaty,Kairat,49
-Q424943,Shabab AlAhli Dubai Club,Al-Ahli Dubaï,Shabab AlAhli Dubai Club,35
-Q428211,Al-Gharafa,Al-Gharafa Sports Club,Al-Gharafa,39
-Q429630,Al Jazira Club,Al-Jazira Club,Al-Jazira Sporting Club,35
+Q424943,Shabab Al-Ahli,Al-Ahli Dubaï,Shabab Al-Ahli,35
+Q428211,Al-Gharafa,Al-Gharafa,Al-Gharafa,39
+Q429630,Al Jazira Club,Al-Jazira Club,Al-Jazira,35
 Q48951,Southend United,Southend United,Southend United,37
 Q50602,Manchester City,Manchester City,Manchester City,117
 Q51974,Hamburger,Hambourg,Hamburgo,76
@@ -290,21 +290,21 @@ Q462411,N.K. Zagreb,NK Zagreb,NK Zagreb,38
 Q476880,Lahti,Lahti,Lahti,36
 Q51976,Werder Bremen,Werder Brême,Werder Bremen,83
 Q52942,Lech Poznań,Lech Poznań,Lech Poznań,64
-Q478317,Coritiba,Coritiba,Coritiba Foot Ball Club,125
+Q478317,Coritiba,Coritiba,Coritiba,125
 Q482406,Seoul,Séoul,Seoul,41
 Q482764,Al-Nassr,Al Nasr Riyad,Al-Nassr,70
 Q483020,Paris Saint-Germain,Paris Saint-Germain,Paris Saint-Germain,100
-Q495299,Galatasaray,Galatasaray,Galatasaray Spor Kulübü,93
+Q495299,Galatasaray,Galatasaray,Galatasaray,93
 Q498473,Hamilton Academical,Hamilton Academical,Hamilton Academical,36
-Q499616,Club Nacional de Football,Club Nacional,Club Nacional de Football,74
+Q499616,Nacional,Club Nacional,Nacional,74
 Q501245,Venezia,Venise,Venezia,53
-Q501693,ES Troyes,ES Troyes,Espérance Sportive Troyes Aube Champagne,46
-Q503317,Dijon FCO,Dijon FCO,Dijon Football Côte d'Or,49
-Q503321,C.D. Guadalajara,Club Deportivo Guadalajara (Mexique),Club Deportivo Guadalajara (México),49
-Q506832,Club Athletico Paranaense,Clube Atlético Paranaense,Clube Atlético Paranaense,51
+Q501693,ES Troyes,ES Troyes,Troyes,46
+Q503317,Dijon FCO,Dijon FCO,Dijon,49
+Q503321,C.D. Guadalajara,Guadalajara,Guadalajara,49
+Q506832,Athletico Paranaense,Athletico Paranaense,Athletico Paranaense,51
 Q513840,Konyaspor,Konyaspor,Konyaspor,47
 Q4122219,Panathinaikos,Panathinaïkós,Panathinaikos,70
-Q5014111,Vasco da Gama,Vasco da Gama,Club de Regatas Vasco da Gama,51
+Q5014111,Vasco da Gama,Vasco da Gama,Vasco da Gama,51
 Q631,Inter Milan,Inter Milan,Inter de Milán,121
 Q564216,Shanghai Port,Shanghai Port,Shanghái Port,39
 Q704,Olympique Lyonnais,Olympique lyonnais,Olympique de Lyon,80
@@ -315,13 +315,13 @@ Q576285,Albacete Balompié,Albacete Balompié,Albacete Balompié,44
 Q584316,Danubio,Danubio,Danubio,40
 Q584858,Halmstads BK,Halmstads BK,Halmstads BK,37
 Q6641,Bari,Bari,Bari,49
-Q586787,Hokkaido Consadole Sapporo,Consadole Sapporo,Consadole Sapporo,36
+Q586787,Consadole Sapporo,Consadole Sapporo,Consadole Sapporo,36
 Q6651,Brescia,Brescia,Brescia,53
 Q604589,Club Olimpia,Club Olimpia,Club Olimpia,48
 Q6767,Livorno 1915,Livourne 1915,Livorno 1915,52
 Q7156,Barcelona,FC Barcelone,FC Barcelona,152
 Q6703,Empoli,Empoli,Empoli,63
-Q604581,Club Sporting Cristal,Club Sporting Cristal,Club Sporting Cristal,37
+Q604581,Sporting Cristal,Sporting Cristal,Sporting Cristal,37
 Q608122,Kayserispor,Kayserispor,Kayserispor,44
 Q618520,Midtjylland,Midtjylland,Midtjylland,53
 Q620499,Tokyo Verdy,Tokyo Verdy,Tokyo Verdy,42
@@ -329,7 +329,7 @@ Q621120,Portimonense,Portimonense,Portimonense,40
 Q622432,Rio Ave,Rio Ave,Rio Ave,44
 Q630279,Sanfrecce Hiroshima,Sanfrecce Hiroshima,Sanfrecce Hiroshima,44
 Q632511,Seattle Sounders FC,Seattle Sounders FC,Seattle Sounders FC,49
-Q646204,JEF United Chiba,JEF United Ichihara Chiba,JEF United Ichihara Chiba,39
+Q646204,JEF United Chiba,JEF United,JEF United,39
 Q633223,Club León,León,Club León,37
 Q646135,New York Cosmos,Cosmos de New York,New York Cosmos,35
 Q652516,Benevento,Bénévent,Benevento,48
@@ -343,7 +343,7 @@ Q725018,Lierse,Lierse,Lierse,35
 Q725367,Shanghai Shenhua,Shanghai Shenhua,Shanghái Greenland,41
 Q727147,Khimki,FK Khimki,FK Jimki,40
 Q54834034,PFC Sochi,FK Sotchi,PFC Sochi,35
-Q6601875,Fenerbahçe Istanbul,Fenerbahçe Istanbul,Fenerbahçe Spor Kulübü,92
+Q6601875,Fenerbahçe Istanbul,Fenerbahçe Istanbul,Fenerbahçe,92
 Q8408,Modena,Modène,Modena,44
 Q8416,Novara,Novara,Novara,44
 Q72844,Al-Ettifaq,Al-Ettifaq,Al-Ettifaq,37
@@ -364,20 +364,20 @@ Q80955,Santos F.C.,Santos F.C.,Santos F.C.,74
 Q8723,Real Betis Balompié,Betis Balompié,Real Betis Balompié,77
 Q80987,Fluminense,Fluminense,Fluminense,71
 Q81888,Ajax,Ajax Amsterdam,Ajax,106
-Q80958,Botafogo F.R,Botafogo FR,Botafogo de Futebol e Regatas,60
+Q80958,Botafogo F.R,Botafogo FR,Botafogo,60
 Q80964,Palmeiras,Palmeiras,Palmeiras,75
 Q730809,Nîmes Olympique,Nîmes Olympique,Nîmes Olympique,61
 Q732002,Royal Antwerp,Royal Antwerp,Royal Antwerp,47
 Q736937,Pachuca,Pachuca,Pachuca,46
-Q737753,Club Universidad de Chile,Universidad de Chili,Club Universidad de Chile,39
-Q732929,Newcastle Jets,Newcastle United Jets,Newcastle United Jets,35
+Q737753,Universidad de Chile,Universidad de Chili,Universidad de Chile,39
+Q732929,Newcastle Jets,Newcastle Jets,Newcastle Jets,35
 Q738423,Gamba Osaka,Gamba Osaka,Gamba Osaka,51
 Q738876,NK Osijek,NK Osijek,NK Osijek,48
 Q738886,FK Teplice,FK Teplice,FK Teplice,35
-Q757104,FK Sūduva,FK Sūduva Marijampolė,FK Sūduva,80
+Q757104,FK Sūduva,Sūduva,FK Sūduva,80
 Q759482,Cremonese,Cremonese,Cremonese,45
 Q768253,Monterrey,Monterrey,Monterrey,47
-Q770740,SD Eibar,SD Eibar,Sociedad Deportiva Eibar,57
+Q770740,SD Eibar,SD Eibar,Eibar,57
 Q791164,Avispa Fukuoka,Avispa Fukuoka,Avispa Fukuoka,37
 Q823384,Shimizu S-Pulse,Shimizu S-Pulse,Shimizu S-Pulse,41
 Q812720,Al Ain,Al-Aïn,Al-Ain,45
@@ -390,24 +390,24 @@ Q854932,Yokohama F. Marinos,Yokohama F·Marinos,Yokohama F. Marinos,47
 Q855401,Júbilo Iwata,Júbilo Iwata,Júbilo Iwata,41
 Q855809,Cerezo Osaka,Cerezo Osaka,Cerezo Osaka,46
 Q854167,Fortuna Sittard,Fortuna Sittard,Fortuna Sittard,44
-Q856119,CD Leganés,Club Deportivo Leganés,Club Deportivo Leganés,53
+Q856119,CD Leganés,Leganés,Leganés,53
 Q856619,Tokyo,Tokyo,Tokyo,41
-Q857938,İstanbul Başakşehir F.K,İstanbul BB,İstanbul Başakşehir,56
+Q857938,Başakşehir,İstanbul BB,İstanbul Başakşehir,56
 Q868582,Deportivo Saprissa,Deportivo Saprissa,Deportivo Saprissa,36
 Q7482049,Strømsgodset TF,Strømsgodset IF,Strømsgodset IF,42
-Q8749,RC Celta de Vigo,Celta de Vigo,Real Club Celta de Vigo,72
-Q8760,Deportivo de A Coruña,Deportivo LC,Real Club Deportivo de La Coruña,69
-Q8780,RCD Espanyol de Barcelona,RCD Espanyol de Barcelona,Real Club Deportivo Espanyol de Barcelona,82
+Q8749,RC Celta de Vigo,Celta de Vigo,Celta de Vigo,72
+Q8760,Deportivo,Deportivo LC,Deportivo,69
+Q8780,Espanyol,Espanyol,Espanyol,82
 Q8806,Getafe,Getafe,Getafe,67
 Q8823,Levante UD,Levante UD,Levante UD,69
-Q8835,RCD Mallorca,RCD Majorque,Real Club Deportivo Mallorca,69
+Q8835,RCD Mallorca,RCD Majorque,Mallorca,69
 Q8857,Málaga,Málaga,Málaga,65
 Q9616,Chelsea,Chelsea,Chelsea,126
 Q9617,Arsenal,Arsenal,Arsenal,124
 Q9653,Ipswich Town,Ipswich Town,Ipswich Town,67
 Q872702,Montevideo Wanderers,Montevideo Wanderers,Montevideo Wanderers,35
 Q874016,Kawasaki Frontale,Kawasaki Frontale,Kawasaki Frontale,44
-Q889348,Ural Yekaterinburg,Oural Iekaterinbourg,Ural Sverdlovsk Oblast,48
-Q910453,Esporte Clube Juventude,Esporte Clube Juventude,Esporte Clube Juventude,38
+Q889348,Ural Yekaterinburg,Oural Iekaterinbourg,Ural,48
+Q910453,Juventude,Juventude,Juventude,38
 Q994811,Red Bull Salzburg,Red Bull Salzbourg,Red Bull Salzburgo,63
-Q999035,Western Sydney Wanderers,Western Sydney Wanderers,Western Sydney Wanderers,38
+Q999035,Western Sydney,Western Sydney,Western Sydney,38
