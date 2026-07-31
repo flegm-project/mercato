@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+# Warns, never blocks.
+#
+# CI is what decides whether a change is fit to ship: it runs the emulator, it
+# is the same on every machine, and it cannot be skipped by accident. This hook
+# exists for the other half of the problem, which is finding out ten minutes
+# earlier and without opening a browser. Blocking here would only teach the
+# habit of --no-verify, and a hook people route around is worse than no hook:
+# it makes everyone believe something is being checked.
+#
+# Enable once, per clone:  git config core.hooksPath .githooks
+
+set -uo pipefail
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT" || exit 0
+
+YEL=$'\033[33m'; GRN=$'\033[32m'; DIM=$'\033[2m'; OFF=$'\033[0m'
+failed=()
+
+run() {
+  local label="$1"; shift
+  if ! out=$("$@" 2>&1); then
+    failed+=("$label")
+    printf '%s  x %s%s\n' "$YEL" "$label" "$OFF"
+    printf '%s\n' "$out" | sed 's/^/      /' | head -12
+  else
+    printf '%s  o %s%s\n' "$GRN" "$label" "$OFF"
+  fi
+}
+
+echo "pre-push checks (advisory)"
+
+if command -v node >/dev/null 2>&1; then
+  run "dataset"        node scripts/check-data.mjs
+  run "compose idioms" node scripts/check-ui-idioms.mjs
+  run "design parity"  node scripts/check-design-parity.mjs
+
+  # The generators must not touch anything tracked. Comparing the tree against
+  # empty would only report the work in progress, which is not the question:
+  # what matters is whether running them changes something. So the comparison
+  # is before against after, not after against clean.
+  before=$(git status --porcelain)
+  node scripts/gen-design-tokens.mjs >/dev/null 2>&1
+  node scripts/gen-strings.mjs >/dev/null 2>&1
+  after=$(git status --porcelain)
+  if [ "$before" != "$after" ]; then
+    failed+=("the generators changed tracked files")
+    printf '%s  x the generators changed tracked files%s\n' "$YEL" "$OFF"
+    diff <(printf '%s\n' "$before") <(printf '%s\n' "$after") | sed 's/^/      /' | head -8
+  else
+    printf '%s  o generators leave the tree as they found it%s\n' "$GRN" "$OFF"
+  fi
+else
+  printf '%s  ~ node missing, script checks skipped%s\n' "$DIM" "$OFF"
+fi
+
+if [ ${#failed[@]} -gt 0 ]; then
+  printf '\n%s%d check(s) would fail in CI. Pushing anyway.%s\n' "$YEL" "${#failed[@]}" "$OFF"
+  printf '%sThe emulator tests only run there, so a clean run here is not a promise.%s\n' "$DIM" "$OFF"
+fi
+
+exit 0

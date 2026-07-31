@@ -62,6 +62,17 @@ jobs:
       - name: Design tokens
         run: node scripts/gen-design-tokens.mjs
 
+      # Mistakes that compile, run, and are visible only to someone looking at
+      # the screen: a height-only Gap used inside a Row, an opaque fill stroked
+      # with a border. Both shipped before this check existed.
+      - name: Compose idioms
+        run: node scripts/check-ui-idioms.mjs
+
+      # iOS is the reference; this fails when a literal style value exists on
+      # one platform and not the other.
+      - name: Design parity
+        run: node scripts/check-design-parity.mjs
+
       # Generated output is never committed; catch it if someone adds it.
       - name: Generated output stays untracked
         run: |
@@ -163,3 +174,69 @@ jobs:
 
       - name: Assemble debug APK and run unit tests
         run: cd apps/android && ./gradlew --no-daemon assembleDebug testDebugUnitTest
+
+  ui:
+    name: Android UI (instrumented, emulator)
+    runs-on: ubuntu-latest
+    # The screens are what everything else is for, and they are also what no
+    # other job looks at: the whole suite above passed green on a build whose
+    # replay button did nothing and whose Hardcore controls sat under the
+    # keyboard. This job is the one that opens the app.
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install rsvg-convert
+        run: sudo apt-get update && sudo apt-get install -y librsvg2-bin
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-linux-android
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ~/.cargo/bin/cargo-ndk
+            core/target
+          key: ui-cargo-${{ hashFiles('core/**/Cargo.toml') }}
+
+      - name: Install cargo-ndk
+        run: command -v cargo-ndk || cargo install cargo-ndk --locked
+
+      - name: Generate app inputs
+        run: |
+          ./scripts/build-native.sh android
+          node scripts/gen-design-tokens.mjs
+          node scripts/gen-strings.mjs
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      # KVM is what makes the emulator usable rather than a twenty-minute wait.
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Instrumented tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 31
+          target: google_apis
+          arch: x86_64
+          profile: pixel_5
+          disable-animations: true
+          script: cd apps/android && ./gradlew --no-daemon connectedDebugAndroidTest

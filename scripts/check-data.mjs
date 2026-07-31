@@ -124,6 +124,34 @@ for (const a of aliases) {
   if (!playerIds.has(a.player_id)) problems.push(`player_aliases.csv: unknown player ${a.player_id}`);
 }
 
+// Names the transfer card cannot hold on one line. The Spanish column had
+// silently taken the registered corporate name where the other two took the
+// usual one ("Le Havre Athletic Club Football Association" against "Le Havre"),
+// which wrapped the card onto a second line and pushed the Hardcore controls
+// off the bottom of the screen. The bug looked like a layout bug for hours.
+//
+// 21 is where the card starts wrapping at its display size; a genuine name
+// longer than that (Wolverhampton Wanderers) belongs in the allowlist below,
+// with the point being that adding to it is a decision someone has to make.
+const NAME_MAX = 21;
+const LONG_ON_PURPOSE = new Set([
+  "New England Revolution", // the club's actual name, nothing shorter is used
+  "Bosnia and Herzegovina", // the country's actual name in English
+]);
+for (const [file, rows] of [["clubs.csv", clubs], ["nationalities.csv", nationalities]]) {
+  for (const r of rows) {
+    for (const col of ["name_en", "name_fr", "name_es"]) {
+      const v = r[col] ?? "";
+      if (v.length > NAME_MAX && !LONG_ON_PURPOSE.has(v)) {
+        problems.push(
+          `${file}: ${r.id} ${col} is ${v.length} chars, over ${NAME_MAX}: ${JSON.stringify(v)}` +
+            ` (use the name people say, or add it to LONG_ON_PURPOSE)`
+        );
+      }
+    }
+  }
+}
+
 if (problems.length) {
   console.error(`data check failed: ${problems.length} problem(s)\n`);
   for (const p of problems) console.error(`  - ${p}`);
