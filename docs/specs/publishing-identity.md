@@ -18,17 +18,17 @@ links to it from Settings. It used to be:
 
 which is the personal account, name included. Both apps now point at:
 
-    https://flegm.github.io/mercato/privacy
+    https://flegm-project.github.io/mercato/privacy
 
 That URL does not resolve yet. To make it resolve:
 
-1. Create a free GitHub organisation named `flegm`.
+1. Create a free GitHub organisation named `flegm-project` (`flegm` itself is taken by an unrelated user).
 2. Transfer this repository into it (Settings → General → Transfer ownership).
    Transferring rather than copying keeps the history, the issues and the
    remote; GitHub leaves a redirect behind, so nothing breaks meanwhile.
 3. Enable Pages on the transferred repo: Settings → Pages → Source: deploy from
    a branch, branch `main`, folder `/docs`.
-4. Check that `https://flegm.github.io/mercato/privacy` serves the page.
+4. Check that `https://flegm-project.github.io/mercato/privacy` serves the page.
 
 The repository name stays `mercato`, so the path does not change.
 

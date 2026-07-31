@@ -5,7 +5,7 @@ enum AppLinks {
     /// Both stores require a reachable privacy policy for an app that shows
     /// ads and sells an in-app purchase. The same document is published for
     /// Android; the page picks its own language.
-    static let privacyPolicy = "https://flegm.github.io/mercato/privacy"
+    static let privacyPolicy = "https://flegm-project.github.io/mercato/privacy"
 
     /// The shipped version, read from the bundle so the settings footer cannot
     /// drift from what was actually submitted.
