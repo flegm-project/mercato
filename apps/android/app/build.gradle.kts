@@ -118,6 +118,7 @@ android {
         targetSdk = 36
         versionCode = 2
         versionName = "1.0.1"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         ndk {
             // Ship only the ABIs the Rust core is built for. JNA otherwise
@@ -234,6 +235,16 @@ dependencies {
     implementation("com.google.firebase:firebase-crashlytics")
 
     testImplementation("junit:junit:4.13.2")
+
+    // Instrumented UI tests. These assert on geometry, not on screenshots: a
+    // screenshot test tells you something moved without saying what, and gets
+    // re-baselined the moment it is inconvenient. "The title starts at least
+    // 12dp after the arrow" survives a font change and still fails when the
+    // gap goes.
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.7.5")
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
+    androidTestImplementation("androidx.test:runner:1.6.2")
+    debugImplementation("androidx.compose.ui:ui-test-manifest:1.7.5")
 }
 
 // Pin the JDK the build runs on. Gradle 8.9 rejects anything newer than 22,
