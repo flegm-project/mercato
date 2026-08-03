@@ -116,8 +116,10 @@ android {
         applicationId = "com.flegm.mercato"
         minSdk = 26
         targetSdk = 36
-        versionCode = 2
-        versionName = "1.0.1"
+        // 2 is spent: Play took that bundle and then refused it over the
+        // 16 KB alignment, and a version code cannot be uploaded twice.
+        versionCode = 3
+        versionName = "1.0.2"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         ndk {
@@ -206,6 +208,17 @@ tasks.named("preBuild") {
 stageAssets { dependsOn(genSounds) }
 
 dependencies {
+    // play-services-basement, which play-services-ads pulls in, still asks for
+    // androidx.fragment 1.1.0, and AndroidX marked that version obsolete: Play
+    // reports it against every upload even though no screen here is a Fragment.
+    // A constraint raises the version resolution settles on without declaring a
+    // dependency the app does not have.
+    constraints {
+        implementation("androidx.fragment:fragment:1.8.9") {
+            because("1.1.0, via play-services-basement, is flagged obsolete by Play")
+        }
+    }
+
     val composeBom = platform("androidx.compose:compose-bom:2024.09.00")
     implementation(composeBom)
     implementation("androidx.compose.ui:ui")
@@ -218,7 +231,16 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
 
     // Required by the generated UniFFI bindings.
-    implementation("net.java.dev.jna:jna:5.14.0@aar")
+    //
+    // The version matters for a reason that has nothing to do with UniFFI.
+    // 5.14.0 ships an x86_64 libjnidispatch.so linked for 4 KB memory pages,
+    // and Play rejects any 64-bit library that cannot be mapped on a 16 KB
+    // page device: that is what "this release contains new app bundles that
+    // are not compatible with 16 KB memory page sizes" meant on version code
+    // 2. 5.17.0 is the first release linked with -Wl,-z,max-page-size=16384
+    // (java-native-access/jna#1654). verify16kAlignment is what stops the
+    // next bump quietly undoing it.
+    implementation("net.java.dev.jna:jna:5.19.1@aar")
 
     // Google Mobile Ads (AdMob) + the UMP consent SDK it pins.
     implementation("com.google.android.gms:play-services-ads:25.4.0")
@@ -246,6 +268,23 @@ dependencies {
     androidTestImplementation("androidx.test:runner:1.6.2")
     debugImplementation("androidx.compose.ui:ui-test-manifest:1.7.5")
 }
+
+// Every 64-bit .so in the upload has to be mapped on a 16 KB page device.
+// Gradle knows nothing about this, and neither does lint: the alignment lives
+// in the ELF program headers of libraries that mostly arrive prebuilt from
+// dependencies. Reading it out of the finished artifact is the only check that
+// sees what Play sees, so it runs on the artifact, after it is assembled.
+val verify16kAlignment = tasks.register<Exec>("verify16kAlignment") {
+    description = "Fails if a packaged 64-bit .so is not 16 KB page aligned."
+    workingDir = repoRoot
+    commandLine(
+        "python3", "scripts/check-16k.py",
+        layout.buildDirectory.file("outputs/bundle/release/app-release.aab").get().asFile.path,
+        layout.buildDirectory.file("outputs/apk/release/app-release.apk").get().asFile.path,
+    )
+}
+tasks.matching { it.name == "bundleRelease" || it.name == "assembleRelease" }
+    .configureEach { finalizedBy(verify16kAlignment) }
 
 // Pin the JDK the build runs on. Gradle 8.9 rejects anything newer than 22,
 // and a machine whose only JDK is newer fails with a bare version number that

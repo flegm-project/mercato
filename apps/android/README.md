@@ -48,3 +48,42 @@ Remove-ads: `BillingManager` (Play Billing, one-time product
 `Game.setAdsRemoved` at launch, on resume, on purchase and on restore, and
 acknowledges new purchases. The purchase and restore rows live in Settings;
 there is no shop screen.
+
+## 16 KB memory pages
+
+Android 15 runs on devices whose memory pages are 16 KB, and since 1 November
+2025 Play refuses uploads whose 64-bit `.so` files are laid out for 4 KB ones.
+Version code 2 was refused for exactly one library: JNA 5.14.0's
+`x86_64/libjnidispatch.so`, whose `PT_LOAD` segments declare a 0x1000
+alignment. Nothing in the Gradle build, and nothing in lint, looks at that.
+
+Two things keep it fixed:
+
+- `scripts/build-native.sh android` refuses to run on an NDK older than r28,
+  which is the first one that links for 16 KB pages by default, and passes
+  `-Wl,-z,max-page-size=16384` anyway. It checks its own output afterwards.
+- `scripts/check-16k.py` reads the alignment straight out of the finished
+  `.aab`/`.apk`, and `verify16kAlignment` runs it after `bundleRelease` and
+  `assembleRelease`. It sees what Play sees, which is the point: most of the
+  libraries in the upload are prebuilt and arrive from dependencies, so the
+  only honest check is on the artifact.
+
+For a dependency's library there is no linker flag to reach for; the version
+is the fix. JNA 5.17.0 was the first release with the flags applied
+(java-native-access/jna#1654).
+
+### Warnings that are not ours to fix
+
+Play also reports `LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES`, deprecated in
+Android 15, at obfuscated `j1.s.a`. That is not app code: `mapping.txt`
+resolves the only class in the release that touches
+`WindowManager.LayoutParams.layoutInDisplayCutoutMode` to
+`com.google.android.gms.ads.internal.util.zzx`, inside the Google Mobile Ads
+SDK, which is already on its newest version. Nothing to change here until
+Google ships it; the API still works, it is only deprecated.
+
+Play's separate note that some libraries were "compiled with an older NDK"
+also lands on `libjnidispatch.so`. JNA links its Android libraries with a
+plain Makefile that never emits the `.note.android.ident` section Play reads
+the NDK version from, so the notice can survive a version bump even though
+the alignment, which is the part that actually crashes, is correct.

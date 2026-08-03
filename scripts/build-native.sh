@@ -165,14 +165,46 @@ android() {
   fi
   echo "    using NDK $ANDROID_NDK_HOME"
 
+  # Android 15 runs on devices with 16 KB memory pages, and Play refuses any
+  # upload whose 64-bit libraries are laid out for 4 KB ones. NDK r28 is the
+  # first release that links them correctly without being asked; r27 and older
+  # need the flags below, and Play separately warns about libraries built with
+  # them because a build that assumes PAGE_SIZE == 4096 can still crash. The
+  # highest installed NDK is picked above, so this only fires on a machine
+  # whose newest NDK predates r28 -- exactly the machine that would otherwise
+  # produce an upload Play rejects, hours later, with no clue where it came
+  # from.
+  local ndk_rev ndk_major
+  ndk_rev=$(sed -n 's/^Pkg.Revision *= *//p' "$ANDROID_NDK_HOME/source.properties" 2>/dev/null)
+  ndk_major=${ndk_rev%%.*}
+  if [ -z "$ndk_major" ]; then
+    die "cannot read Pkg.Revision from $ANDROID_NDK_HOME/source.properties.
+     That path does not look like an NDK; point ANDROID_NDK_HOME at one."
+  fi
+  if [ "$ndk_major" -lt 28 ]; then
+    die "NDK $ndk_rev is too old: it links libraries for 4 KB memory pages, and
+     Play rejects those. Install r28 or newer with
+       sdkmanager --install 'ndk;28.2.13676358'
+     and either let this script pick it up or set ANDROID_NDK_HOME to it."
+  fi
+
   need_targets "${ANDROID_TARGETS[@]}"
 
   echo "==> building Android shared libs"
   mkdir -p "$OUT/android/jniLibs"
-  ( cd "$CORE" && cargo ndk -o "$OUT/android/jniLibs" \
+  # Belt and braces on top of the r28 floor: stating the page size explicitly
+  # means the output stays correct even if a future toolchain changes its
+  # default back, and it costs a few kilobytes of padding.
+  ( cd "$CORE" && \
+    RUSTFLAGS="${RUSTFLAGS:-} -C link-arg=-Wl,-z,max-page-size=16384" \
+    cargo ndk -o "$OUT/android/jniLibs" \
       -t arm64-v8a -t armeabi-v7a -t x86_64 \
       build -p mercato-ffi --release )
   echo "    -> $OUT/android/jniLibs"
+
+  # The same check the release build runs, applied to what was just produced,
+  # so a bad toolchain is caught here rather than in the Play Console.
+  python3 "$ROOT/scripts/check-16k.py" "$OUT/android/jniLibs"
 }
 
 case "${1:-all}" in

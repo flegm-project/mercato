@@ -170,6 +170,14 @@ jobs:
 
       # The app consumes generated inputs from build/: UniFFI Kotlin bindings,
       # per-ABI .so files, design tokens, localized resources.
+      # The runner's newest NDK is r27, which links native libraries for 4 KB
+      # memory pages; Play rejects those, and build-native.sh now refuses to
+      # produce them. Pin r28 rather than trusting whatever the image ships.
+      - name: Install NDK r28
+        run: |
+          "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --install "ndk;28.2.13676358"
+          echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/28.2.13676358" >> "$GITHUB_ENV"
+
       - name: Generate app inputs
         run: |
           ./scripts/build-native.sh android
@@ -220,6 +228,14 @@ jobs:
 
       - name: Install cargo-ndk
         run: command -v cargo-ndk || cargo install cargo-ndk --locked
+
+      # The runner's newest NDK is r27, which links native libraries for 4 KB
+      # memory pages; Play rejects those, and build-native.sh now refuses to
+      # produce them. Pin r28 rather than trusting whatever the image ships.
+      - name: Install NDK r28
+        run: |
+          "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --install "ndk;28.2.13676358"
+          echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/28.2.13676358" >> "$GITHUB_ENV"
 
       - name: Generate app inputs
         run: |
