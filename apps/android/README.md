@@ -63,10 +63,12 @@ Two things keep it fixed:
   which is the first one that links for 16 KB pages by default, and passes
   `-Wl,-z,max-page-size=16384` anyway. It checks its own output afterwards.
 - `scripts/check-16k.py` reads the alignment straight out of the finished
-  `.aab`/`.apk`, and `verify16kAlignment` runs it after `bundleRelease` and
-  `assembleRelease`. It sees what Play sees, which is the point: most of the
-  libraries in the upload are prebuilt and arrive from dependencies, so the
-  only honest check is on the artifact.
+  `.aab`/`.apk`; `verify16kAlignmentBundle` runs it after `bundleRelease` and
+  `verify16kAlignmentApk` after `assembleRelease`, one task per artifact so
+  neither judges a file the build it follows did not produce. It sees what
+  Play sees, which is the point: most of the libraries in the upload are
+  prebuilt and arrive from dependencies, so the only honest check is on the
+  artifact.
 
 For a dependency's library there is no linker flag to reach for; the version
 is the fix. JNA 5.17.0 was the first release with the flags applied

@@ -154,12 +154,29 @@ android() {
   export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
 
   # cargo-ndk resolves the toolchain through ANDROID_NDK_HOME; pick the
-  # highest installed NDK when the caller has not pinned one.
+  # highest installed NDK when the caller has not pinned one. Look in the
+  # Homebrew SDK as well as $ANDROID_HOME, and not only when ANDROID_HOME is
+  # unset: Android Studio exports its own SDK path, so a machine that installed
+  # the NDK through Homebrew has ANDROID_HOME pointing at a directory with no
+  # ndk/ in it at all, and the search would end there with an NDK sitting
+  # installed a few directories away.
   if [ -z "${ANDROID_NDK_HOME:-}" ]; then
     local ndk
-    ndk=$(ls -1d "$ANDROID_HOME"/ndk/*/ 2>/dev/null | sort -V | tail -1)
+    # Sort on the version directory's own name, not the whole path: the
+    # candidates live under different prefixes, and sorting the paths would
+    # rank them by where they are installed rather than by how new they are.
+    # `|| true` is load-bearing. ls reports failure when any operand is
+    # missing, and most of these are: under `set -e` with pipefail, the
+    # assignment would take the script down right here, with no message and an
+    # exit status of 1 that says nothing. The absence of an NDK is diagnosed
+    # two lines below, where it can be explained.
+    ndk=$(ls -1d "$ANDROID_HOME"/ndk/*/ \
+                 /opt/homebrew/share/android-commandlinetools/ndk/*/ \
+                 /usr/local/share/android-commandlinetools/ndk/*/ 2>/dev/null \
+          | while IFS= read -r d; do printf '%s\t%s\n' "$(basename "$d")" "$d"; done \
+          | sort -V | tail -1 | cut -f2) || true
     [ -n "$ndk" ] || die \
-      "No NDK found under $ANDROID_HOME/ndk. Install one with:
+      "No NDK found under $ANDROID_HOME/ndk or the Homebrew SDK. Install one with:
        sdkmanager --install 'ndk;29.0.14206865'"
     export ANDROID_NDK_HOME="${ndk%/}"
   fi

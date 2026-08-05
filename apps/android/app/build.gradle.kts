@@ -274,17 +274,29 @@ dependencies {
 // in the ELF program headers of libraries that mostly arrive prebuilt from
 // dependencies. Reading it out of the finished artifact is the only check that
 // sees what Play sees, so it runs on the artifact, after it is assembled.
-val verify16kAlignment = tasks.register<Exec>("verify16kAlignment") {
-    description = "Fails if a packaged 64-bit .so is not 16 KB page aligned."
-    workingDir = repoRoot
-    commandLine(
-        "python3", "scripts/check-16k.py",
-        layout.buildDirectory.file("outputs/bundle/release/app-release.aab").get().asFile.path,
-        layout.buildDirectory.file("outputs/apk/release/app-release.apk").get().asFile.path,
-    )
-}
-tasks.matching { it.name == "bundleRelease" || it.name == "assembleRelease" }
-    .configureEach { finalizedBy(verify16kAlignment) }
+//
+// One task per artifact, rather than one task reading both. bundleRelease does
+// not touch the APK, so a single task would have judged an app-release.apk
+// left over from an earlier build and failed a bundle that was in fact
+// correct: the check would have been reporting on a file nothing had just
+// produced.
+fun register16kCheck(name: String, artifact: String) =
+    tasks.register<Exec>(name) {
+        description = "Fails if a packaged 64-bit .so is not 16 KB page aligned."
+        workingDir = repoRoot
+        commandLine(
+            "python3", "scripts/check-16k.py",
+            layout.buildDirectory.file(artifact).get().asFile.path,
+        )
+    }
+
+val verifyBundle16k =
+    register16kCheck("verify16kAlignmentBundle", "outputs/bundle/release/app-release.aab")
+val verifyApk16k =
+    register16kCheck("verify16kAlignmentApk", "outputs/apk/release/app-release.apk")
+
+tasks.matching { it.name == "bundleRelease" }.configureEach { finalizedBy(verifyBundle16k) }
+tasks.matching { it.name == "assembleRelease" }.configureEach { finalizedBy(verifyApk16k) }
 
 // Pin the JDK the build runs on. Gradle 8.9 rejects anything newer than 22,
 // and a machine whose only JDK is newer fails with a bare version number that
