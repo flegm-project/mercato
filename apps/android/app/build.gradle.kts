@@ -133,6 +133,26 @@ android {
     fun secret(key: String, env: String): String? =
         keystoreProperties.getProperty(key) ?: System.getenv(env)
 
+    // AdMob test devices. A brand-new app gets no fill from the real network
+    // for days, which looks exactly like a broken slot: the ad view goes
+    // INVISIBLE and the screen shows a gap. Listing a device here makes the
+    // production ad units serve Google's demo creatives to that device only,
+    // so the slots can be seen working without touching the ad unit IDs and
+    // without polluting the reporting.
+    //
+    // The IDs live in admob.properties, git-ignored like keystore.properties:
+    // they identify someone's phone, and the list is per-person, not per-repo.
+    // Absent, the field is empty and nothing changes, which is what every
+    // build that reaches Play must be.
+    val admobProperties = Properties().apply {
+        val f = rootProject.file("admob.properties")
+        if (f.exists()) f.inputStream().use { load(it) }
+    }
+    val admobTestDevices =
+        admobProperties.getProperty("testDevices")
+            ?: System.getenv("MERCATO_ADMOB_TEST_DEVICES")
+            ?: ""
+
 
     namespace = "com.mercato.app"
     compileSdk = 36
@@ -219,6 +239,13 @@ android {
         compose = true
         buildConfig = true
     }
+
+    // Comma-separated, and empty in any build that did not opt in.
+    defaultConfig.buildConfigField(
+        "String",
+        "ADMOB_TEST_DEVICES",
+        "\"" + admobTestDevices + "\"",
+    )
 
     sourceSets.getByName("main") {
         kotlin.srcDir(repoRoot.resolve("build/bindings/kotlin"))

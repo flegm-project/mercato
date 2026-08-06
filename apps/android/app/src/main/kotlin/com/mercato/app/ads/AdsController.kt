@@ -36,6 +36,13 @@ class AdsController(private val context: Context, private val game: Game) {
 
     private var interstitial: InterstitialAd? = null
 
+    private companion object {
+        val TEST_DEVICES: List<String> =
+            BuildConfig.ADMOB_TEST_DEVICES.split(",")
+                .map { it.trim() }
+                .filter { it.isNotEmpty() }
+    }
+
     /**
      * Sync the SDK's personalisation state from the core before building a
      * request. The publisher privacy state is the modern npa equivalent;
@@ -53,6 +60,11 @@ class AdsController(private val context: Context, private val game: Game) {
             MobileAds.getRequestConfiguration()
                 .toBuilder()
                 .setPublisherPrivacyPersonalizationState(state)
+                // Empty in every build that did not opt in through
+                // admob.properties, and an empty list is the SDK's own
+                // default, so this line is inert in what reaches Play. See
+                // the comment next to admobTestDevices in build.gradle.kts.
+                .setTestDeviceIds(TEST_DEVICES)
                 .build()
         )
         return AdRequest.Builder().build()
