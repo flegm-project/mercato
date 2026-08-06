@@ -1,3 +1,4 @@
+import java.io.File
 import java.util.Properties
 
 // Mercato Android app.
@@ -96,6 +97,30 @@ val genIcons = tasks.register<Exec>("genIcons") {
     outputs.dir(repoRoot.resolve("build/icons/android/res"))
 }
 
+// Where the NDK is. AGP needs it for two things this app would otherwise ship
+// without: stripping the native libraries, and extracting their symbol tables
+// so Play can name the frames of a crash in the Rust core. AGP looks under
+// $ANDROID_HOME/ndk and nowhere else, so on a machine whose NDK came from
+// Homebrew it finds nothing, says so in one line among a thousand -- "Unable
+// to strip the following libraries, packaging them as they are" -- and the
+// release goes out 340 kB heavier per device with no symbols in it. The search
+// is the one scripts/build-native.sh does, and ANDROID_NDK_HOME, which that
+// script exports, wins over it.
+val ndkDir: File? = System.getenv("ANDROID_NDK_HOME")?.let(::file)
+    ?: listOfNotNull(
+        System.getenv("ANDROID_HOME")?.let { "$it/ndk" },
+        "/opt/homebrew/share/android-commandlinetools/ndk",
+        "/usr/local/share/android-commandlinetools/ndk",
+    ).map(::file)
+        .filter { it.isDirectory }
+        .flatMap { it.listFiles()?.toList() ?: emptyList() }
+        .filter { it.isDirectory }
+        .maxByOrNull { d ->
+            (d.name.split(".").map { it.toIntOrNull() ?: 0 } + listOf(0, 0, 0))
+                .take(3)
+                .fold(0L) { acc, n -> acc * 100_000_000L + n }
+        }
+
 android {
     // Release signing. The keystore and its passwords never enter the repo:
     // they come from keystore.properties (git-ignored) or, in CI, from the
@@ -112,14 +137,25 @@ android {
     namespace = "com.mercato.app"
     compileSdk = 36
 
+    // Both, not one. ndkPath says where the NDK is; ndkVersion is what the
+    // strip and symbol-extraction tasks actually resolve their tool through,
+    // and left alone it holds AGP's default, a version this machine does not
+    // have. Setting the path alone changes nothing except the warning you get
+    // about them disagreeing.
+    ndkDir?.let {
+        ndkPath = it.absolutePath
+        ndkVersion = it.name
+    }
+
     defaultConfig {
         applicationId = "com.flegm.mercato"
         minSdk = 26
         targetSdk = 36
         // 2 is spent: Play took that bundle and then refused it over the
-        // 16 KB alignment, and a version code cannot be uploaded twice.
-        versionCode = 3
-        versionName = "1.0.2"
+        // 16 KB alignment, and a version code cannot be uploaded twice. 3 is
+        // spent too, on the build that fixed it.
+        versionCode = 4
+        versionName = "1.0.3"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         ndk {
@@ -127,6 +163,13 @@ android {
             // drags in mips, x86 and armeabi copies of its helper, on which
             // libmercato_ffi does not exist and the app could not run anyway.
             abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86_64")
+            // Put the .so symbol tables in the bundle, where Play reads them
+            // to turn a native crash into named frames. Without this a panic
+            // in the Rust core arrives in the console as a column of
+            // addresses, which is the same as not arriving. SYMBOL_TABLE and
+            // not FULL: FULL carries DWARF and multiplies the upload size for
+            // line numbers a release build cannot honour anyway.
+            debugSymbolLevel = "SYMBOL_TABLE"
         }
     }
 

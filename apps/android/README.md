@@ -74,6 +74,22 @@ For a dependency's library there is no linker flag to reach for; the version
 is the fix. JNA 5.17.0 was the first release with the flags applied
 (java-native-access/jna#1654).
 
+## Native libraries and the NDK
+
+`ndkDir` in `app/build.gradle.kts` sets both `ndkPath` and `ndkVersion`. Both,
+because they do different jobs: the path says where the NDK is, the version is
+what the strip and symbol-extraction tasks resolve their tool through. Setting
+the path alone changes nothing except the warning about the two disagreeing,
+which is how the first attempt at this looked like it had worked.
+
+What it buys, measured on the same source: `libmercato_ffi.so` for arm64 goes
+from 1 085 680 bytes to 753 208, and the bundle gains
+`BUNDLE-METADATA/com.android.tools.build.debugsymbols/` for all three ABIs, so
+a panic in the Rust core reaches the Play console as named frames rather than
+a column of addresses. Without it AGP says "Unable to strip the following
+libraries, packaging them as they are" in one line among a thousand, and the
+release ships heavier and mute.
+
 ### Warnings that are not ours to fix
 
 Play also reports `LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES`, deprecated in
