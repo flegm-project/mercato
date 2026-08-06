@@ -49,6 +49,34 @@ Remove-ads: `BillingManager` (Play Billing, one-time product
 acknowledges new purchases. The purchase and restore rows live in Settings;
 there is no shop screen.
 
+## Releasing
+
+`./scripts/release-android.sh` is the whole path from a commit to a track:
+
+```sh
+./scripts/release-android.sh --upload                       # to alpha
+./scripts/release-android.sh --track internal --upload
+./scripts/release-android.sh --name 1.1.0 --notes notes.md --upload
+```
+
+It refuses to run on a dirty tree, off main, or ahead of origin, because a
+bundle Play keeps forever should name a commit anyone can check out. Then it
+bumps the version code, commits that, regenerates the inputs, builds, and
+checks the artifact it just made rather than the one at the path: 16 KB
+alignment, a signature, native debug symbols, and a version code inside the
+bundle matching the one it bumped. The last of those exists because a stale
+`.aab` was once picked up from a path that already held an older build, same
+name, older bytes, no error anywhere.
+
+Uploading needs `PLAY_SA_JSON` pointing at a Play service account key. That
+key lives on the VPS, not here, so the usual shape is: build on this machine,
+upload from there. Without `--upload` the script stops with a verified bundle
+and tells you where it is.
+
+Release notes are a markdown file of `## fr-FR` / `## en-US` / `## es-ES`
+sections, 500 characters each at most, which is Play's limit and not a style
+preference.
+
 ## 16 KB memory pages
 
 Android 15 runs on devices whose memory pages are 16 KB, and since 1 November
