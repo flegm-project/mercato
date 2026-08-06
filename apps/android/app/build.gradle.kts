@@ -214,6 +214,7 @@ android {
             buildConfigField("String", "ADMOB_SPONSOR_ID", "\"ca-app-pub-3940256099942544/6300978111\"")
             buildConfigField("String", "ADMOB_INTERSTITIAL_ID", "\"ca-app-pub-3940256099942544/1033173712\"")
             buildConfigField("String", "ADMOB_RECTANGLE_ID", "\"ca-app-pub-3940256099942544/6300978111\"")
+            buildConfigField("String", "ADMOB_TEST_DEVICES", "\"" + admobTestDevices + "\"")
         }
         // Production ad units of the "Mercato" Android app entry in the
         // AdMob console (account ca-app-pub-5435447054359850).
@@ -232,6 +233,12 @@ android {
             buildConfigField("String", "ADMOB_SPONSOR_ID", "\"ca-app-pub-5435447054359850/3959557736\"")
             buildConfigField("String", "ADMOB_INTERSTITIAL_ID", "\"ca-app-pub-5435447054359850/2430165280\"")
             buildConfigField("String", "ADMOB_RECTANGLE_ID", "\"ca-app-pub-5435447054359850/5958080825\"")
+            // Empty, and not read from admob.properties. The file is on the
+            // machine that builds releases, which is the whole problem: a
+            // git-ignored opt-in is not an opt-out, and the build that goes to
+            // Play would have carried whatever phone was listed in it. Debug
+            // reads the file; release cannot.
+            buildConfigField("String", "ADMOB_TEST_DEVICES", "\"\"")
         }
     }
 
@@ -240,12 +247,6 @@ android {
         buildConfig = true
     }
 
-    // Comma-separated, and empty in any build that did not opt in.
-    defaultConfig.buildConfigField(
-        "String",
-        "ADMOB_TEST_DEVICES",
-        "\"" + admobTestDevices + "\"",
-    )
 
     sourceSets.getByName("main") {
         kotlin.srcDir(repoRoot.resolve("build/bindings/kotlin"))
