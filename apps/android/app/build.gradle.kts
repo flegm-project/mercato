@@ -174,8 +174,8 @@ android {
         // 2 is spent: Play took that bundle and then refused it over the
         // 16 KB alignment, and a version code cannot be uploaded twice. 3 is
         // spent too, on the build that fixed it.
-        versionCode = 5
-        versionName = "1.0.3"
+        versionCode = 6
+        versionName = "1.0.4"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         ndk {
