@@ -116,7 +116,7 @@ final class Store: ObservableObject {
         #if DEBUG
         // QA: render the purchasable row in the simulator, where no StoreKit
         // product loads. Never compiled into release.
-        if CommandLine.arguments.contains("-MercatoFakePrice") { return "4,99 \u{20AC}" }
+        if CommandLine.arguments.contains("-MercatoFakePrice") { return "3,99 \u{20AC}" }
         #endif
         return product?.displayPrice
     }

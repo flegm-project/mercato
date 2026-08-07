@@ -67,3 +67,16 @@ keystore.properties
 apps/android/admob.properties
 *.jks
 /build/parity-shots/
+
+# Python bytecode from the asset generators.
+__pycache__/
+*.pyc
+
+# Local scratch: screenshots pulled off a device, transfer staging, anything
+# tried out and not meant to be kept.
+/.qa/
+
+# Screenshot renders. store/play-assets holds what was uploaded; these two are
+# working sets, 25 MB of near-duplicates that no build reads.
+/store/play-assets-design/
+/store/play-assets-en/
