@@ -1,9 +1,8 @@
 import SwiftUI
 
-/// The Mercato design system, ported from the source design
-/// (reference/design-source/Mercato.dc.html) and docs/specs/components.md.
-/// Numbers come from that design or from design/tokens.json, never invented
-/// here, so a component can be diffed against its origin.
+/// The Mercato design system, built from docs/specs/components.md. Numbers
+/// come from there or from design/tokens.json, never invented here, so a
+/// component can be diffed against its origin.
 /// The generated token namespace is `DesignTokens.Type`, and `Type` in
 /// expression position is Swift's metatype keyword, so every use would need
 /// back-ticks. Aliased once here instead.

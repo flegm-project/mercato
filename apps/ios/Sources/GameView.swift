@@ -1,9 +1,8 @@
 import SwiftUI
 
-/// The Game screen, matching the source design
-/// (reference/design-source/Mercato.dc.html, the `isGame` block): a top bar of
-/// close button, progress pips and score pill; the transfer card; the sponsor
-/// board; and the answers pushed to the bottom of the column.
+/// The Game screen, laid out as docs/specs/screens.md describes it: a top bar
+/// of close button, progress pips and score pill; the transfer card; the
+/// sponsor board; and the answers pushed to the bottom of the column.
 ///
 /// There is no skip and no result sheet. The answer turns green, a wrong pick
 /// turns coral, the card outline follows, the score bumps, and the round
