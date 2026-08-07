@@ -2,8 +2,8 @@
 
 ## Commun
 
-- Nom de l'application / titre (30 caractères max) : `Mercato : Quiz Transferts`
-  <!-- 25 chars -->
+- Nom de l'application / titre (30 caractères max) : `Mercato Quiz Transferts Foot`
+  <!-- 28 chars -->
 - Prix : gratuit avec publicités ; achat unique "Supprimer les publicités" à 3,99 EUR.
 
 ## App Store (iOS)

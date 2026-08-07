@@ -104,7 +104,7 @@ Design rules:
 
 ## Persistence
 
-- v1 has **no cross-session persistence** (per SPEC): score, streak, and balls
+- v1 has **no cross-session persistence** (per SPEC): score and streak
   reset each session. Only the **remove-ads entitlement** must persist - and it
   comes from the store (StoreKit / Play), owned natively.
 - If later versions add persisted stats, keep it native (UserDefaults / DataStore)

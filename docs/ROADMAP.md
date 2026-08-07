@@ -5,9 +5,12 @@ playable reference, a design system, and EN/FR/ES strings, this is a **porting**
 plan (web → Rust core + native UI), not a design-from-scratch plan. See
 [REUSE.md](REUSE.md). Each phase is shippable/reviewable on its own.
 
-**Status:** Phases 0, 1, 2 and 4 are done. Phase 3 is in progress: the Rust core,
-the FFI facade and the iOS build are done and verified; the Android library and
-the first screens remain.
+**Status:** Phases 0 to 6 are done. The Android app is in closed testing on
+Google Play: both modes, EN/FR/ES, ads with UMP consent, and the remove-ads
+purchase. Phase 7 is in progress, and what remains in it is not engineering:
+Google requires a new personal developer account to hold 12 testers opted in
+for 14 continuous days before it will grant production access, and the store's
+own content declarations have to be filled in by hand. iOS trails Android.
 
 ## Phase 0 - Foundations [DONE]
 
@@ -37,7 +40,7 @@ the first screens remain.
 - Integration tests assert the real volumes (412 / 513 / 1905 / 945 aliases) and
   that the Easy pool is exactly the 956 transfers the spec quotes.
 
-## Phase 3 - Cross the FFI, first playable [IN PROGRESS]
+## Phase 3 - Cross the FFI, first playable [DONE]
 
 Done:
 - `mercato-core::session` drives a round (10 questions, Easy 4-option / Hardcore
@@ -57,10 +60,10 @@ Done:
   bindings and plays a real round, so the Rust-to-Swift chain is proven at
   runtime and not merely typechecked.
 
-Remaining:
-- Android `.so` per ABI (`scripts/build-native.sh android`).
-- Minimal SwiftUI and Compose screens on top of the facade.
-- **Exit**: same core logic playable on simulator + emulator.
+- Android `.so` per ABI (`scripts/build-native.sh android`), one per
+  arm64-v8a / armeabi-v7a / x86_64, checked for 16 KB page alignment because
+  Play refuses anything else.
+- **Exit**: same core logic playable on simulator + emulator. Met.
 
 ## Phase 4 - Trilingual data (v1 requirement) [DONE]
 
@@ -74,7 +77,7 @@ Remaining:
   43 of the 53 nationalities differ EN/FR.
 - Positions are a fixed four-value set, mapped in the UI layer.
 
-## Phase 5 - Build the screens
+## Phase 5 - Build the screens [DONE]
 
 - Generate `DesignTokens.swift` / `.kt` from `tokens.json`; wire `strings.json`
   (system language, English fallback).
@@ -86,20 +89,23 @@ Remaining:
 - Recap: stars, missed transfers, play again. **No balls, no rewarded video.**
 - **Exit**: full offline game, both modes, EN/FR/ES.
 
-## Phase 6 - Monetization
+## Phase 6 - Monetization [DONE]
 
 - AdMob per `specs/ads.md`: sponsor board, interstitial (1/round), banner on
   menus, recap rectangle. Consent (UMP) + iOS ATT. **No rewarded ads.**
-- **Remove-ads only** (€4.99, StoreKit 2 / Play Billing non-consumable) +
+- **Remove-ads only** (€3.99, StoreKit 2 / Play Billing non-consumable) +
   restore. No shop, no other products.
 - **Exit**: no ads after purchase (verified fresh install + restore).
 
-## Phase 7 - Data confidence & hardening
+## Phase 7 - Data confidence & hardening [IN PROGRESS]
 
 - Confirm dataset rows against a second source (per authors' caveat); record
   sources in `data/SOURCES.md`.
-- Privacy policy, store listings (FR/EN/ES), icons, screenshots, data-safety
-  labels. QA across device sizes + accessibility. Closed beta.
+- Done: privacy policy published, store listings and screenshots in all three
+  languages, generated icons, closed beta running on the alpha track.
+- Remaining: 12 testers opted in for 14 continuous days, the console's App
+  content declarations (data safety, content rating, target audience, ads),
+  and linking both AdMob apps to their store entries so real ads fill.
 
 ## Phase 8 - Launch
 

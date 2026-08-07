@@ -2,11 +2,10 @@
 
 | Format | Size | Where | Rule |
 | --- | --- | --- | --- |
-| Banner | 320x50 | Above the tab bar on Home, Shop, Profile | Never during a question |
+| Banner | 320x50 | Above the tab bar on Home and Profile | Never during a question |
 | Sponsor board | full width x 44 | Below the transfer card, in game | Static, no interaction, no animation |
 | Interstitial | full screen | Between the last question and the recap | 5s countdown then explicit close |
-| Rewarded video | opt in | Recap | Doubles the balls won, never forced, hidden when balls = 0 |
-| Rectangle | 300x250 | Recap, under the rewarded button | Standard display slot |
+| Rectangle | 300x250 | Recap | Standard display slot |
 
 ## Rules
 1. No ad format is ever layered over a live question, apart from the static sponsor board.

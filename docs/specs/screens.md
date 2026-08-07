@@ -2,12 +2,17 @@
 
 Column: 440px max, 16px gutters. Tab bar and banner share the exact same column.
 
+The numbering skips 09. That was the Shop, dropped when monetization settled on
+remove-ads alone: no currency, no hint packs, no rewarded video. The numbers are
+quoted in the Swift and Kotlin screen headers, so closing the gap would mean
+renaming screens that never changed, to hide a decision worth remembering.
+
 ## 01 Splash
 Logo, loading bar (1.3s). Auto advances to onboarding on first launch, to Home afterwards.
 
 ## 02 Onboarding
 Three panes, illustration placeholder + title + body. Dots, Skip, then NEXT / START.
-1. Two clubs, one year. 2. Name the player, four options or free typing. 3. +3 per correct answer, points become balls.
+1. Two clubs, one year. 2. Name the player, four options or free typing. 3. +3 per correct answer.
 
 ## 03 Ad consent
 Ivory card, three bullet points, ACCEPT ALL (primary) and NON PERSONALISED ADS (secondary). Reachable again from Settings.
@@ -30,10 +35,7 @@ Modal over the game. KEEP PLAYING (yellow) / QUIT (coral).
 Full screen slot between the last question and the recap. Countdown 5s, then explicit close. Skipped entirely when ads are removed.
 
 ## 08 Recap
-Stars (3 at 90% correct, 2 at 60%, 1 above zero), points, balls won, rewarded video for double balls (hidden at zero), 300x250 rectangle, list of missed transfers, PLAY AGAIN / Home.
-
-## 09 Shop
-Remove ads (3,99 €), 10 hints (120 balls), 50 hints (500 balls), 200 balls (1,99 €), restore purchases.
+Stars (3 at 90% correct, 2 at 60%, 1 above zero), points, 300x250 rectangle, list of missed transfers, PLAY AGAIN / Home.
 
 ## 10 Profile
 Four lifetime stats, entry to Settings.

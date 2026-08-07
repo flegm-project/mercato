@@ -2,7 +2,7 @@
 
 ## Shared
 
-- App name / title (30 chars max): `Mercato: Transfer Quiz`
+- App name / title (30 chars max): `Mercato Football Transfer Quiz`
 - Price: free, ads; one-time "Remove ads" purchase at EUR 3.99.
 
 ## App Store (iOS)

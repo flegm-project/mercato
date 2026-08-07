@@ -10,13 +10,14 @@ must name the footballer.
   fallback).
 - **Platforms**: iOS and Android, powered by a shared Rust core.
 - **Monetization**: banner/interstitial ads with a single in-app purchase to
-  remove ads (€4.99). No shop, no other purchases.
+  remove ads (€3.99). No shop, no other purchases.
 
-> Status: porting. A complete v1.0 reference kit (real data - 412 clubs, 513
-> players, 1 905 transfers - a specified matching engine, a playable web
-> reference, a design system, and EN/FR/ES strings) has been unpacked into this
-> repo. This effort **ports** it to a shared Rust core with native iOS/Android
-> UIs. See [`docs/REUSE.md`](docs/REUSE.md).
+> Status: in closed testing on Google Play. The shared Rust core, the FFI
+> facade and both native UIs are built; the Android app ships ads, the
+> remove-ads purchase and EN/FR/ES content. Remaining before production: the
+> 12-tester window Google requires of new personal developer accounts, and the
+> store's own content declarations. iOS trails Android. The v1.0 reference kit
+> this was ported from is described in [`docs/REUSE.md`](docs/REUSE.md).
 
 ## Modes
 
