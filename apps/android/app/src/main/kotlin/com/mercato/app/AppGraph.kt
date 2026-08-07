@@ -47,6 +47,12 @@ class AppGraph(private val context: Context, private val scope: CoroutineScope) 
     suspend fun warmUp() = withContext(Dispatchers.IO) {
         stageDataset()
         game // force corpus parsing off the main thread
+        // And build Sounds, which starts SoundPool decoding the three cues.
+        // Left lazy, the first thing to touch it was the play() for the first
+        // answer of the round, so loading began at the moment the sound was
+        // due and that cue was dropped: the first question of every session
+        // was silent.
+        sounds
     }
 
     /**
