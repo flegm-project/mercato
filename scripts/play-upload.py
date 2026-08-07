@@ -78,12 +78,23 @@ def main():
     eid = edit["id"]
     print("    edit %s" % eid)
     try:
-        media = MediaFileUpload(args.aab, mimetype="application/octet-stream",
-                                resumable=True)
-        bundle = svc.edits().bundles().upload(
-            packageName=args.package, editId=eid, media_body=media).execute()
-        got = int(bundle["versionCode"])
-        print("    uploaded version code %d (sha1 %s)" % (got, bundle.get("sha1")))
+        # A bundle can only be uploaded once. Putting the same build on a
+        # second track is not another upload, it is another track assignment,
+        # and trying to upload again fails with "Version code N has already
+        # been used" after having pushed the whole file over the wire.
+        existing = [int(b["versionCode"]) for b
+                    in svc.edits().bundles().list(
+                        packageName=args.package, editId=eid).execute().get("bundles", [])]
+        if args.version_code in existing:
+            got = args.version_code
+            print("    version code %d is already uploaded, assigning it" % got)
+        else:
+            media = MediaFileUpload(args.aab, mimetype="application/octet-stream",
+                                    resumable=True)
+            bundle = svc.edits().bundles().upload(
+                packageName=args.package, editId=eid, media_body=media).execute()
+            got = int(bundle["versionCode"])
+            print("    uploaded version code %d (sha1 %s)" % (got, bundle.get("sha1")))
         # The bundle decides its own version code, from its manifest. If it is
         # not the one the caller bumped, the file on disk is not the file the
         # build just made, and shipping it would put a stale app on the track
