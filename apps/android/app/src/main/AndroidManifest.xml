@@ -5,7 +5,16 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
+    <!--
+      appCategory is not decoration. Android 16 ignores android:screenOrientation
+      on any display at least 600dp wide, so on a tablet or an unfolded foldable
+      the portrait lock below would simply not apply. Games are exempt from that
+      override, and this is a game. The alternative, the
+      PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY property, stops working at
+      targetSdk 37, so it would buy one year and a migration.
+    -->
     <application
+        android:appCategory="game"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:name=".MercatoApplication"
@@ -19,10 +28,17 @@
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="${admobAppId}" />
 
+        <!--
+          Portrait only. Every screen is one column: the transfer card, then
+          the four choices or the text field, then the keyboard. Turned
+          sideways there is no room for the card and the answer at once, and
+          nothing in the game gains from the width.
+        -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustResize"
+            android:screenOrientation="portrait"
             android:configChanges="orientation|screenSize|keyboardHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
