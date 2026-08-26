@@ -10,9 +10,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.Box
+import androidx.lifecycle.LifecycleDestroyedException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.withResumed
+import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -136,6 +139,49 @@ fun MercatoNav(graph: AppGraph, startRoute: String? = null) {
         }
     }
 
+    // Navigation asked for by a callback rather than by a tap.
+    //
+    // Crashlytics, 1.0.4, the first issue the app ever reported:
+    //   java.lang.IllegalStateException: State must be at least CREATED to
+    //   move to DESTROYED, but was INITIALIZED
+    // Every way out of Splash is an async callback: the splash timer, then
+    // the UMP consent form, which come back whenever the network and the
+    // player let them. Leave the app during those two seconds and the
+    // request lands on a stopped host. NavHost is no longer composing, so
+    // the entry navigate() adds never moves past INITIALIZED, and the
+    // popUpTo behind it then asks LifecycleRegistry to destroy an entry it
+    // never created, which it refuses.
+    //
+    // So a navigation waits for the host to be resumed instead of running
+    // against a stopped one. Dropping it would be worse than the crash: the
+    // player comes back to a splash screen that never leaves. The same latch
+    // swallows the second of two taps landing in the same frame, which is
+    // the other way to open one screen twice.
+    val hostLifecycle = androidx.lifecycle.compose.LocalLifecycleOwner.current.lifecycle
+    val navScope = androidx.compose.runtime.rememberCoroutineScope()
+    val navigating = androidx.compose.runtime.remember {
+        androidx.compose.runtime.mutableStateOf(false)
+    }
+    val whenResumed: (() -> Unit) -> Unit = { action ->
+        if (!navigating.value) {
+            navigating.value = true
+            navScope.launch {
+                try {
+                    hostLifecycle.withResumed { action() }
+                } catch (_: LifecycleDestroyedException) {
+                    // The activity went away first: there is nothing to open.
+                } finally {
+                    navigating.value = false
+                }
+            }
+        }
+    }
+    fun go(route: String, options: NavOptionsBuilder.() -> Unit = {}) =
+        whenResumed { nav.navigate(route, builder = options) }
+    fun back(route: String? = null) = whenResumed {
+        if (route == null) nav.popBackStack() else nav.popBackStack(route, inclusive = false)
+    }
+
     // One hook for every screen rather than a call in each composable: a
     // screen added later is counted without anyone remembering to count it.
     // The names come from the shared vocabulary, not from the route strings,
@@ -159,10 +205,10 @@ fun MercatoNav(graph: AppGraph, startRoute: String? = null) {
             SplashScreen {
                 if (onboarded == true) {
                     gatherConsent {
-                        nav.navigate(Routes.HOME) { popUpTo(Routes.SPLASH) { inclusive = true } }
+                        go(Routes.HOME) { popUpTo(Routes.SPLASH) { inclusive = true } }
                     }
                 } else {
-                    nav.navigate(Routes.ONBOARDING) { popUpTo(Routes.SPLASH) { inclusive = true } }
+                    go(Routes.ONBOARDING) { popUpTo(Routes.SPLASH) { inclusive = true } }
                 }
             }
         }
@@ -176,78 +222,78 @@ fun MercatoNav(graph: AppGraph, startRoute: String? = null) {
                     if (graph.consent.handledByUmp.value) {
                         scope.launch {
                             graph.prefs.setOnboarded()
-                            nav.navigate(Routes.HOME) {
+                            go(Routes.HOME) {
                                 popUpTo(Routes.ONBOARDING) { inclusive = true }
                             }
                         }
                     } else {
-                        nav.navigate(Routes.CONSENT)
+                        go(Routes.CONSENT)
                     }
                 }
             })
         }
         composable(Routes.CONSENT) {
             ConsentScreen(graph, fromSettings = false) {
-                nav.navigate(Routes.HOME) { popUpTo(Routes.ONBOARDING) { inclusive = true } }
+                go(Routes.HOME) { popUpTo(Routes.ONBOARDING) { inclusive = true } }
             }
         }
         composable("${Routes.CONSENT}/settings") {
-            ConsentScreen(graph, fromSettings = true) { nav.popBackStack() }
+            ConsentScreen(graph, fromSettings = true) { back() }
         }
         composable(Routes.HOME) {
             HomeScreen(
                 graph = graph,
                 onPlay = { mode ->
-                    nav.navigate(if (mode == GameMode.EASY) Routes.GAME_EASY else Routes.GAME_HARDCORE)
+                    go(if (mode == GameMode.EASY) Routes.GAME_EASY else Routes.GAME_HARDCORE)
                 },
-                onProfile = { nav.navigate(Routes.PROFILE) },
+                onProfile = { go(Routes.PROFILE) },
             )
         }
         composable(Routes.GAME_EASY) {
             GameScreen(graph, vm, GameMode.EASY,
-                onRoundOver = { nav.navigate(Routes.RECAP) { popUpTo(Routes.HOME) } },
-                onQuit = { nav.popBackStack(Routes.HOME, inclusive = false) })
+                onRoundOver = { go(Routes.RECAP) { popUpTo(Routes.HOME) } },
+                onQuit = { back(Routes.HOME) })
         }
         composable(Routes.GAME_HARDCORE) {
             GameScreen(graph, vm, GameMode.HARDCORE,
-                onRoundOver = { nav.navigate(Routes.RECAP) { popUpTo(Routes.HOME) } },
-                onQuit = { nav.popBackStack(Routes.HOME, inclusive = false) })
+                onRoundOver = { go(Routes.RECAP) { popUpTo(Routes.HOME) } },
+                onQuit = { back(Routes.HOME) })
         }
         composable(Routes.RECAP) {
             RecapScreen(graph, vm,
                 onPlayAgain = { mode ->
                     // Before the navigate, not after: see clearRecap.
                     vm.clearRecap()
-                    nav.navigate(if (mode == GameMode.EASY) Routes.GAME_EASY else Routes.GAME_HARDCORE) {
+                    go(if (mode == GameMode.EASY) Routes.GAME_EASY else Routes.GAME_HARDCORE) {
                         popUpTo(Routes.HOME)
                     }
                 },
                 onHome = {
                     // Same reason: Home then PLAY lands on the game screen too.
                     vm.clearRecap()
-                    nav.popBackStack(Routes.HOME, inclusive = false)
+                    back(Routes.HOME)
                 })
         }
         composable(Routes.PROFILE) {
             ProfileScreen(graph,
-                onPlayTab = { nav.popBackStack(Routes.HOME, inclusive = false) },
-                onSettings = { nav.navigate(Routes.SETTINGS) })
+                onPlayTab = { back(Routes.HOME) },
+                onSettings = { go(Routes.SETTINGS) })
         }
         composable(Routes.SETTINGS) {
             val activity = androidx.compose.ui.platform.LocalContext.current as? android.app.Activity
             SettingsScreen(graph,
-                onBack = { nav.popBackStack() },
+                onBack = { back() },
                 onConsent = {
                     // GDPR scope: the UMP privacy options form is the legal
                     // surface; elsewhere the app's own screen handles it.
                     if (activity != null && graph.consent.privacyOptionsRequired(activity)) {
                         graph.consent.showPrivacyOptions(activity)
                     } else {
-                        nav.navigate("${Routes.CONSENT}/settings")
+                        go("${Routes.CONSENT}/settings")
                     }
                 },
                 onReplayIntro = {
-                    nav.navigate(Routes.ONBOARDING) { popUpTo(Routes.HOME) }
+                    go(Routes.ONBOARDING) { popUpTo(Routes.HOME) }
                 },
                 onPrivacy = {
                     // The nav graph is not the Activity, so open through the
@@ -259,17 +305,17 @@ fun MercatoNav(graph: AppGraph, startRoute: String? = null) {
                         )
                     )
                 },
-                onOffline = { nav.navigate(Routes.OFFLINE) },
-                onLab = { nav.navigate(Routes.LAB) })
+                onOffline = { go(Routes.OFFLINE) },
+                onLab = { go(Routes.LAB) })
         }
         composable(Routes.OFFLINE) {
-            com.mercato.app.ui.OfflineScreen(onRetry = { nav.popBackStack() })
+            com.mercato.app.ui.OfflineScreen(onRetry = { back() })
         }
         composable(Routes.LAB) {
             // Dev-only surface; the Settings row is hidden in release, and
             // the route itself refuses to render outside debug builds.
             if (BuildConfig.DEBUG) {
-                com.mercato.app.ui.LabScreen(graph, onBack = { nav.popBackStack() })
+                com.mercato.app.ui.LabScreen(graph, onBack = { back() })
             }
         }
     }
