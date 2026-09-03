@@ -12,7 +12,16 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
 import uniffi.mercato_ffi.AdConsent
 
-private val Context.dataStore by preferencesDataStore(name = "mercato")
+private val Context.dataStore by preferencesDataStore(name = Prefs.MAIN_STORE)
+
+// The remove-ads entitlement lives alone in its own DataStore so the backup
+// rules can drop exactly this file and nothing else. It carries no migration
+// from the old shared store on purpose: a local copy cannot tell a genuine
+// purchase from a restored backup, so seeding it from disk would recreate the
+// very free-forever exploit this split closes. BillingManager.restore() runs
+// at every launch and resume and re-grants it from Play, so a real buyer who
+// updates offline only sees ads until the next online start.
+private val Context.entitlementStore by preferencesDataStore(name = Prefs.ENTITLEMENT_STORE)
 
 /**
  * Small preference store: first-run flag, consent, toggles, lifetime stats.
@@ -20,6 +29,14 @@ private val Context.dataStore by preferencesDataStore(name = "mercato")
  * death lives here.
  */
 class Prefs(private val context: Context) {
+
+    companion object {
+        /** Progression, stats, onboarding, consent, settings: backed up. */
+        const val MAIN_STORE = "mercato"
+
+        /** The remove-ads entitlement only: excluded from every backup path. */
+        const val ENTITLEMENT_STORE = "entitlement"
+    }
 
     private object Keys {
         val onboarded = booleanPreferencesKey("onboarded")
@@ -60,8 +77,11 @@ class Prefs(private val context: Context) {
     suspend fun resetOnboarding() = context.dataStore.edit { it[Keys.onboarded] = false }
 
     suspend fun setConsent(value: String) = context.dataStore.edit { it[Keys.consent] = value }
+
+    // Entitlement store, not the main one: this key must never end up in a
+    // backup, or restoring the backup would grant remove-ads for free.
     suspend fun setAdsRemoved(value: Boolean) =
-        context.dataStore.edit { it[Keys.adsRemoved] = value }
+        context.entitlementStore.edit { it[Keys.adsRemoved] = value }
 
     suspend fun setSound(value: Boolean) = context.dataStore.edit { it[Keys.sound] = value }
     suspend fun setNotifications(value: Boolean) =
@@ -82,7 +102,7 @@ class Prefs(private val context: Context) {
     // known entitlement/consent right away; these two reads are the only
     // blocking calls, on tiny data.
     fun adsRemovedBlocking(): Boolean =
-        runBlocking { context.dataStore.data.first()[Keys.adsRemoved] ?: false }
+        runBlocking { context.entitlementStore.data.first()[Keys.adsRemoved] ?: false }
 
     fun consentBlocking(): AdConsent =
         runBlocking { consentFromPref(context.dataStore.data.first()[Keys.consent]) }

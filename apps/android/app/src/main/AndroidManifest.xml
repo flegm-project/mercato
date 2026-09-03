@@ -20,6 +20,8 @@
         android:name=".MercatoApplication"
         android:label="Mercato"
         android:allowBackup="true"
+        android:fullBackupContent="@xml/backup_rules"
+        android:dataExtractionRules="@xml/data_extraction_rules"
         android:supportsRtl="true"
         android:theme="@style/Theme.Mercato">
 
