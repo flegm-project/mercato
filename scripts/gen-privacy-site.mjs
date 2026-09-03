@@ -60,7 +60,18 @@ function toHtml(md) {
 
   const out = [];
   let inList = false;
+  // A block (paragraph or list item) is buffered raw and rendered once it is
+  // complete, so inline markup that wraps across source lines, a **bold** span
+  // whose markers land on two lines, is not split into two unmatched halves.
+  let pending = null;
+  const flush = () => {
+    if (!pending) return;
+    const html = inline(pending.text);
+    out.push(pending.type === "li" ? `<li>${html}</li>` : `<p>${html}</p>`);
+    pending = null;
+  };
   const closeList = () => {
+    flush();
     if (inList) {
       out.push("</ul>");
       inList = false;
@@ -87,23 +98,19 @@ function toHtml(md) {
     }
     const item = /^[-*]\s+(.*)$/.exec(line);
     if (item) {
+      flush();
       if (!inList) {
         out.push("<ul>");
         inList = true;
       }
-      out.push(`<li>${inline(item[1])}</li>`);
+      pending = { type: "li", text: item[1] };
       continue;
     }
-    if (inList) {
-      // A wrapped list item continues the previous one.
-      out[out.length - 1] = out[out.length - 1].replace(/<\/li>$/, ` ${inline(line.trim())}</li>`);
-      continue;
-    }
-    const prev = out[out.length - 1];
-    if (prev && prev.startsWith("<p>") && prev.endsWith("</p>")) {
-      out[out.length - 1] = `${prev.slice(0, -4)} ${inline(line.trim())}</p>`;
+    // A wrapped line continues the current block, whichever kind it is.
+    if (pending) {
+      pending.text += ` ${line.trim()}`;
     } else {
-      out.push(`<p>${inline(line.trim())}</p>`);
+      pending = { type: "p", text: line.trim() };
     }
   }
   closeList();

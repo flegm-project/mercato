@@ -5,9 +5,10 @@ Last updated: 27 July 2026
 Mercato is a football transfer guessing game ("we" refers to its publisher;
 the publisher's legal identity is set on the store listing at submission).
 This policy explains what data the app handles, on iOS and Android.
-The short version: the game itself collects nothing, has no account, and
-works entirely offline; the only data processing comes from the advertising
-SDK, and you control whether ads are personalised.
+The short version: the game needs no account and works entirely offline;
+the data processing comes from embedded Google services, advertising
+(AdMob), usage measurement (Firebase Analytics) and crash reports
+(Firebase Crashlytics), and you control whether ads are personalised.
 
 ## No account, no registration
 
@@ -23,7 +24,7 @@ score, best streak, accuracy) and settings (sound, vibration, consent
 choice, remove-ads state) are stored only on your device, and are deleted
 when you uninstall the app.
 
-## Advertising (the only data processing)
+## Advertising
 
 The free version shows ads served by Google AdMob (Google Mobile Ads SDK).
 To serve and measure ads, Google may process device information such as the
@@ -46,6 +47,30 @@ Your choices:
 - **Buying "Remove ads" disables every ad** and, with it, the ad SDK's data
   processing described above.
 
+## Usage measurement and crash reporting (Firebase)
+
+To know whether the game works and to fix what breaks, the app uses two Google
+services, Firebase Analytics and Firebase Crashlytics.
+
+**Firebase Analytics** logs usage events: round started and ended (mode, score,
+correct answers, stars), quitting mid-round, hint taken, screen opened, purchase
+steps and the sound setting. Alongside these events sits an install-specific
+instance identifier, which is not the advertising identifier and does not
+identify you. This data is used only to measure whether the game holds up
+(rounds finished, question difficulty, quit rate). It is processed by Google and
+retained for up to 14 months.
+
+**Firebase Crashlytics** sends a report when the app crashes or hits an error it
+swallows silently. The report carries the device state at the time (model, OS
+version, memory, technical stack trace) and no personal data. It is used only to
+diagnose and fix the fault, and is processed by Google.
+
+Usage measurement stays active even if you refuse ad personalisation, because it
+carries no advertising identifier. Your refusal (the UMP form in the EEA and UK,
+the in-app consent screen elsewhere, App Tracking Transparency on iOS) strips
+advertising identifiers from measurement as well as from ads. Uninstalling the
+app stops any new data being sent.
+
 ## Purchases
 
 The single in-app purchase (Remove ads) is processed entirely by Apple
@@ -62,9 +87,11 @@ remove-ads purchase as usual.
 
 ## Data sharing and retention
 
-We store no personal data on any server, so we have nothing to share, sell,
-or retain. The only third party processing data is Google, as the ads
-provider, under the consent choices described above.
+We operate no server and store no personal data ourselves, so we have nothing
+to sell. The only third party processing data is Google, both as the ads
+provider (AdMob) and as the usage-measurement and crash-reporting provider
+(Firebase), under the consent choices described above; measurement events are
+retained for up to 14 months.
 
 ## Your rights
 
@@ -99,8 +126,11 @@ Answers for App Store Connect, "App Privacy" section:
 - Data not linked to you: **Identifiers (Device ID), Usage Data (advertising
   data), Diagnostics (crash and performance data from the ads SDK)** -
   collected by Google AdMob for Third-Party Advertising and App
-  Functionality (ad delivery, fraud prevention).
-- Purposes: Third-Party Advertising.
+  Functionality (ad delivery, fraud prevention); **Usage Data (product
+  interaction), Identifiers (instance identifier)** collected by Firebase
+  Analytics for Analytics; **Diagnostics (crash and performance data)**
+  collected by Firebase Crashlytics for App Functionality.
+- Purposes: Third-Party Advertising, Analytics, App Functionality.
 - The app itself collects nothing: no contact info, no location, no user
   content, no browsing history, no purchases data leaves Apple's systems.
 
@@ -110,11 +140,14 @@ Answers for the Play Console "Data safety" section:
 
 - Does your app collect or share any of the required user data types?
   **Yes** (via the Google Mobile Ads SDK).
-- Data collected: **Device or other IDs (Advertising ID)**; **App
-  interactions (ad interactions)** - collected, not shared by us (Google
-  acts as the ads provider), optional (user can refuse personalised ads;
-  buying Remove ads stops ad requests entirely), for **Advertising or
-  marketing** purposes.
+- Data collected: **Device or other IDs (Advertising ID and Firebase instance
+  identifier)**; **App interactions (ad interactions and usage events)**;
+  **Crash logs** and **Diagnostics** - collected, not shared by us (Google
+  acts as the ads provider via AdMob and the measurement provider via
+  Firebase), for **Advertising or marketing**, **Analytics** and **App
+  functionality** purposes; personalised advertising is optional (user can
+  refuse it; buying Remove ads stops ad requests entirely). Measurement events
+  are retained for up to 14 months.
 - Data shared: none beyond the processing by Google described above.
 - Is all of the user data collected by your app encrypted in transit?
   **Yes** (the ads SDK uses HTTPS).

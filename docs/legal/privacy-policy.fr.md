@@ -5,9 +5,10 @@ Dernière mise à jour : 27 juillet 2026
 Mercato est un jeu de devinettes sur les transferts de football ("nous" désigne son éditeur ;
 l'identité légale de l'éditeur est précisée dans la fiche store au moment de la soumission).
 Cette politique explique comment l'application traite les données, sur iOS et Android.
-En résumé : le jeu lui-même ne collecte rien, ne nécessite aucun compte et
-fonctionne entièrement hors ligne ; le seul traitement de données provient du SDK
-publicitaire, et vous contrôlez si les publicités sont personnalisées.
+En résumé : le jeu ne nécessite aucun compte et fonctionne entièrement hors ligne ;
+les traitements de données proviennent de services Google intégrés, la publicité
+(AdMob), la mesure d'usage (Firebase Analytics) et les rapports de plantage
+(Firebase Crashlytics), et vous contrôlez si les publicités sont personnalisées.
 
 ## Aucun compte, aucune inscription
 
@@ -23,7 +24,7 @@ meilleure série, précision) et paramètres (son, vibration, choix de consentem
 état de la suppression des publicités) sont stockés uniquement sur votre appareil et sont
 supprimés lorsque vous désinstallez l'application.
 
-## Publicité (seul traitement de données)
+## Publicité
 
 La version gratuite affiche des publicités diffusées par Google AdMob (Google Mobile Ads SDK).
 Pour diffuser et mesurer les publicités, Google peut traiter des informations sur l'appareil
@@ -47,6 +48,31 @@ Vos choix :
 - **L'achat "Supprimer les publicités" désactive toutes les publicités** et, avec elles,
   le traitement de données effectué par le SDK publicitaire décrit ci-dessus.
 
+## Mesure d'usage et rapports de plantage (Firebase)
+
+Pour savoir si le jeu fonctionne et corriger ce qui casse, l'application utilise deux
+services de Google, Firebase Analytics et Firebase Crashlytics.
+
+**Firebase Analytics** enregistre des événements d'usage : début et fin de partie
+(mode, score, réponses correctes, étoiles), abandon en cours de manche, indice utilisé,
+ouverture d'un écran, étapes d'un achat et réglage du son. À ces événements s'ajoute un
+identifiant d'instance propre à l'installation, qui n'est pas l'identifiant publicitaire
+et ne vous identifie pas. Ces données servent uniquement à mesurer si le jeu tient
+(parties terminées, difficulté des questions, taux d'abandon). Elles sont traitées par
+Google et conservées jusqu'à 14 mois.
+
+**Firebase Crashlytics** envoie un rapport lorsque l'application plante ou rencontre une
+erreur qu'elle absorbe silencieusement. Le rapport contient l'état de l'appareil au
+moment de l'incident (modèle, version du système, mémoire, trace technique), sans aucune
+donnée personnelle. Il sert uniquement à diagnostiquer et corriger le défaut, et est
+traité par Google.
+
+La mesure d'usage reste active même si vous refusez la personnalisation des publicités,
+car elle ne transporte aucun identifiant publicitaire. Votre refus (formulaire UMP dans
+l'EEE et au Royaume-Uni, écran de consentement intégré ailleurs, App Tracking
+Transparency sur iOS) retire les identifiants publicitaires de la mesure comme de la
+publicité. La désinstallation de l'application interrompt tout nouvel envoi.
+
 ## Achats
 
 L'achat intégré unique (Supprimer les publicités) est traité intégralement par Apple
@@ -63,9 +89,11 @@ Les paramètres familiaux des stores requérant une confirmation avant achat s'a
 
 ## Partage et conservation des données
 
-Nous ne stockons aucune donnée personnelle sur un serveur ; nous n'avons donc rien à partager,
-vendre ni conserver. Le seul tiers traitant des données est Google, en tant que fournisseur
-publicitaire, selon les choix de consentement décrits ci-dessus.
+Nous n'exploitons aucun serveur et ne stockons nous-mêmes aucune donnée personnelle, nous
+n'avons donc rien à vendre. Le seul tiers traitant des données est Google, à la fois comme
+fournisseur publicitaire (AdMob) et comme fournisseur de mesure d'usage et de rapports de
+plantage (Firebase), selon les choix de consentement décrits ci-dessus ; les événements de
+mesure sont conservés jusqu'à 14 mois.
 
 ## Vos droits
 
@@ -102,8 +130,14 @@ Réponses pour App Store Connect, section "App Privacy" :
   plantage et de performance du SDK publicitaire)** (Diagnostics / crash and performance data)
   - collectées par Google AdMob pour la publicité tierce et le bon fonctionnement de
   l'application (Third-Party Advertising, App Functionality : diffusion des publicités,
-  prévention de la fraude).
-- Finalités : publicité tierce (Third-Party Advertising).
+  prévention de la fraude) ; **Données d'utilisation (interactions avec le produit)**
+  (Usage Data / product interaction) et **Identifiants (identifiant d'instance)**
+  (Identifiers) collectées par Firebase Analytics à des fins d'**analyse** (Analytics) ;
+  **Diagnostics (données de plantage et de performance)** (Diagnostics / crash and
+  performance data) collectées par Firebase Crashlytics pour le **bon fonctionnement de
+  l'application** (App Functionality).
+- Finalités : publicité tierce (Third-Party Advertising), analyse (Analytics), bon
+  fonctionnement de l'application (App Functionality).
 - L'application elle-même ne collecte rien : aucune information de contact, de localisation,
   aucun contenu utilisateur, aucun historique de navigation, aucune donnée d'achat ne quitte
   les systèmes d'Apple.
@@ -115,11 +149,15 @@ Réponses pour la section "Data safety" de la Play Console :
 - Votre application collecte-t-elle ou partage-t-elle des types de données utilisateur
   requis ? **Oui** (via le Google Mobile Ads SDK).
 - Données collectées : **Identifiants d'appareil ou autres** (Device or other IDs /
-  Advertising ID) ; **Interactions avec l'application** (App interactions / ad interactions)
-  - collectées, non partagées par nous (Google agit en tant que fournisseur publicitaire),
-  facultatives (l'utilisateur peut refuser les publicités personnalisées ; l'achat de
-  Supprimer les publicités arrête entièrement les demandes publicitaires), à des fins de
-  **publicité ou marketing** (Advertising or marketing).
+  Advertising ID et identifiant d'instance Firebase) ; **Interactions avec l'application**
+  (App interactions / interactions publicitaires et événements d'usage) ; **Journaux de
+  plantage** (Crash logs) et **Diagnostics** (Diagnostics) - collectées, non partagées
+  par nous (Google agit en tant que fournisseur publicitaire via AdMob et de mesure via
+  Firebase), à des fins de **publicité ou marketing** (Advertising or marketing),
+  d'**analyse** (Analytics) et de **fonctionnalité de l'application** (App functionality) ;
+  la publicité personnalisée est facultative (l'utilisateur peut la refuser ; l'achat de
+  Supprimer les publicités arrête entièrement les demandes publicitaires). Conservation des
+  événements de mesure : jusqu'à 14 mois.
 - Données partagées : aucune au-delà du traitement par Google décrit ci-dessus.
 - Toutes les données utilisateur collectées par votre application sont-elles chiffrées
   pendant le transit ? **Oui** (le SDK publicitaire utilise HTTPS).
