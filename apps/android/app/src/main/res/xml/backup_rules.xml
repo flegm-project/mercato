@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Auto Backup for Android 11 and below (android:fullBackupContent). allowBackup
+  stays true so the player keeps progression, stats, onboarding, consent and
+  settings across a restore. Only the remove-ads entitlement is dropped: it is a
+  Play Billing purchase, and letting it ride in a backup would grant remove-ads
+  for free and forever, since restore() never revokes offline. Paths are
+  relative to getFilesDir(); DataStore writes files/datastore/<name>.preferences_pb.
+-->
+<full-backup-content>
+    <exclude domain="file" path="datastore/entitlement.preferences_pb" />
+</full-backup-content>
