@@ -35,46 +35,53 @@
 <nav aria-label="Language"><button type="button" data-pick="en">English</button><button type="button" data-pick="fr">Français</button><button type="button" data-pick="es">Español</button></nav>
 <section data-lang="en" hidden>
 <h1>Mercato Privacy Policy</h1>
-<p>Last updated: 27 July 2026 Mercato is a football transfer guessing game ("we" refers to its publisher; the publisher's legal identity is set on the store listing at submission). This policy explains what data the app handles, on iOS and Android. The short version: the game itself collects nothing, has no account, and works entirely offline; the only data processing comes from the advertising SDK, and you control whether ads are personalised.</p>
+<p>Last updated: 27 July 2026</p>
+<p>Mercato is a football transfer guessing game ("we" refers to its publisher; the publisher's legal identity is set on the store listing at submission). This policy explains what data the app handles, on iOS and Android. The short version: the game needs no account and works entirely offline; the data processing comes from embedded Google services, advertising (AdMob), usage measurement (Firebase Analytics) and crash reports (Firebase Crashlytics), and you control whether ads are personalised.</p>
 <h2>No account, no registration</h2>
 <p>Mercato has no sign-up, no login, and no way to enter personal information. We do not know who you are.</p>
 <h2>The game is offline</h2>
 <p>The full game dataset (clubs, players, transfers) ships inside the app. Gameplay never sends anything to us: we operate no game server and receive no gameplay data. Your scores, lifetime statistics (rounds played, best score, best streak, accuracy) and settings (sound, vibration, consent choice, remove-ads state) are stored only on your device, and are deleted when you uninstall the app.</p>
-<h2>Advertising (the only data processing)</h2>
-<p>The free version shows ads served by Google AdMob (Google Mobile Ads SDK). To serve and measure ads, Google may process device information such as the advertising identifier (IDFA on iOS, Advertising ID on Android), IP address, and coarse ad-interaction data. This processing happens under Google's own terms; see [How Google uses information from sites or apps that use its services](https://policies.google.com/technologies/partner-sites) and the <a href="https://policies.google.com/privacy">Google Privacy Policy</a>. Your choices:</p>
+<h2>Advertising</h2>
+<p>The free version shows ads served by Google AdMob (Google Mobile Ads SDK). To serve and measure ads, Google may process device information such as the advertising identifier (IDFA on iOS, Advertising ID on Android), IP address, and coarse ad-interaction data. This processing happens under Google's own terms; see <a href="https://policies.google.com/technologies/partner-sites">How Google uses information from sites or apps that use its services</a> and the <a href="https://policies.google.com/privacy">Google Privacy Policy</a>.</p>
+<p>Your choices:</p>
 <ul>
 <li><strong>In the European Economic Area and the UK</strong>, a Google-certified consent form (Google User Messaging Platform) is shown before the first round. If you refuse personalisation, you see the same number of ads, just non-personalised. You can change your choice anytime in Settings.</li>
 <li><strong>On iOS</strong>, the App Tracking Transparency prompt lets you refuse tracking; refusing limits ads to non-personalised.</li>
 <li><strong>Everywhere else</strong>, the in-app consent screen offers the same personalised / non-personalised choice, changeable anytime in Settings.</li>
 <li><strong>Buying "Remove ads" disables every ad</strong> and, with it, the ad SDK's data processing described above.</li>
 </ul>
+<h2>Usage measurement and crash reporting (Firebase)</h2>
+<p>To know whether the game works and to fix what breaks, the app uses two Google services, Firebase Analytics and Firebase Crashlytics.</p>
+<p><strong>Firebase Analytics</strong> logs usage events: round started and ended (mode, score, correct answers, stars), quitting mid-round, hint taken, screen opened, purchase steps and the sound setting. Alongside these events sits an install-specific instance identifier, which is not the advertising identifier and does not identify you. This data is used only to measure whether the game holds up (rounds finished, question difficulty, quit rate). It is processed by Google and retained for up to 14 months.</p>
+<p><strong>Firebase Crashlytics</strong> sends a report when the app crashes or hits an error it swallows silently. The report carries the device state at the time (model, OS version, memory, technical stack trace) and no personal data. It is used only to diagnose and fix the fault, and is processed by Google.</p>
+<p>Usage measurement stays active even if you refuse ad personalisation, because it carries no advertising identifier. Your refusal (the UMP form in the EEA and UK, the in-app consent screen elsewhere, App Tracking Transparency on iOS) strips advertising identifiers from measurement as well as from ads. Uninstalling the app stops any new data being sent.</p>
 <h2>Purchases</h2>
 <p>The single in-app purchase (Remove ads) is processed entirely by Apple (App Store, StoreKit) or Google (Google Play, Play Billing). We never see your payment details. The purchase state ("ads removed") is stored on your device and restorable through your store account.</p>
 <h2>Children</h2>
 <p>Mercato is not directed at children under 13, does not knowingly collect data from anyone (see above), and does not tag ad requests as child-directed. Ask-before-buy family settings of the stores apply to the remove-ads purchase as usual.</p>
 <h2>Data sharing and retention</h2>
-<p>We store no personal data on any server, so we have nothing to share, sell, or retain. The only third party processing data is Google, as the ads provider, under the consent choices described above.</p>
+<p>We operate no server and store no personal data ourselves, so we have nothing to sell. The only third party processing data is Google, both as the ads provider (AdMob) and as the usage-measurement and crash-reporting provider (Firebase), under the consent choices described above; measurement events are retained for up to 14 months.</p>
 <h2>Your rights</h2>
 <p>For anything the app stores locally: uninstalling the app deletes it. For data processed by Google for advertising, use the consent controls in Settings, your device's advertising-ID controls (reset or delete the identifier), or Google's tools at <a href="https://adssettings.google.com">adssettings.google.com</a>. EEA/UK users can withdraw or change consent anytime in Settings; this takes effect with the next ad request.</p>
 <h2>Changes</h2>
 <p>If a future version changes what data the app handles (for example, online leaderboards), this policy will be updated and the "Last updated" date changed before that version ships.</p>
 <h2>Contact</h2>
-<p>Questions about this policy: flegm.project@gmail.com</p>
+<p>Questions about this policy: mercato@flegm.fr</p>
 <hr>
 <h2>Appendix A: Apple App Store privacy nutrition labels</h2>
 <p>Answers for App Store Connect, "App Privacy" section:</p>
 <ul>
-<li>Data used to track you: **Identifiers (Device ID / advertising identifier)** - only when the user allows tracking via ATT; used by Google AdMob for personalised advertising.</li>
+<li>Data used to track you: <strong>Identifiers (Device ID / advertising identifier)</strong> - only when the user allows tracking via ATT; used by Google AdMob for personalised advertising.</li>
 <li>Data linked to you: <strong>none</strong>.</li>
-<li>Data not linked to you: **Identifiers (Device ID), Usage Data (advertising data), Diagnostics (crash and performance data from the ads SDK)** - collected by Google AdMob for Third-Party Advertising and App Functionality (ad delivery, fraud prevention).</li>
-<li>Purposes: Third-Party Advertising.</li>
+<li>Data not linked to you: <strong>Identifiers (Device ID), Usage Data (advertising data), Diagnostics (crash and performance data from the ads SDK)</strong> - collected by Google AdMob for Third-Party Advertising and App Functionality (ad delivery, fraud prevention); <strong>Usage Data (product interaction), Identifiers (instance identifier)</strong> collected by Firebase Analytics for Analytics; <strong>Diagnostics (crash and performance data)</strong> collected by Firebase Crashlytics for App Functionality.</li>
+<li>Purposes: Third-Party Advertising, Analytics, App Functionality.</li>
 <li>The app itself collects nothing: no contact info, no location, no user content, no browsing history, no purchases data leaves Apple's systems.</li>
 </ul>
 <h2>Appendix B: Google Play Data safety form</h2>
 <p>Answers for the Play Console "Data safety" section:</p>
 <ul>
 <li>Does your app collect or share any of the required user data types? <strong>Yes</strong> (via the Google Mobile Ads SDK).</li>
-<li>Data collected: <strong>Device or other IDs (Advertising ID)</strong>; **App interactions (ad interactions)** - collected, not shared by us (Google acts as the ads provider), optional (user can refuse personalised ads; buying Remove ads stops ad requests entirely), for **Advertising or marketing** purposes.</li>
+<li>Data collected: <strong>Device or other IDs (Advertising ID and Firebase instance identifier)</strong>; <strong>App interactions (ad interactions and usage events)</strong>; <strong>Crash logs</strong> and <strong>Diagnostics</strong> - collected, not shared by us (Google acts as the ads provider via AdMob and the measurement provider via Firebase), for <strong>Advertising or marketing</strong>, <strong>Analytics</strong> and <strong>App functionality</strong> purposes; personalised advertising is optional (user can refuse it; buying Remove ads stops ad requests entirely). Measurement events are retained for up to 14 months.</li>
 <li>Data shared: none beyond the processing by Google described above.</li>
 <li>Is all of the user data collected by your app encrypted in transit? <strong>Yes</strong> (the ads SDK uses HTTPS).</li>
 <li>Do you provide a way for users to request that their data is deleted? <strong>Yes</strong>: resetting/deleting the Advertising ID via Android settings, plus Google's ad controls; the app itself stores no personal data.</li>
@@ -84,46 +91,53 @@
 </section>
 <section data-lang="fr" hidden>
 <h1>Politique de confidentialité de Mercato</h1>
-<p>Dernière mise à jour : 27 juillet 2026 Mercato est un jeu de devinettes sur les transferts de football ("nous" désigne son éditeur ; l'identité légale de l'éditeur est précisée dans la fiche store au moment de la soumission). Cette politique explique comment l'application traite les données, sur iOS et Android. En résumé : le jeu lui-même ne collecte rien, ne nécessite aucun compte et fonctionne entièrement hors ligne ; le seul traitement de données provient du SDK publicitaire, et vous contrôlez si les publicités sont personnalisées.</p>
+<p>Dernière mise à jour : 27 juillet 2026</p>
+<p>Mercato est un jeu de devinettes sur les transferts de football ("nous" désigne son éditeur ; l'identité légale de l'éditeur est précisée dans la fiche store au moment de la soumission). Cette politique explique comment l'application traite les données, sur iOS et Android. En résumé : le jeu ne nécessite aucun compte et fonctionne entièrement hors ligne ; les traitements de données proviennent de services Google intégrés, la publicité (AdMob), la mesure d'usage (Firebase Analytics) et les rapports de plantage (Firebase Crashlytics), et vous contrôlez si les publicités sont personnalisées.</p>
 <h2>Aucun compte, aucune inscription</h2>
 <p>Mercato ne propose ni inscription, ni connexion, ni aucun moyen de saisir des informations personnelles. Nous ne savons pas qui vous êtes.</p>
 <h2>Le jeu fonctionne hors ligne</h2>
 <p>L'ensemble des données du jeu (clubs, joueurs, transferts) est inclus dans l'application. Le jeu n'envoie rien à nos serveurs : nous n'exploitons aucun serveur de jeu et ne recevons aucune donnée de jeu. Vos scores, statistiques de jeu (parties jouées, meilleur score, meilleure série, précision) et paramètres (son, vibration, choix de consentement, état de la suppression des publicités) sont stockés uniquement sur votre appareil et sont supprimés lorsque vous désinstallez l'application.</p>
-<h2>Publicité (seul traitement de données)</h2>
-<p>La version gratuite affiche des publicités diffusées par Google AdMob (Google Mobile Ads SDK). Pour diffuser et mesurer les publicités, Google peut traiter des informations sur l'appareil telles que l'identifiant publicitaire (IDFA sur iOS, Advertising ID sur Android), l'adresse IP et des données agrégées d'interaction avec les publicités. Ce traitement s'effectue selon les propres conditions de Google ; consultez [la page "Comment Google utilise les informations provenant de sites ou d'applications qui utilisent ses services"](https://policies.google.com/technologies/partner-sites) et la <a href="https://policies.google.com/privacy">Politique de confidentialité de Google</a>. Vos choix :</p>
+<h2>Publicité</h2>
+<p>La version gratuite affiche des publicités diffusées par Google AdMob (Google Mobile Ads SDK). Pour diffuser et mesurer les publicités, Google peut traiter des informations sur l'appareil telles que l'identifiant publicitaire (IDFA sur iOS, Advertising ID sur Android), l'adresse IP et des données agrégées d'interaction avec les publicités. Ce traitement s'effectue selon les propres conditions de Google ; consultez <a href="https://policies.google.com/technologies/partner-sites">la page "Comment Google utilise les informations provenant de sites ou d'applications qui utilisent ses services"</a> et la <a href="https://policies.google.com/privacy">Politique de confidentialité de Google</a>.</p>
+<p>Vos choix :</p>
 <ul>
 <li><strong>Dans l'Espace économique européen et au Royaume-Uni</strong>, un formulaire de consentement certifié par Google (Google User Messaging Platform) est affiché avant la première partie. Si vous refusez la personnalisation, vous voyez le même nombre de publicités, simplement non personnalisées. Vous pouvez modifier votre choix à tout moment dans les Paramètres.</li>
 <li><strong>Sur iOS</strong>, l'invite App Tracking Transparency vous permet de refuser le suivi ; le refus limite les publicités aux annonces non personnalisées.</li>
 <li><strong>Partout ailleurs</strong>, l'écran de consentement intégré à l'application propose le même choix personnalisé / non personnalisé, modifiable à tout moment dans les Paramètres.</li>
 <li><strong>L'achat "Supprimer les publicités" désactive toutes les publicités</strong> et, avec elles, le traitement de données effectué par le SDK publicitaire décrit ci-dessus.</li>
 </ul>
+<h2>Mesure d'usage et rapports de plantage (Firebase)</h2>
+<p>Pour savoir si le jeu fonctionne et corriger ce qui casse, l'application utilise deux services de Google, Firebase Analytics et Firebase Crashlytics.</p>
+<p><strong>Firebase Analytics</strong> enregistre des événements d'usage : début et fin de partie (mode, score, réponses correctes, étoiles), abandon en cours de manche, indice utilisé, ouverture d'un écran, étapes d'un achat et réglage du son. À ces événements s'ajoute un identifiant d'instance propre à l'installation, qui n'est pas l'identifiant publicitaire et ne vous identifie pas. Ces données servent uniquement à mesurer si le jeu tient (parties terminées, difficulté des questions, taux d'abandon). Elles sont traitées par Google et conservées jusqu'à 14 mois.</p>
+<p><strong>Firebase Crashlytics</strong> envoie un rapport lorsque l'application plante ou rencontre une erreur qu'elle absorbe silencieusement. Le rapport contient l'état de l'appareil au moment de l'incident (modèle, version du système, mémoire, trace technique), sans aucune donnée personnelle. Il sert uniquement à diagnostiquer et corriger le défaut, et est traité par Google.</p>
+<p>La mesure d'usage reste active même si vous refusez la personnalisation des publicités, car elle ne transporte aucun identifiant publicitaire. Votre refus (formulaire UMP dans l'EEE et au Royaume-Uni, écran de consentement intégré ailleurs, App Tracking Transparency sur iOS) retire les identifiants publicitaires de la mesure comme de la publicité. La désinstallation de l'application interrompt tout nouvel envoi.</p>
 <h2>Achats</h2>
 <p>L'achat intégré unique (Supprimer les publicités) est traité intégralement par Apple (App Store, StoreKit) ou Google (Google Play, Play Billing). Nous n'avons jamais accès à vos coordonnées de paiement. L'état de l'achat ("publicités supprimées") est stocké sur votre appareil et peut être restauré via votre compte store.</p>
 <h2>Enfants</h2>
 <p>Mercato ne s'adresse pas aux enfants de moins de 13 ans, ne collecte sciemment aucune donnée (voir ci-dessus) et ne marque pas les demandes publicitaires comme destinées aux enfants. Les paramètres familiaux des stores requérant une confirmation avant achat s'appliquent à l'achat de suppression des publicités comme à l'habitude.</p>
 <h2>Partage et conservation des données</h2>
-<p>Nous ne stockons aucune donnée personnelle sur un serveur ; nous n'avons donc rien à partager, vendre ni conserver. Le seul tiers traitant des données est Google, en tant que fournisseur publicitaire, selon les choix de consentement décrits ci-dessus.</p>
+<p>Nous n'exploitons aucun serveur et ne stockons nous-mêmes aucune donnée personnelle, nous n'avons donc rien à vendre. Le seul tiers traitant des données est Google, à la fois comme fournisseur publicitaire (AdMob) et comme fournisseur de mesure d'usage et de rapports de plantage (Firebase), selon les choix de consentement décrits ci-dessus ; les événements de mesure sont conservés jusqu'à 14 mois.</p>
 <h2>Vos droits</h2>
 <p>Pour tout ce que l'application stocke localement : la désinstallation de l'application le supprime. Pour les données traitées par Google à des fins publicitaires, utilisez les contrôles de consentement dans les Paramètres, les contrôles d'identifiant publicitaire de votre appareil (réinitialiser ou supprimer l'identifiant), ou les outils de Google sur <a href="https://adssettings.google.com">adssettings.google.com</a>. Les utilisateurs de l'EEE/RU peuvent retirer ou modifier leur consentement à tout moment dans les Paramètres ; cela prend effet à la prochaine demande publicitaire.</p>
 <h2>Modifications</h2>
 <p>Si une version future modifie la façon dont l'application traite les données (par exemple, des classements en ligne), cette politique sera mise à jour et la date "Dernière mise à jour" sera modifiée avant la publication de cette version.</p>
 <h2>Contact</h2>
-<p>Questions sur cette politique : flegm.project@gmail.com</p>
+<p>Questions sur cette politique : mercato@flegm.fr</p>
 <hr>
 <h2>Annexe A : Étiquettes de confidentialité Apple App Store</h2>
 <p>Réponses pour App Store Connect, section "App Privacy" :</p>
 <ul>
 <li>Données utilisées pour vous suivre : <strong>Identifiants (Device ID / identifiant publicitaire)</strong> (Identifiers / advertising identifier) - uniquement lorsque l'utilisateur autorise le suivi via ATT ; utilisées par Google AdMob pour la publicité personnalisée.</li>
 <li>Données liées à vous : <strong>aucune</strong> (none).</li>
-<li>Données non liées à vous : <strong>Identifiants (Device ID)</strong> (Identifiers), **Données d'utilisation (données publicitaires)<strong> (Usage Data / advertising data), </strong>Diagnostics (données de plantage et de performance du SDK publicitaire)** (Diagnostics / crash and performance data) - collectées par Google AdMob pour la publicité tierce et le bon fonctionnement de l'application (Third-Party Advertising, App Functionality : diffusion des publicités, prévention de la fraude).</li>
-<li>Finalités : publicité tierce (Third-Party Advertising).</li>
+<li>Données non liées à vous : <strong>Identifiants (Device ID)</strong> (Identifiers), <strong>Données d'utilisation (données publicitaires)</strong> (Usage Data / advertising data), <strong>Diagnostics (données de plantage et de performance du SDK publicitaire)</strong> (Diagnostics / crash and performance data) - collectées par Google AdMob pour la publicité tierce et le bon fonctionnement de l'application (Third-Party Advertising, App Functionality : diffusion des publicités, prévention de la fraude) ; <strong>Données d'utilisation (interactions avec le produit)</strong> (Usage Data / product interaction) et <strong>Identifiants (identifiant d'instance)</strong> (Identifiers) collectées par Firebase Analytics à des fins d'<strong>analyse</strong> (Analytics) ; <strong>Diagnostics (données de plantage et de performance)</strong> (Diagnostics / crash and performance data) collectées par Firebase Crashlytics pour le <strong>bon fonctionnement de l'application</strong> (App Functionality).</li>
+<li>Finalités : publicité tierce (Third-Party Advertising), analyse (Analytics), bon fonctionnement de l'application (App Functionality).</li>
 <li>L'application elle-même ne collecte rien : aucune information de contact, de localisation, aucun contenu utilisateur, aucun historique de navigation, aucune donnée d'achat ne quitte les systèmes d'Apple.</li>
 </ul>
 <h2>Annexe B : Formulaire Data safety Google Play</h2>
 <p>Réponses pour la section "Data safety" de la Play Console :</p>
 <ul>
 <li>Votre application collecte-t-elle ou partage-t-elle des types de données utilisateur requis ? <strong>Oui</strong> (via le Google Mobile Ads SDK).</li>
-<li>Données collectées : <strong>Identifiants d'appareil ou autres</strong> (Device or other IDs / Advertising ID) ; <strong>Interactions avec l'application</strong> (App interactions / ad interactions) - collectées, non partagées par nous (Google agit en tant que fournisseur publicitaire), facultatives (l'utilisateur peut refuser les publicités personnalisées ; l'achat de Supprimer les publicités arrête entièrement les demandes publicitaires), à des fins de <strong>publicité ou marketing</strong> (Advertising or marketing).</li>
+<li>Données collectées : <strong>Identifiants d'appareil ou autres</strong> (Device or other IDs / Advertising ID et identifiant d'instance Firebase) ; <strong>Interactions avec l'application</strong> (App interactions / interactions publicitaires et événements d'usage) ; <strong>Journaux de plantage</strong> (Crash logs) et <strong>Diagnostics</strong> (Diagnostics) - collectées, non partagées par nous (Google agit en tant que fournisseur publicitaire via AdMob et de mesure via Firebase), à des fins de <strong>publicité ou marketing</strong> (Advertising or marketing), d'<strong>analyse</strong> (Analytics) et de <strong>fonctionnalité de l'application</strong> (App functionality) ; la publicité personnalisée est facultative (l'utilisateur peut la refuser ; l'achat de Supprimer les publicités arrête entièrement les demandes publicitaires). Conservation des événements de mesure : jusqu'à 14 mois.</li>
 <li>Données partagées : aucune au-delà du traitement par Google décrit ci-dessus.</li>
 <li>Toutes les données utilisateur collectées par votre application sont-elles chiffrées pendant le transit ? <strong>Oui</strong> (le SDK publicitaire utilise HTTPS).</li>
 <li>Proposez-vous aux utilisateurs un moyen de demander la suppression de leurs données ? <strong>Oui</strong> : réinitialisation/suppression de l'Advertising ID via les paramètres Android, ainsi que les contrôles publicitaires de Google ; l'application elle-même ne stocke aucune donnée personnelle.</li>
@@ -133,46 +147,53 @@
 </section>
 <section data-lang="es" hidden>
 <h1>Política de privacidad de Mercato</h1>
-<p>Última actualización: 27 de julio de 2026 Mercato es un juego de adivinanzas de traspasos de fútbol ("nosotros" se refiere a su editor; la identidad legal del editor figura en la ficha de la tienda al momento del envío). Esta política explica qué datos gestiona la aplicación, en iOS y Android. Versión resumida: el juego en sí no recopila nada, no tiene cuenta y funciona completamente sin conexión; el único tratamiento de datos proviene del SDK publicitario, y el usuario controla si los anuncios son personalizados.</p>
+<p>Última actualización: 27 de julio de 2026</p>
+<p>Mercato es un juego de adivinanzas de traspasos de fútbol ("nosotros" se refiere a su editor; la identidad legal del editor figura en la ficha de la tienda al momento del envío). Esta política explica qué datos gestiona la aplicación, en iOS y Android. Versión resumida: el juego no necesita cuenta y funciona completamente sin conexión; los tratamientos de datos provienen de servicios de Google integrados, la publicidad (AdMob), la medición de uso (Firebase Analytics) y los informes de fallos (Firebase Crashlytics), y el usuario controla si los anuncios son personalizados.</p>
 <h2>Sin cuenta ni registro</h2>
 <p>Mercato no tiene registro, no tiene inicio de sesión y no permite introducir información personal. No sabemos quién eres.</p>
 <h2>El juego funciona sin conexión</h2>
 <p>El conjunto de datos completo del juego (clubes, jugadores, traspasos) se incluye dentro de la aplicación. El juego nunca nos envía nada: no operamos ningún servidor de juego ni recibimos datos de partidas. Las puntuaciones, las estadísticas de por vida (partidas jugadas, mejor puntuación, mejor racha, precisión) y los ajustes (sonido, vibración, elección de consentimiento, estado de eliminación de anuncios) se almacenan únicamente en el dispositivo y se eliminan al desinstalar la aplicación.</p>
-<h2>Publicidad (el único tratamiento de datos)</h2>
-<p>La versión gratuita muestra anuncios servidos por Google AdMob (Google Mobile Ads SDK). Para servir y medir anuncios, Google puede procesar información del dispositivo, como el identificador publicitario (IDFA en iOS, Advertising ID en Android), la dirección IP y datos básicos de interacción con los anuncios. Este tratamiento se realiza bajo los propios términos de Google; consulta [Cómo usa Google la información de sitios o aplicaciones que utilizan sus servicios](https://policies.google.com/technologies/partner-sites) y la <a href="https://policies.google.com/privacy">Política de privacidad de Google</a>. Opciones disponibles:</p>
+<h2>Publicidad</h2>
+<p>La versión gratuita muestra anuncios servidos por Google AdMob (Google Mobile Ads SDK). Para servir y medir anuncios, Google puede procesar información del dispositivo, como el identificador publicitario (IDFA en iOS, Advertising ID en Android), la dirección IP y datos básicos de interacción con los anuncios. Este tratamiento se realiza bajo los propios términos de Google; consulta <a href="https://policies.google.com/technologies/partner-sites">Cómo usa Google la información de sitios o aplicaciones que utilizan sus servicios</a> y la <a href="https://policies.google.com/privacy">Política de privacidad de Google</a>.</p>
+<p>Opciones disponibles:</p>
 <ul>
 <li><strong>En el Espacio Económico Europeo y el Reino Unido</strong>, se muestra un formulario de consentimiento certificado por Google (Google User Messaging Platform) antes de la primera partida. Si se rechaza la personalización, se verán el mismo número de anuncios, simplemente no personalizados. La elección puede cambiarse en cualquier momento en Ajustes.</li>
 <li><strong>En iOS</strong>, el aviso de App Tracking Transparency permite rechazar el seguimiento; rechazarlo limita los anuncios a no personalizados.</li>
 <li><strong>En cualquier otro lugar</strong>, la pantalla de consentimiento integrada ofrece la misma opción de anuncios personalizados o no personalizados, modificable en cualquier momento en Ajustes.</li>
 <li><strong>Adquirir "Eliminar anuncios" desactiva todos los anuncios</strong> y, con ello, el tratamiento de datos del SDK publicitario descrito anteriormente.</li>
 </ul>
+<h2>Medición de uso e informes de fallos (Firebase)</h2>
+<p>Para saber si el juego funciona y corregir lo que se rompe, la aplicación utiliza dos servicios de Google, Firebase Analytics y Firebase Crashlytics.</p>
+<p><strong>Firebase Analytics</strong> registra eventos de uso: inicio y fin de partida (modo, puntuación, respuestas correctas, estrellas), abandono a mitad de manga, pista utilizada, apertura de una pantalla, pasos de una compra y ajuste de sonido. A estos eventos se añade un identificador de instancia propio de la instalación, que no es el identificador publicitario y no te identifica. Estos datos sirven únicamente para medir si el juego se sostiene (partidas terminadas, dificultad de las preguntas, tasa de abandono). Son tratados por Google y conservados hasta 14 meses.</p>
+<p><strong>Firebase Crashlytics</strong> envía un informe cuando la aplicación se bloquea o encuentra un error que absorbe en silencio. El informe contiene el estado del dispositivo en el momento del incidente (modelo, versión del sistema, memoria, traza técnica), sin ningún dato personal. Sirve únicamente para diagnosticar y corregir el defecto, y es tratado por Google.</p>
+<p>La medición de uso permanece activa aunque rechaces la personalización de los anuncios, porque no transporta ningún identificador publicitario. Tu rechazo (formulario UMP en el EEE y el Reino Unido, pantalla de consentimiento integrada en otros lugares, App Tracking Transparency en iOS) retira los identificadores publicitarios tanto de la medición como de la publicidad. Desinstalar la aplicación interrumpe cualquier nuevo envío.</p>
 <h2>Compras</h2>
 <p>La única compra integrada (Eliminar anuncios) es procesada íntegramente por Apple (App Store, StoreKit) o Google (Google Play, Play Billing). Nunca vemos los datos de pago. El estado de la compra ("anuncios eliminados") se almacena en el dispositivo y puede restaurarse a través de la cuenta de la tienda correspondiente.</p>
 <h2>Menores</h2>
 <p>Mercato no está dirigido a menores de 13 años, no recopila datos de ninguna persona de manera deliberada (ver apartados anteriores) y no etiqueta las solicitudes de anuncios como dirigidas a menores. Los ajustes familiares de compra previa confirmación de las tiendas se aplican a la compra de eliminación de anuncios de la manera habitual.</p>
 <h2>Compartición y conservación de datos</h2>
-<p>No almacenamos datos personales en ningún servidor, por lo que no tenemos nada que compartir, vender ni conservar. El único tercero que trata datos es Google, en calidad de proveedor de anuncios, bajo las opciones de consentimiento descritas anteriormente.</p>
+<p>No operamos ningún servidor ni almacenamos nosotros mismos datos personales, por lo que no tenemos nada que vender. El único tercero que trata datos es Google, a la vez como proveedor de anuncios (AdMob) y como proveedor de medición de uso e informes de fallos (Firebase), bajo las opciones de consentimiento descritas anteriormente; los eventos de medición se conservan hasta 14 meses.</p>
 <h2>Derechos del usuario</h2>
 <p>Para cualquier dato almacenado localmente por la aplicación: desinstalarla los elimina. Para los datos tratados por Google con fines publicitarios, se pueden usar los controles de consentimiento en Ajustes, los controles del identificador publicitario del dispositivo (restablecer o eliminar el identificador), o las herramientas de Google en <a href="https://adssettings.google.com">adssettings.google.com</a>. Los usuarios del EEE y el Reino Unido pueden retirar o cambiar el consentimiento en cualquier momento en Ajustes; el cambio surte efecto con la siguiente solicitud de anuncio.</p>
 <h2>Cambios</h2>
 <p>Si una versión futura modifica los datos que gestiona la aplicación (por ejemplo, clasificaciones en línea), esta política se actualizará y la fecha de "Última actualización" cambiará antes del lanzamiento de dicha versión.</p>
 <h2>Contacto</h2>
-<p>Preguntas sobre esta política: flegm.project@gmail.com</p>
+<p>Preguntas sobre esta política: mercato@flegm.fr</p>
 <hr>
 <h2>Apéndice A: Etiquetas de nutrición de privacidad de Apple App Store</h2>
 <p>Respuestas para App Store Connect, sección "Privacidad de la app":</p>
 <ul>
-<li>Datos utilizados para rastrearte: **Identificadores (ID de dispositivo / identificador publicitario)** (Identifiers: Device ID / advertising identifier) - solo cuando el usuario permite el seguimiento a través de ATT; utilizado por Google AdMob para publicidad personalizada.</li>
+<li>Datos utilizados para rastrearte: <strong>Identificadores (ID de dispositivo / identificador publicitario)</strong> (Identifiers: Device ID / advertising identifier) - solo cuando el usuario permite el seguimiento a través de ATT; utilizado por Google AdMob para publicidad personalizada.</li>
 <li>Datos vinculados a ti: <strong>ninguno</strong> (none).</li>
-<li>Datos no vinculados a ti: <strong>Identificadores (ID de dispositivo)</strong> (Identifiers: Device ID), <strong>Datos de uso (datos publicitarios)</strong> (Usage Data: advertising data), <strong>Diagnóstico (datos de bloqueos y rendimiento del SDK publicitario)</strong> (Diagnostics: crash and performance data from the ads SDK) - recopilados por Google AdMob para publicidad de terceros y funcionalidad de la app (entrega de anuncios, prevención del fraude).</li>
-<li>Finalidades: Publicidad de terceros (Third-Party Advertising).</li>
+<li>Datos no vinculados a ti: <strong>Identificadores (ID de dispositivo)</strong> (Identifiers: Device ID), <strong>Datos de uso (datos publicitarios)</strong> (Usage Data: advertising data), <strong>Diagnóstico (datos de bloqueos y rendimiento del SDK publicitario)</strong> (Diagnostics: crash and performance data from the ads SDK) - recopilados por Google AdMob para publicidad de terceros y funcionalidad de la app (entrega de anuncios, prevención del fraude); <strong>Datos de uso (interacción con el producto)</strong> (Usage Data: product interaction) e <strong>Identificadores (identificador de instancia)</strong> (Identifiers) recopilados por Firebase Analytics con fines de <strong>análisis</strong> (Analytics); <strong>Diagnóstico (datos de bloqueos y rendimiento)</strong> (Diagnostics) recopilados por Firebase Crashlytics para la <strong>funcionalidad de la app</strong> (App Functionality).</li>
+<li>Finalidades: Publicidad de terceros (Third-Party Advertising), análisis (Analytics), funcionalidad de la app (App Functionality).</li>
 <li>La propia aplicación no recopila nada: sin información de contacto, sin ubicación, sin contenido del usuario, sin historial de navegación; ningún dato de compras sale de los sistemas de Apple.</li>
 </ul>
 <h2>Apéndice B: Formulario de seguridad de datos de Google Play</h2>
 <p>Respuestas para la sección "Seguridad de los datos" (Data safety) de Play Console:</p>
 <ul>
 <li>¿Tu app recopila o comparte alguno de los tipos de datos de usuario requeridos? <strong>Sí</strong> (a través del Google Mobile Ads SDK).</li>
-<li>Datos recopilados: <strong>ID de dispositivo u otros ID (Advertising ID)</strong> (Device or other IDs); <strong>Interacciones en la app (interacciones con anuncios)</strong> (App interactions: ad interactions) - recopilados, no compartidos por nosotros (Google actúa como proveedor de anuncios), opcionales (el usuario puede rechazar los anuncios personalizados; adquirir Eliminar anuncios detiene las solicitudes de anuncios por completo), con fines de <strong>publicidad o marketing</strong> (Advertising or marketing).</li>
+<li>Datos recopilados: <strong>ID de dispositivo u otros ID (Advertising ID e identificador de instancia de Firebase)</strong> (Device or other IDs); <strong>Interacciones en la app (interacciones con anuncios y eventos de uso)</strong> (App interactions); <strong>Registros de fallos</strong> (Crash logs) y <strong>Diagnóstico</strong> (Diagnostics) - recopilados, no compartidos por nosotros (Google actúa como proveedor de anuncios mediante AdMob y de medición mediante Firebase), con fines de <strong>publicidad o marketing</strong> (Advertising or marketing), <strong>análisis</strong> (Analytics) y <strong>funcionalidad de la app</strong> (App functionality); la publicidad personalizada es opcional (el usuario puede rechazarla; adquirir Eliminar anuncios detiene las solicitudes de anuncios por completo). Los eventos de medición se conservan hasta 14 meses.</li>
 <li>Datos compartidos: ninguno más allá del tratamiento por parte de Google descrito anteriormente.</li>
 <li>¿Todos los datos de usuario recopilados por tu app están cifrados en tránsito? <strong>Sí</strong> (el SDK publicitario utiliza HTTPS).</li>
 <li>¿Ofreces a los usuarios una forma de solicitar la eliminación de sus datos? <strong>Sí</strong>: restableciendo o eliminando el Advertising ID desde los ajustes de Android, más los controles de anuncios de Google; la propia aplicación no almacena datos personales.</li>

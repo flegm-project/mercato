@@ -12,21 +12,21 @@ review fail. Everything under "Should fix" ships, but ships worse.
 
 ### Shared
 
-1. **The privacy policy URL is still a 404, for a smaller reason than before.**
-   Both apps now point at `https://flegm-project.github.io/mercato/privacy`,
-   the repository has moved into that organisation, and Pages is serving from
-   `main` / `docs`. What is missing is the page: `docs/privacy/index.html` was
-   deleted because the committed copy printed a personal address, and
-   `scripts/gen-privacy-site.mjs` refuses to write a new one while
-   `docs/legal/contact.txt` holds its placeholder. So this closes the moment
-   item 2 does. Both stores require a reachable policy for an app with ads and
-   a purchase, and the Settings row still opens a dead page until then. See
-   publishing-identity.md.
+1. ~~**The privacy policy URL is still a 404.**~~ *Closed in the repo, pending
+   merge and mailbox.* Both apps point at
+   `https://flegm-project.github.io/mercato/privacy`, Pages serves `main` /
+   `docs`, and `docs/privacy/index.html` is committed, regenerated from the
+   three policies with the real contact address. It goes live the moment the
+   branch `docs/privacy-firebase-contact` reaches `main`. Both stores require a
+   reachable policy for an app with ads and a purchase, and the Settings row
+   opens it. See publishing-identity.md.
 
-2. **No support URL and no contact address exist anywhere.** App Store Connect
-   requires one, and the privacy policy needs the same address. One neutral
-   mailbox answers both: put it in `docs/legal/contact.txt`, run
-   `node scripts/gen-privacy-site.mjs`, commit the page it writes.
+2. ~~**No support URL and no contact address exist anywhere.**~~ *Address set,
+   mailbox pending.* `docs/legal/contact.txt` now holds `mercato@flegm.fr`, the
+   three policies and the generated page print it, and App Store Connect can
+   use it for support. What remains, on Nico's side and outside the repo:
+   create the mailbox at Hostinger and confirm it receives mail before
+   submission, since a bouncing support address is itself a rejection.
 
 3. **No store assets.** `store/` holds three listing texts and nothing else.
    Needed: iPhone 6.9" screenshots, Play phone screenshots, a 512x512 Play
