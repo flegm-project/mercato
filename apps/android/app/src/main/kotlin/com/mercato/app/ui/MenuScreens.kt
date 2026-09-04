@@ -631,8 +631,11 @@ fun SettingsScreen(
             // shows ads and sells an in-app purchase.
             LinkRow(stringResource(R.string.rowPrivacy), null, onClick = onPrivacy, external = true)
             LinkRow(stringResource(R.string.rowIntro), null, onClick = onReplayIntro)
-            LinkRow(stringResource(R.string.rowOffline), null, onClick = onOffline)
+            // Developer shortcuts, kept out of release builds. The offline
+            // route and screen stay wired for real network loss; only this
+            // on-demand menu entry is hidden from the public.
             if (BuildConfig.DEBUG) {
+                LinkRow(stringResource(R.string.rowOffline), null, onClick = onOffline)
                 LinkRow(stringResource(R.string.rowLab), null, onClick = onLab)
             }
         }
