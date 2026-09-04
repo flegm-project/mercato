@@ -80,3 +80,6 @@ __pycache__/
 # working sets, 25 MB of near-duplicates that no build reads.
 /store/play-assets-design/
 /store/play-assets-en/
+
+# Cles de signature Android: ne doivent jamais partir sur GitHub
+CLES-DE-SIGNATURE/
