@@ -51,6 +51,7 @@ import com.mercato.app.QuestionUi
 import com.mercato.app.R
 import com.mercato.app.RecapUi
 import com.mercato.app.RecapRectangle
+import com.mercato.app.SponsorBoard
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.text.TextStyle
@@ -196,17 +197,22 @@ fun GameScreen(
         }
         Gap(DesignTokens.Space.md)
         TransferCard(q, compact = compactCard, onTap = vm::advance)
-        // No ad slot during a question (parity with iOS): the answers zone
-        // floats centered between the card and the bottom edge. iOS holds at
-        // least 12 either side of it (GameView.swift:47). With the keyboard up
-        // there is no slack to float in, and a weighted spacer cannot live in
-        // a scrolling column anyway.
-        //
-        // Plus the card's own shadow: it is painted below the layout box, so a
-        // bare 12 here showed as 1. Every gap on this screen is stated as the
-        // space wanted plus the shadow it has to clear, which is what makes
-        // them look equal rather than merely read equal in the source.
+        // The card's own shadow is painted below the layout box, so a bare 12
+        // here showed as 1. Every gap on this screen is stated as the space
+        // wanted plus the shadow it has to clear, which is what makes them
+        // look equal rather than merely read equal in the source.
         Gap(DesignTokens.Space.block + DesignTokens.Depth.card)
+        // The sponsor board sits below the transfer card, where
+        // docs/MONETIZATION.md puts it, and only while the column has slack.
+        // With the keyboard up the answers need every dp left, the column
+        // scrolls, and a weighted spacer cannot live in a scrolling column
+        // anyway, so the board steps aside exactly when the layout is tight.
+        // The spacer below keeps it clear of the answer targets: nothing
+        // tappable ever sits against the ad.
+        if (!tight) {
+            SponsorBoard(graph.ads)
+            Gap(DesignTokens.Space.block)
+        }
         if (!tight) Spacer(Modifier.weight(1f))
         if (mode == GameMode.EASY) EasyAnswers(q, vm) else HardcoreAnswers(q, vm)
         if (!tight) Spacer(Modifier.weight(1f))
@@ -221,7 +227,17 @@ fun GameScreen(
             onQuit = {
                 quitAsked = false
                 vm.quitRound()
-                onQuit()
+                // Giving up is a round break too, and it is the common one:
+                // far more rounds end here than at the recap, so the break
+                // that carried the interstitial was the rare one. The gate
+                // still owns warmup and spacing, so this adds occasions, not
+                // frequency.
+                val quitActivity = context as? Activity
+                if (quitActivity != null) {
+                    graph.ads.maybeShowInterstitial(quitActivity) { onQuit() }
+                } else {
+                    onQuit()
+                }
             },
         )
     }
@@ -650,7 +666,14 @@ fun RecapScreen(
                 )
             }
         }
+        // The rectangle sits between the score card and the actions. Below
+        // them it fell off the bottom of a phone screen: loaded on every
+        // recap, seen on almost none, which is most of what the low show rate
+        // in AdMob was made of. The gap under it stays wide so no tap on the
+        // way to Play again can land on the ad.
         Gap(DesignTokens.Space.xl)
+        RecapRectangle(graph.ads)
+        Gap(24.dp)
         InkButton(
             stringResource(R.string.again), ButtonStyle.Primary,
             fontSize = 18.sp, fontWeight = 800, tracking = -0.045f,
@@ -683,9 +706,6 @@ fun RecapScreen(
                 style = typeStyle(DesignTokens.Type.ctaSmall, DesignTokens.Color.ivory),
             )
         }
-        // Display slot lives below the actions, never above the primary CTA.
-        Gap(24.dp)
-        RecapRectangle(graph.ads)
         Gap(DesignTokens.Space.section)
     }
 }

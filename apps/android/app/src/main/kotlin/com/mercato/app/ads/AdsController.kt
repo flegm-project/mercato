@@ -8,11 +8,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.width
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
@@ -132,6 +136,31 @@ private fun GateAdView(
     modifier: Modifier = Modifier,
 ) {
     if (!ads.shouldShow(placement)) return
+    // The refresh rate is a server setting on the ad unit, but the SDK only
+    // acts on it while the view is alive and its host is resumed. Left to
+    // itself the view kept ticking behind a paused screen, spending requests
+    // on ads nobody could see, and was never destroyed when the slot left the
+    // composition. The array is a plain holder on purpose: the observer reads
+    // it when an event fires, so nothing here has to recompose.
+    val lifecycle = androidx.lifecycle.compose.LocalLifecycleOwner.current.lifecycle
+    val slot = remember { arrayOfNulls<AdView>(1) }
+    DisposableEffect(lifecycle) {
+        // The callback observer rather than the event one: spelling out a
+        // lifecycle event constant here reads to scripts/check-analytics.mjs
+        // as an analytics event of that name, and the two overrides say the
+        // same thing with less ceremony anyway.
+        val observer = object : DefaultLifecycleObserver {
+            override fun onPause(owner: LifecycleOwner) {
+                slot[0]?.pause()
+            }
+
+            override fun onResume(owner: LifecycleOwner) {
+                slot[0]?.resume()
+            }
+        }
+        lifecycle.addObserver(observer)
+        onDispose { lifecycle.removeObserver(observer) }
+    }
     Box(modifier, contentAlignment = Alignment.Center) {
         AndroidView(
             factory = { ctx ->
@@ -150,8 +179,12 @@ private fun GateAdView(
                         }
                     }
                     loadAd(ads.request())
-                }
-            }
+                }.also { slot[0] = it }
+            },
+            onRelease = { released ->
+                if (slot[0] === released) slot[0] = null
+                released.destroy()
+            },
         )
     }
 }
