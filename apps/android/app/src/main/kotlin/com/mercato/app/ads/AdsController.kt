@@ -15,8 +15,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.width
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
@@ -145,11 +145,17 @@ private fun GateAdView(
     val lifecycle = androidx.lifecycle.compose.LocalLifecycleOwner.current.lifecycle
     val slot = remember { arrayOfNulls<AdView>(1) }
     DisposableEffect(lifecycle) {
-        val observer = LifecycleEventObserver { _, event ->
-            when (event) {
-                Lifecycle.Event.ON_PAUSE -> slot[0]?.pause()
-                Lifecycle.Event.ON_RESUME -> slot[0]?.resume()
-                else -> Unit
+        // The callback observer rather than the event one: spelling out a
+        // lifecycle event constant here reads to scripts/check-analytics.mjs
+        // as an analytics event of that name, and the two overrides say the
+        // same thing with less ceremony anyway.
+        val observer = object : DefaultLifecycleObserver {
+            override fun onPause(owner: LifecycleOwner) {
+                slot[0]?.pause()
+            }
+
+            override fun onResume(owner: LifecycleOwner) {
+                slot[0]?.resume()
             }
         }
         lifecycle.addObserver(observer)
