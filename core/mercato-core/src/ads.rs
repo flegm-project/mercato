@@ -20,6 +20,10 @@ pub enum Placement {
     SponsorBoard,
     /// Full screen, between the last question and the recap.
     Interstitial,
+    /// Full screen when the player gives up a round. Uncapped: giving up is
+    /// the common ending here, far more common than reaching the recap, and
+    /// the player has already left the game loop when it fires.
+    QuitInterstitial,
     /// 300x250 on the recap screen.
     Rectangle,
 }
@@ -87,6 +91,10 @@ impl AdsGate {
         match placement {
             Placement::Banner | Placement::SponsorBoard | Placement::Rectangle => true,
             Placement::Interstitial => self.interstitial_allowed(),
+            // No warmup, no spacing. The cap on the recap interstitial is
+            // there so a player is not interrupted mid-run; someone who just
+            // gave up is not mid-run.
+            Placement::QuitInterstitial => true,
         }
     }
 
@@ -157,7 +165,20 @@ mod tests {
         assert!(!g.should_show(Placement::Banner));
         assert!(!g.should_show(Placement::SponsorBoard));
         assert!(!g.should_show(Placement::Interstitial));
+        assert!(!g.should_show(Placement::QuitInterstitial));
         assert!(!g.should_show(Placement::Rectangle));
+    }
+
+    #[test]
+    fn quit_interstitial_ignores_warmup_and_spacing() {
+        let mut g = gate();
+        // Nothing answered yet: the recap interstitial is still in warmup.
+        assert!(!g.should_show(Placement::Interstitial));
+        assert!(g.should_show(Placement::QuitInterstitial));
+        g.record_interstitial_shown();
+        // And again straight away, where the recap one would have to wait.
+        assert!(!g.should_show(Placement::Interstitial));
+        assert!(g.should_show(Placement::QuitInterstitial));
     }
 
     #[test]

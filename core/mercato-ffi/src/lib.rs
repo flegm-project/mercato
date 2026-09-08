@@ -136,6 +136,8 @@ pub enum AdPlacement {
     Interstitial,
     /// 300x250 on the recap screen.
     Rectangle,
+    /// Full screen when the player gives up a round.
+    QuitInterstitial,
 }
 
 impl From<AdPlacement> for Placement {
@@ -145,6 +147,7 @@ impl From<AdPlacement> for Placement {
             AdPlacement::SponsorBoard => Placement::SponsorBoard,
             AdPlacement::Interstitial => Placement::Interstitial,
             AdPlacement::Rectangle => Placement::Rectangle,
+            AdPlacement::QuitInterstitial => Placement::QuitInterstitial,
         }
     }
 }

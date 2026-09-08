@@ -2,6 +2,8 @@ package com.mercato.app
 
 import android.app.Activity
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -39,8 +41,14 @@ import uniffi.mercato_ffi.Game
 class AdsController(private val context: Context, private val game: Game) {
 
     private var interstitial: InterstitialAd? = null
+    private var loading = false
+    private var failedLoads = 0
+    private val main = Handler(Looper.getMainLooper())
 
     private companion object {
+        /** Backoff between failed loads, and the retry budget with it. */
+        val RETRY_DELAYS_MS = longArrayOf(2_000L, 8_000L, 30_000L)
+
         val TEST_DEVICES: List<String> =
             BuildConfig.ADMOB_TEST_DEVICES.split(",")
                 .map { it.trim() }
@@ -76,20 +84,37 @@ class AdsController(private val context: Context, private val game: Game) {
 
     fun shouldShow(placement: AdPlacement): Boolean = game.shouldShowAd(placement)
 
-    /** Keep one interstitial preloaded whenever the gate could allow it. */
+    /**
+     * Keep one interstitial preloaded whenever the gate could allow it.
+     *
+     * A failed load used to be the end of it: the reference went back to null
+     * and nothing tried again until the player next entered a screen that
+     * preloads. Most of the misses were that, not the frequency cap. The
+     * retry backs off so a network that is simply down is not hammered, and
+     * the counter resets on the first success.
+     */
     fun preloadInterstitial() {
-        if (interstitial != null || game.adsRemoved()) return
+        if (interstitial != null || loading || game.adsRemoved()) return
+        loading = true
         InterstitialAd.load(
             context,
             BuildConfig.ADMOB_INTERSTITIAL_ID,
             request(),
             object : InterstitialAdLoadCallback() {
                 override fun onAdLoaded(ad: InterstitialAd) {
+                    loading = false
+                    failedLoads = 0
                     interstitial = ad
                 }
 
                 override fun onAdFailedToLoad(error: LoadAdError) {
+                    loading = false
                     interstitial = null
+                    if (failedLoads < RETRY_DELAYS_MS.size) {
+                        val delay = RETRY_DELAYS_MS[failedLoads]
+                        failedLoads += 1
+                        main.postDelayed({ preloadInterstitial() }, delay)
+                    }
                 }
             },
         )
@@ -100,9 +125,13 @@ class AdsController(private val context: Context, private val game: Game) {
      * loaded. Returns true when an ad was actually presented; the caller
      * navigates to the recap either way ([onDismissed] always fires).
      */
-    fun maybeShowInterstitial(activity: Activity, onDismissed: () -> Unit): Boolean {
+    fun maybeShowInterstitial(
+        activity: Activity,
+        placement: AdPlacement = AdPlacement.INTERSTITIAL,
+        onDismissed: () -> Unit,
+    ): Boolean {
         val ad = interstitial
-        if (ad == null || !game.shouldShowAd(AdPlacement.INTERSTITIAL)) {
+        if (ad == null || !game.shouldShowAd(placement)) {
             onDismissed()
             return false
         }

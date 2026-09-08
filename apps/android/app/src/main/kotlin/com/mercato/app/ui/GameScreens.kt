@@ -51,7 +51,6 @@ import com.mercato.app.QuestionUi
 import com.mercato.app.R
 import com.mercato.app.RecapUi
 import com.mercato.app.RecapRectangle
-import com.mercato.app.SponsorBoard
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.text.TextStyle
@@ -62,6 +61,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import com.mercato.design.DesignTokens
+import uniffi.mercato_ffi.AdPlacement
 import uniffi.mercato_ffi.GameMode
 import uniffi.mercato_ffi.HintView
 import uniffi.mercato_ffi.MoveKind
@@ -87,6 +87,8 @@ fun GameScreen(
     // -MercatoQuit does on iOS. Without it the dialog is the one surface the
     // parity harness could not reach, which is how both its buttons ended up
     // the wrong height unnoticed.
+    // Loading starts when the dialog opens, not when it is confirmed: those
+    // couple of seconds of hesitation are exactly what the ad needs.
     var quitAsked by remember {
         mutableStateOf(
             BuildConfig.DEBUG &&
@@ -197,22 +199,16 @@ fun GameScreen(
         }
         Gap(DesignTokens.Space.md)
         TransferCard(q, compact = compactCard, onTap = vm::advance)
-        // The card's own shadow is painted below the layout box, so a bare 12
-        // here showed as 1. Every gap on this screen is stated as the space
-        // wanted plus the shadow it has to clear, which is what makes them
-        // look equal rather than merely read equal in the source.
+        // No ad slot while a question is on screen. The board was tried here
+        // and taken back out: the answers zone floats centered between the
+        // card and the bottom edge, and 50dp of ad in the middle of it is the
+        // one place in the app where an ad is in the way of playing.
+        //
+        // Plus the card's own shadow: it is painted below the layout box, so a
+        // bare 12 here showed as 1. Every gap on this screen is stated as the
+        // space wanted plus the shadow it has to clear, which is what makes
+        // them look equal rather than merely read equal in the source.
         Gap(DesignTokens.Space.block + DesignTokens.Depth.card)
-        // The sponsor board sits below the transfer card, where
-        // docs/MONETIZATION.md puts it, and only while the column has slack.
-        // With the keyboard up the answers need every dp left, the column
-        // scrolls, and a weighted spacer cannot live in a scrolling column
-        // anyway, so the board steps aside exactly when the layout is tight.
-        // The spacer below keeps it clear of the answer targets: nothing
-        // tappable ever sits against the ad.
-        if (!tight) {
-            SponsorBoard(graph.ads)
-            Gap(DesignTokens.Space.block)
-        }
         if (!tight) Spacer(Modifier.weight(1f))
         if (mode == GameMode.EASY) EasyAnswers(q, vm) else HardcoreAnswers(q, vm)
         if (!tight) Spacer(Modifier.weight(1f))
@@ -221,20 +217,27 @@ fun GameScreen(
     }
     }
 
+    LaunchedEffect(quitAsked) {
+        if (quitAsked) graph.ads.preloadInterstitial()
+    }
+
     if (quitAsked) {
         QuitDialog(
             onStay = { quitAsked = false },
             onQuit = {
                 quitAsked = false
                 vm.quitRound()
-                // Giving up is a round break too, and it is the common one:
-                // far more rounds end here than at the recap, so the break
-                // that carried the interstitial was the rare one. The gate
-                // still owns warmup and spacing, so this adds occasions, not
-                // frequency.
+                // Giving up is a round break too, and it is the common
+                // one: far more rounds end here than at the recap, so the
+                // break that carried the interstitial was the rare one. This
+                // placement carries no warmup and no spacing, which is the
+                // whole point of it being its own placement.
                 val quitActivity = context as? Activity
                 if (quitActivity != null) {
-                    graph.ads.maybeShowInterstitial(quitActivity) { onQuit() }
+                    graph.ads.maybeShowInterstitial(
+                        quitActivity,
+                        AdPlacement.QUIT_INTERSTITIAL,
+                    ) { onQuit() }
                 } else {
                     onQuit()
                 }
