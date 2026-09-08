@@ -61,6 +61,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import com.mercato.design.DesignTokens
+import uniffi.mercato_ffi.AdPlacement
 import uniffi.mercato_ffi.GameMode
 import uniffi.mercato_ffi.HintView
 import uniffi.mercato_ffi.MoveKind
@@ -86,6 +87,8 @@ fun GameScreen(
     // -MercatoQuit does on iOS. Without it the dialog is the one surface the
     // parity harness could not reach, which is how both its buttons ended up
     // the wrong height unnoticed.
+    // Loading starts when the dialog opens, not when it is confirmed: those
+    // couple of seconds of hesitation are exactly what the ad needs.
     var quitAsked by remember {
         mutableStateOf(
             BuildConfig.DEBUG &&
@@ -214,20 +217,27 @@ fun GameScreen(
     }
     }
 
+    LaunchedEffect(quitAsked) {
+        if (quitAsked) graph.ads.preloadInterstitial()
+    }
+
     if (quitAsked) {
         QuitDialog(
             onStay = { quitAsked = false },
             onQuit = {
                 quitAsked = false
                 vm.quitRound()
-                // Giving up is a round break too, and it is the common one:
-                // far more rounds end here than at the recap, so the break
-                // that carried the interstitial was the rare one. The gate
-                // still owns warmup and spacing, so this adds occasions, not
-                // frequency.
+                // Giving up is a round break too, and it is the common
+                // one: far more rounds end here than at the recap, so the
+                // break that carried the interstitial was the rare one. This
+                // placement carries no warmup and no spacing, which is the
+                // whole point of it being its own placement.
                 val quitActivity = context as? Activity
                 if (quitActivity != null) {
-                    graph.ads.maybeShowInterstitial(quitActivity) { onQuit() }
+                    graph.ads.maybeShowInterstitial(
+                        quitActivity,
+                        AdPlacement.QUIT_INTERSTITIAL,
+                    ) { onQuit() }
                 } else {
                     onQuit()
                 }
