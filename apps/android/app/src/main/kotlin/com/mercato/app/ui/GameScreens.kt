@@ -51,7 +51,6 @@ import com.mercato.app.QuestionUi
 import com.mercato.app.R
 import com.mercato.app.RecapUi
 import com.mercato.app.RecapRectangle
-import com.mercato.app.SponsorBoard
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.text.TextStyle
@@ -197,22 +196,16 @@ fun GameScreen(
         }
         Gap(DesignTokens.Space.md)
         TransferCard(q, compact = compactCard, onTap = vm::advance)
-        // The card's own shadow is painted below the layout box, so a bare 12
-        // here showed as 1. Every gap on this screen is stated as the space
-        // wanted plus the shadow it has to clear, which is what makes them
-        // look equal rather than merely read equal in the source.
+        // No ad slot while a question is on screen. The board was tried here
+        // and taken back out: the answers zone floats centered between the
+        // card and the bottom edge, and 50dp of ad in the middle of it is the
+        // one place in the app where an ad is in the way of playing.
+        //
+        // Plus the card's own shadow: it is painted below the layout box, so a
+        // bare 12 here showed as 1. Every gap on this screen is stated as the
+        // space wanted plus the shadow it has to clear, which is what makes
+        // them look equal rather than merely read equal in the source.
         Gap(DesignTokens.Space.block + DesignTokens.Depth.card)
-        // The sponsor board sits below the transfer card, where
-        // docs/MONETIZATION.md puts it, and only while the column has slack.
-        // With the keyboard up the answers need every dp left, the column
-        // scrolls, and a weighted spacer cannot live in a scrolling column
-        // anyway, so the board steps aside exactly when the layout is tight.
-        // The spacer below keeps it clear of the answer targets: nothing
-        // tappable ever sits against the ad.
-        if (!tight) {
-            SponsorBoard(graph.ads)
-            Gap(DesignTokens.Space.block)
-        }
         if (!tight) Spacer(Modifier.weight(1f))
         if (mode == GameMode.EASY) EasyAnswers(q, vm) else HardcoreAnswers(q, vm)
         if (!tight) Spacer(Modifier.weight(1f))
