@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
@@ -49,6 +50,18 @@ class Prefs(private val context: Context) {
         val bestStreak = intPreferencesKey("best_streak")
         val correct = intPreferencesKey("answers_correct")
         val answered = intPreferencesKey("answers_total")
+
+        // Daily challenge. The key is the ISO date of the last one finished,
+        // which is both the "already played today" flag and the anchor the
+        // streak counts from.
+        val dailyKey = stringPreferencesKey("daily_last_key")
+        val dailyStreak = intPreferencesKey("daily_streak")
+        val dailyCorrect = intPreferencesKey("daily_correct")
+        /** One character per question, '1' right and '0' wrong, in order. */
+        val dailyGrid = stringPreferencesKey("daily_grid")
+
+        /** When the in-app review sheet was last requested, epoch millis. */
+        val reviewAsked = longPreferencesKey("review_asked_at")
     }
 
     data class Stats(
@@ -57,6 +70,14 @@ class Prefs(private val context: Context) {
         val bestStreak: Int,
         val correct: Int,
         val answered: Int,
+    )
+
+    /** The last finished daily challenge, or null when there is none. */
+    data class Daily(
+        val key: String,
+        val streak: Int,
+        val correct: Int,
+        val grid: String,
     )
 
     val onboarded: Flow<Boolean> = context.dataStore.data.map { it[Keys.onboarded] ?: false }
@@ -72,6 +93,38 @@ class Prefs(private val context: Context) {
             answered = it[Keys.answered] ?: 0,
         )
     }
+
+    val daily: Flow<Daily?> = context.dataStore.data.map { p ->
+        p[Keys.dailyKey]?.let {
+            Daily(
+                key = it,
+                streak = p[Keys.dailyStreak] ?: 1,
+                correct = p[Keys.dailyCorrect] ?: 0,
+                grid = p[Keys.dailyGrid] ?: "",
+            )
+        }
+    }
+
+    /**
+     * Record a finished daily. The streak continues only when the previous
+     * one was yesterday's: a player who skips a day starts again at 1, which
+     * is the rule that makes a streak worth keeping.
+     */
+    suspend fun recordDaily(key: String, previousKey: String, correct: Int, grid: String) {
+        context.dataStore.edit {
+            val last = it[Keys.dailyKey]
+            if (last == key) return@edit // one attempt a day, already taken
+            it[Keys.dailyStreak] = if (last == previousKey) (it[Keys.dailyStreak] ?: 0) + 1 else 1
+            it[Keys.dailyKey] = key
+            it[Keys.dailyCorrect] = correct
+            it[Keys.dailyGrid] = grid
+        }
+    }
+
+    val reviewAskedAt: Flow<Long> = context.dataStore.data.map { it[Keys.reviewAsked] ?: 0L }
+
+    suspend fun setReviewAsked(millis: Long) =
+        context.dataStore.edit { it[Keys.reviewAsked] = millis }
 
     suspend fun setOnboarded() = context.dataStore.edit { it[Keys.onboarded] = true }
     suspend fun resetOnboarding() = context.dataStore.edit { it[Keys.onboarded] = false }

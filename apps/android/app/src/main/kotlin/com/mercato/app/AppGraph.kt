@@ -3,6 +3,7 @@ package com.mercato.app
 import android.content.Context
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import java.io.File
 import uniffi.mercato_ffi.AdConsent
@@ -53,6 +54,10 @@ class AppGraph(private val context: Context, private val scope: CoroutineScope) 
         // due and that cue was dropped: the first question of every session
         // was silent.
         sounds
+        // Re-arm the daily reminder. Alarms do not survive a reboot or a
+        // reinstall, so the setting has to be the source of truth at every
+        // start rather than only at the moment the switch is flipped.
+        Reminders.sync(context, prefs.notifications.first())
     }
 
     /**

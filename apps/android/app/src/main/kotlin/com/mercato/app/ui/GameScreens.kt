@@ -51,6 +51,12 @@ import com.mercato.app.QuestionUi
 import com.mercato.app.R
 import com.mercato.app.RecapUi
 import com.mercato.app.RecapRectangle
+import com.mercato.app.DailyChallenge
+import com.mercato.app.ReviewPrompt
+import com.mercato.app.ShareResult
+import com.mercato.analytics.Event
+import com.mercato.analytics.Param
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.text.TextStyle
@@ -76,6 +82,8 @@ fun GameScreen(
     mode: GameMode,
     onRoundOver: () -> Unit,
     onQuit: () -> Unit,
+    /** The daily challenge runs Easy on a date-derived seed, not a random one. */
+    daily: Boolean = false,
 ) {
     val context = LocalContext.current
     val question by vm.question.collectAsState()
@@ -105,11 +113,11 @@ fun GameScreen(
     // then found its own recap null and rendered nothing: the button looked
     // dead. Gating on a round this screen actually started is what makes the
     // effect immune to whatever the ViewModel was holding on arrival.
-    var roundStarted by remember(mode) { mutableStateOf(false) }
+    var roundStarted by remember(mode, daily) { mutableStateOf(false) }
 
-    LaunchedEffect(mode) {
+    LaunchedEffect(mode, daily) {
         val locale = context.resources.configuration.locales[0]?.toLanguageTag() ?: "en"
-        vm.startRound(mode, locale)
+        if (daily) vm.startDaily(locale) else vm.startRound(mode, locale)
         roundStarted = true
         graph.ads.preloadInterstitial()
     }
@@ -603,6 +611,25 @@ fun RecapScreen(
     val recap by vm.recap.collectAsState()
     val mode by vm.mode.collectAsState()
     val r: RecapUi = recap ?: return
+    val context = LocalContext.current
+    val stats by graph.prefs.stats.collectAsState(initial = null)
+    val askedAt by graph.prefs.reviewAskedAt.collectAsState(initial = -1L)
+    val scope = rememberCoroutineScope()
+
+    // Ask for a rating on the way out of a round that went well, once the
+    // player has enough rounds behind them to have an opinion. The sheet is
+    // Play's, it may refuse to appear, and nothing here waits on it.
+    val played = stats?.roundsPlayed
+    LaunchedEffect(r.won, played, askedAt) {
+        val activity = context as? Activity ?: return@LaunchedEffect
+        val rounds = played ?: return@LaunchedEffect
+        if (askedAt < 0L) return@LaunchedEffect
+        val now = System.currentTimeMillis()
+        if (r.won && ReviewPrompt.shouldAsk(rounds, askedAt, now)) {
+            graph.prefs.setReviewAsked(now)
+            ReviewPrompt.ask(activity, graph.analytics)
+        }
+    }
 
     // iOS: 22 above the title, 18 above the stars, 22 above the card, 22 above
     // the CTAs, 24 above the rectangle, 20 at the foot (Screens.swift:155).
@@ -677,6 +704,39 @@ fun RecapScreen(
         Gap(DesignTokens.Space.xl)
         RecapRectangle(graph.ads)
         Gap(24.dp)
+        // The share button, above Play again rather than below it: the grid is
+        // the only thing on this screen that can reach someone who has never
+        // heard of the game, and a control under the fold reaches nobody.
+        val shareTitle = stringResource(R.string.shareTitle)
+        val shareStreakWord = stringResource(R.string.shareStreak)
+        val dailyWord = stringResource(R.string.shareDaily)
+        val roundWord = stringResource(R.string.shareRound)
+        InkButton(
+            stringResource(R.string.share), ButtonStyle.Secondary,
+            fontSize = 18.sp, fontWeight = 800, tracking = -0.045f,
+            radius = DesignTokens.Radius.button, verticalPadding = 17.dp,
+        ) {
+            val header =
+                if (r.daily) "Mercato · $dailyWord #${DailyChallenge.number(DailyChallenge.today())}"
+                else "Mercato · $roundWord"
+            ShareResult.send(
+                context,
+                shareTitle,
+                ShareResult.text(
+                    title = header,
+                    results = r.results,
+                    correct = r.correct,
+                    total = r.total,
+                    streakWord = shareStreakWord,
+                    streak = r.dailyStreak,
+                ),
+            )
+            graph.analytics.log(
+                Event.RESULT_SHARED,
+                mapOf(Param.SOURCE to if (r.daily) "daily" else "recap"),
+            )
+        }
+        Gap(DesignTokens.Space.sm)
         InkButton(
             stringResource(R.string.again), ButtonStyle.Primary,
             fontSize = 18.sp, fontWeight = 800, tracking = -0.045f,

@@ -18,18 +18,15 @@
 // Validation runs first and reports every problem it finds (not just the
 // first) before exiting non-zero, so a translator can fix everything in one
 // pass:
-//   - all three languages must have exactly the same set of (flattened) keys
+//   - every language must have exactly the same set of (flattened) keys
 //   - no empty or whitespace-only values
 //   - English must be present, since it is the fallback
 //
 // Emits:
-//   build/strings/ios/en.lproj/Localizable.strings
-//   build/strings/ios/fr.lproj/Localizable.strings
-//   build/strings/ios/es.lproj/Localizable.strings
+//   build/strings/ios/<lang>.lproj/Localizable.strings
 //   build/strings/ios/<lang>.lproj/InfoPlist.strings  (the tracking prompt)
 //   build/strings/android/values/strings.xml      (English, the default)
-//   build/strings/android/values-fr/strings.xml
-//   build/strings/android/values-es/strings.xml
+//   build/strings/android/values-<lang>/strings.xml
 //
 // Output is generated and gitignored (see /build/ in .gitignore), the same
 // convention scripts/build-native.sh and scripts/gen-design-tokens.mjs use
@@ -43,7 +40,24 @@ const ROOT = new URL("..", import.meta.url).pathname;
 const STRINGS_PATH = path.join(ROOT, "design/strings.json");
 const OUT_DIR = path.join(ROOT, "build/strings");
 
-const LANGUAGES = ["en", "fr", "es"];
+// Every language the apps ship, and where each platform expects it.
+//
+// Apple takes the tag as the .lproj name. Android spells a region as -r<REGION>
+// and, for historical reasons, still wants the obsolete ISO code for a few
+// languages: Indonesian resources go in values-in, not values-id, and a
+// directory named values-id is simply never selected on a device set to
+// Indonesian.
+const LANGUAGE_TARGETS = [
+  { tag: "en", lproj: "en", values: "values" },
+  { tag: "fr", lproj: "fr", values: "values-fr" },
+  { tag: "es", lproj: "es", values: "values-es" },
+  { tag: "pt-BR", lproj: "pt-BR", values: "values-pt-rBR" },
+  { tag: "it", lproj: "it", values: "values-it" },
+  { tag: "de", lproj: "de", values: "values-de" },
+  { tag: "tr", lproj: "tr", values: "values-tr" },
+  { tag: "id", lproj: "id", values: "values-in" },
+];
+const LANGUAGES = LANGUAGE_TARGETS.map((l) => l.tag);
 const FALLBACK_LANGUAGE = "en";
 
 const die = (msg) => {
@@ -198,8 +212,8 @@ const GENERATED_NOTE = [
 // --- emit: Apple .strings -----------------------------------------------------
 const canonicalKeyOrder = [...flattened[FALLBACK_LANGUAGE].keys()];
 
-function writeAppleStrings(lang) {
-  const dir = path.join(OUT_DIR, "ios", `${lang}.lproj`);
+function writeAppleStrings(lang, lproj) {
+  const dir = path.join(OUT_DIR, "ios", `${lproj}.lproj`);
   fs.mkdirSync(dir, { recursive: true });
   const header = `/*\n${GENERATED_NOTE.map((l) => ` * ${l}`).join("\n")}\n */\n`;
   const lines = canonicalKeyOrder.map((key) => {
@@ -236,12 +250,10 @@ function writeAndroidStrings(lang, valuesDir) {
 }
 
 const written = [];
-written.push(writeAppleStrings("en"));
-written.push(writeAppleStrings("fr"));
-written.push(writeAppleStrings("es"));
-written.push(writeAndroidStrings("en", "values"));
-written.push(writeAndroidStrings("fr", "values-fr"));
-written.push(writeAndroidStrings("es", "values-es"));
+for (const target of LANGUAGE_TARGETS) {
+  written.push(writeAppleStrings(target.tag, target.lproj));
+  written.push(writeAndroidStrings(target.tag, target.values));
+}
 
 // --- summary -------------------------------------------------------------------
 console.log(

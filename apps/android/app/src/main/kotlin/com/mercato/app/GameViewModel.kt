@@ -7,6 +7,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import com.mercato.analytics.Event
 import com.mercato.analytics.Param
@@ -42,6 +43,12 @@ data class RecapUi(
     val bestStreak: Int,
     val stars: Int,
     val missed: List<uniffi.mercato_ffi.MissedView>,
+    /** One entry per question, in the order asked, for the shareable grid. */
+    val results: List<Boolean> = emptyList(),
+    /** True when this was the daily challenge rather than a free round. */
+    val daily: Boolean = false,
+    /** Consecutive days played, once the daily has been recorded. */
+    val dailyStreak: Int = 0,
 )
 
 /**
@@ -82,19 +89,39 @@ class GameViewModel(private val graph: AppGraph) : ViewModel() {
     private var advanceJob: Job? = null
     private var correctCount = 0
 
+    /** Set for the round in progress, so the recap knows what to offer. */
+    private var isDaily = false
+
     fun startRound(gameMode: GameMode, localeTag: String) {
+        isDaily = false
+        beginRound(gameMode, localeTag, (System.currentTimeMillis() and 0xFFFF_FFFFL).toUInt())
+        graph.analytics.log(Event.ROUND_START, mapOf(Param.MODE to modeName(gameMode)))
+        nextQuestion()
+    }
+
+    /**
+     * The daily challenge: an Easy round seeded from today's date, so every
+     * player answers the same ten questions and a shared grid means something.
+     */
+    fun startDaily(localeTag: String) {
+        val today = DailyChallenge.today()
+        isDaily = true
+        beginRound(GameMode.EASY, localeTag, DailyChallenge.seed(today))
+        graph.analytics.log(Event.DAILY_START, emptyMap())
+        nextQuestion()
+    }
+
+    private fun beginRound(gameMode: GameMode, localeTag: String, seed: UInt) {
         mode.value = gameMode
         _recap.value = null
         correctCount = 0
         game.startRound(
             languageForLocale(localeTag),
             gameMode,
-            (System.currentTimeMillis() and 0xFFFF_FFFFL).toUInt(),
+            seed,
         )
         _pips.value = List(game.questionsPerRound().toInt()) { null }
         _score.value = game.score()
-        graph.analytics.log(Event.ROUND_START, mapOf(Param.MODE to modeName(gameMode)))
-        nextQuestion()
     }
 
     /** The mode as the event vocabulary spells it, not as Kotlin does. */
@@ -198,6 +225,9 @@ class GameViewModel(private val graph: AppGraph) : ViewModel() {
             ratio > 0f -> 1
             else -> 0
         }
+        // An unanswered question counts as a miss: a grid that quietly drops
+        // questions reports a better round than the one that was played.
+        val results = _pips.value.map { it == true }
         _recap.value = RecapUi(
             // Two stars is the win, as on iOS. Calling a single star a win
             // meant one right answer out of ten reported "round won".
@@ -208,6 +238,8 @@ class GameViewModel(private val graph: AppGraph) : ViewModel() {
             bestStreak = s.bestStreak.toInt(),
             stars = stars,
             missed = game.missed(),
+            results = results,
+            daily = isDaily,
         )
         _question.value = null
         graph.analytics.log(
@@ -227,7 +259,30 @@ class GameViewModel(private val graph: AppGraph) : ViewModel() {
                 correct = correctCount,
                 answered = total,
             )
+            if (isDaily) recordDaily(results)
         }
+    }
+
+    /**
+     * Persist the daily, then put the streak it produced back on the recap so
+     * the share text can carry it. Reading the flow once after the write is
+     * what keeps the streak rule in one place, in Prefs, rather than counting
+     * days here as well.
+     */
+    private suspend fun recordDaily(results: List<Boolean>) {
+        val today = DailyChallenge.today()
+        graph.prefs.recordDaily(
+            key = DailyChallenge.key(today),
+            previousKey = DailyChallenge.previousKey(today),
+            correct = correctCount,
+            grid = results.joinToString("") { if (it) "1" else "0" },
+        )
+        val streak = graph.prefs.daily.first()?.streak ?: 1
+        _recap.value = _recap.value?.copy(dailyStreak = streak)
+        graph.analytics.log(
+            Event.DAILY_END,
+            mapOf(Param.CORRECT to correctCount, Param.STREAK to streak),
+        )
     }
 
     /**

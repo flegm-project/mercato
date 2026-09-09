@@ -46,11 +46,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.Manifest
 import android.app.Activity
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import com.mercato.app.AppGraph
 import com.mercato.app.BuildConfig
 import com.mercato.app.MenuBanner
+import com.mercato.app.DailyChallenge
 import com.mercato.app.Prefs
+import com.mercato.app.Reminders
 import com.mercato.app.R
 import java.util.Locale
 import androidx.compose.ui.platform.LocalContext
@@ -358,8 +365,16 @@ fun ConsentScreen(graph: AppGraph, fromSettings: Boolean, onDone: () -> Unit) {
 
 /** 04 Home: logo, the two mode buttons pushed to the bottom, banner + tabs. */
 @Composable
-fun HomeScreen(graph: AppGraph, onPlay: (GameMode) -> Unit, onProfile: () -> Unit) {
+fun HomeScreen(
+    graph: AppGraph,
+    onPlay: (GameMode) -> Unit,
+    onDaily: () -> Unit,
+    onProfile: () -> Unit,
+) {
     LaunchedEffect(Unit) { graph.ads.preloadInterstitial() }
+    val daily by graph.prefs.daily.collectAsState(initial = null)
+    val todayKey = DailyChallenge.key(DailyChallenge.today())
+    val playedToday = daily?.key == todayKey
     ScreenColumn {
         // iOS treats the wordmark and both buttons as one block, with the
         // flexible space above and below it, not between them.
@@ -369,6 +384,16 @@ fun HomeScreen(graph: AppGraph, onPlay: (GameMode) -> Unit, onProfile: () -> Uni
         Wordmark(DesignTokens.Type.logo.size)
         // iOS: 22 under the wordmark, 14 between the modes (Screens.swift:82).
         Gap(DesignTokens.Space.xl)
+        // The daily challenge sits above the two modes and is drawn as a
+        // different kind of object, an outlined panel rather than a solid
+        // card: it is a standing appointment, not a third way to play.
+        DailyCard(
+            playedToday = playedToday,
+            correct = daily?.correct ?: 0,
+            streak = daily?.streak ?: 0,
+            onClick = { if (!playedToday) onDaily() },
+        )
+        Gap(DesignTokens.Space.md)
         ModeButton(R.string.l1, DesignTokens.Color.yellow) { onPlay(GameMode.EASY) }
         Gap(DesignTokens.Space.md)
         ModeButton(R.string.l3, DesignTokens.Color.ivory) { onPlay(GameMode.HARDCORE) }
@@ -380,6 +405,78 @@ fun HomeScreen(graph: AppGraph, onPlay: (GameMode) -> Unit, onProfile: () -> Uni
             selected = 0,
         ) { if (it == 1) onProfile() }
         Gap(DesignTokens.Space.gutter)
+    }
+}
+
+/**
+ * The daily challenge entry. Two states, and the second one is the point: a
+ * player who has already played sees what they scored and how many days they
+ * have strung together, which is what a streak is for.
+ */
+@Composable
+private fun DailyCard(
+    playedToday: Boolean,
+    correct: Int,
+    streak: Int,
+    onClick: () -> Unit,
+) {
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .background(
+                DesignTokens.Color.ink.dim(DesignTokens.Opacity.row),
+                RoundedCornerShape(DesignTokens.Radius.medium),
+            )
+            .border(
+                2.dp,
+                Color.White.dim(DesignTokens.Opacity.borderPanel),
+                RoundedCornerShape(DesignTokens.Radius.medium),
+            )
+            .clip(RoundedCornerShape(DesignTokens.Radius.medium))
+            .clickable(enabled = !playedToday, onClick = onClick)
+            .padding(vertical = 16.dp, horizontal = 20.dp),
+    ) {
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(DesignTokens.Space.block),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text(
+                    stringResource(R.string.dTitle),
+                    style = typeStyle(DesignTokens.Type.label, DesignTokens.Color.yellow),
+                )
+                Gap(DesignTokens.Space.xs)
+                Text(
+                    stringResource(if (playedToday) R.string.dDone else R.string.dSub),
+                    style = typeStyle(
+                        DesignTokens.Type.bodySmall,
+                        DesignTokens.Color.ivory.dim(DesignTokens.Opacity.textSubtle),
+                    ),
+                )
+            }
+            if (playedToday) {
+                Column(horizontalAlignment = Alignment.End) {
+                    Text(
+                        "$correct/10",
+                        style = typeStyle(DesignTokens.Type.badgeValue, DesignTokens.Color.ivory),
+                    )
+                    Gap(DesignTokens.Space.xs)
+                    Text(
+                        stringResource(R.string.dStreak) + " " + streak,
+                        style = typeStyle(
+                            DesignTokens.Type.footnote,
+                            DesignTokens.Color.ivory.dim(DesignTokens.Opacity.textSubtle),
+                        ),
+                    )
+                }
+            } else {
+                Text(
+                    stringResource(R.string.tPlay),
+                    style = typeStyle(DesignTokens.Type.ctaCompact, DesignTokens.Color.yellow),
+                )
+            }
+        }
     }
 }
 
@@ -586,8 +683,29 @@ fun SettingsScreen(
                 scope.launch { graph.prefs.setSound(it) }
                 graph.analytics.log(Event.SOUND_SET, mapOf(Param.ON to it))
             }
-            ToggleRow(R.string.notifS, notifications) {
-                scope.launch { graph.prefs.setNotifications(it) }
+            // Turning the switch on is a request for a permission on Android
+            // 13 and later, so the stored value follows what the system
+            // actually granted rather than what the tap asked for: a switch
+            // left on next to a denied permission is a control that lies.
+            val settingsContext = LocalContext.current
+            val askNotifications = rememberLauncherForActivityResult(
+                ActivityResultContracts.RequestPermission()
+            ) { granted ->
+                scope.launch { graph.prefs.setNotifications(granted) }
+                Reminders.sync(settingsContext, granted)
+            }
+            ToggleRow(R.string.notifS, notifications) { on ->
+                val needsPermission = on &&
+                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                    settingsContext.checkSelfPermission(
+                        Manifest.permission.POST_NOTIFICATIONS
+                    ) != PackageManager.PERMISSION_GRANTED
+                if (needsPermission) {
+                    askNotifications.launch(Manifest.permission.POST_NOTIFICATIONS)
+                } else {
+                    scope.launch { graph.prefs.setNotifications(on) }
+                    Reminders.sync(settingsContext, on)
+                }
             }
         }
         Gap(DesignTokens.Space.gutter)

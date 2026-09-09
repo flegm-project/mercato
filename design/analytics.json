@@ -7,7 +7,9 @@
   "events": {
     "round_start": {
       "why": "The denominator for everything else. Without it, a drop in rounds finished reads exactly like a drop in rounds started.",
-      "params": { "mode": "easy | hardcore" }
+      "params": {
+        "mode": "easy | hardcore"
+      }
     },
     "round_end": {
       "why": "How well people actually do. Star counts piled on one is a difficulty problem; piled on three is a dataset that is too easy.",
@@ -21,15 +23,22 @@
     },
     "round_quit": {
       "why": "Quitting mid-round is the strongest signal that a question is unfair or the round is too long. `answered` says where they gave up.",
-      "params": { "mode": "easy | hardcore", "answered": "questions settled before quitting" }
+      "params": {
+        "mode": "easy | hardcore",
+        "answered": "questions settled before quitting"
+      }
     },
     "hint_taken": {
       "why": "Hardcore only. Which rung of the ladder people stop at says which hint is the useful one.",
-      "params": { "rank": "1 nationality, 2 position, 3 surname shape" }
+      "params": {
+        "rank": "1 nationality, 2 position, 3 surname shape"
+      }
     },
     "screen_opened": {
       "why": "Reach, not navigation. Firebase logs its own screen views; this exists so the few screens that matter are countable without reading an automatic report.",
-      "params": { "screen": "home | profile | settings | recap | offline | onboarding" }
+      "params": {
+        "screen": "home | profile | settings | recap | offline | onboarding"
+      }
     },
     "purchase_started": {
       "why": "The top of the only funnel this app has.",
@@ -45,7 +54,30 @@
     },
     "sound_set": {
       "why": "Whether the cues are wanted. If most players turn them off, that is an answer about the sounds, not about the setting.",
-      "params": { "on": "1 or 0" }
+      "params": {
+        "on": "1 or 0"
+      }
+    },
+    "daily_start": {
+      "why": "The daily challenge is the retention loop. Without a start count, a drop in daily finishes reads the same as a drop in daily opens.",
+      "params": {}
+    },
+    "daily_end": {
+      "why": "How the daily is going, and whether the streak that the share text advertises is actually building.",
+      "params": {
+        "correct": "answers right, 0..10",
+        "streak": "consecutive days played, 1 on the first"
+      }
+    },
+    "result_shared": {
+      "why": "The only organic growth loop the app has. Nothing else says whether the share button is worth its place on the screen.",
+      "params": {
+        "source": "daily | recap"
+      }
+    },
+    "review_prompted": {
+      "why": "The in-app review sheet is throttled by Play and may never appear. Counting the requests is the only way to tell a quota refusal from a code path that never runs.",
+      "params": {}
     }
   }
 }

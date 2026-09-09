@@ -175,7 +175,7 @@ android {
         // 16 KB alignment, and a version code cannot be uploaded twice. 3 is
         // spent too, on the build that fixed it.
         versionCode = 15
-        versionName = "1.0.6"
+        versionName = "1.0.7"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         ndk {
@@ -323,6 +323,11 @@ dependencies {
 
     // Play Billing: the single remove-ads non-consumable.
     implementation("com.android.billingclient:billing-ktx:9.1.0")
+
+    // The in-app review sheet. Play throttles it and may show nothing, which
+    // is why the app treats every failure path as a no-op rather than an
+    // error: this is a courtesy the app asks for, not a step the player is in.
+    implementation("com.google.android.play:review:2.0.2")
 
     // Analytics and Crashlytics. Both are no-cost on the Spark plan with no
     // usage limits; nothing else from Firebase is used, and nothing else is

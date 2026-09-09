@@ -6,6 +6,15 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <!--
+      The daily reminder. Asked for from the Notifications switch in Settings
+      and nowhere else, so a player who never turns it on is never prompted.
+      RECEIVE_BOOT_COMPLETED exists because an alarm does not survive a
+      restart: without it the reminder stops the first time the phone reboots.
+    -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <!--
       appCategory is not decoration. Android 16 ignores android:screenOrientation
       on any display at least 600dp wide, so on a tablet or an unfolded foldable
       the portrait lock below would simply not apply. Games are exempt from that
@@ -47,5 +56,23 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!--
+          Fires the daily reminder, and re-arms it after a reboot.
+
+          Exported because BOOT_COMPLETED is delivered by the system, which is
+          another uid: a non-exported receiver simply never hears it, and the
+          reminder would stop at the first restart. BOOT_COMPLETED is a
+          protected broadcast, so no other app can send it, and the worst any
+          app could do with the alarm path is make this phone show its own
+          reminder a few hours early.
+        -->
+        <receiver
+            android:name=".ReminderReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
     </application>
 </manifest>

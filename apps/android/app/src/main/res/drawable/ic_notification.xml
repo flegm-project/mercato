@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Notification small icon. Android draws it as a flat silhouette, so this is a
+  ball reduced to the two shapes that survive that treatment: the outer ring
+  and one panel. The launcher icon cannot stand in here, because a full-colour
+  mark tinted to a single colour comes out as an unreadable blob.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:fillType="evenOdd"
+        android:pathData="M12,2 C6.477,2 2,6.477 2,12 C2,17.523 6.477,22 12,22 C17.523,22 22,17.523 22,12 C22,6.477 17.523,2 12,2 Z M12,4 C16.418,4 20,7.582 20,12 C20,16.418 16.418,20 12,20 C7.582,20 4,16.418 4,12 C4,7.582 7.582,4 12,4 Z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M12,7.2 L15.5,9.75 L14.16,13.85 L9.84,13.85 L8.5,9.75 Z" />
+</vector>

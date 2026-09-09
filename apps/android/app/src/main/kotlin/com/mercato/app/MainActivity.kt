@@ -43,6 +43,7 @@ object Routes {
     const val HOME = "home"
     const val GAME_EASY = "game/easy"
     const val GAME_HARDCORE = "game/hardcore"
+    const val GAME_DAILY = "game/daily"
     const val RECAP = "recap"
     const val PROFILE = "profile"
     const val SETTINGS = "settings"
@@ -246,6 +247,7 @@ fun MercatoNav(graph: AppGraph, startRoute: String? = null) {
                 onPlay = { mode ->
                     go(if (mode == GameMode.EASY) Routes.GAME_EASY else Routes.GAME_HARDCORE)
                 },
+                onDaily = { go(Routes.GAME_DAILY) },
                 onProfile = { go(Routes.PROFILE) },
             )
         }
@@ -256,6 +258,11 @@ fun MercatoNav(graph: AppGraph, startRoute: String? = null) {
         }
         composable(Routes.GAME_HARDCORE) {
             GameScreen(graph, vm, GameMode.HARDCORE,
+                onRoundOver = { go(Routes.RECAP) { popUpTo(Routes.HOME) } },
+                onQuit = { back(Routes.HOME) })
+        }
+        composable(Routes.GAME_DAILY) {
+            GameScreen(graph, vm, GameMode.EASY, daily = true,
                 onRoundOver = { go(Routes.RECAP) { popUpTo(Routes.HOME) } },
                 onQuit = { back(Routes.HOME) })
         }
