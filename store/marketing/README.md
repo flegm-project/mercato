@@ -10,6 +10,19 @@ only what Google Play and the App Store consume.
 | `stories/launch-en-1080x1920.png` | 1080x1920, English | Launch announcement story (Instagram, TikTok). This is the one to post. |
 | `stories/launch-en-1080x1920-guide.png` | 1080x1920, English | Same layout with the link-sticker area outlined. Working guide only, never post it. |
 
+## Social clips
+
+`scripts/gen-clip.py` turns any five transfers from `data/` into a 1080x1920,
+24-second "guess the player" clip: intro, five questions with a countdown and a
+reveal, outro. Output goes to `build/clips/` and is not committed, the same
+convention the rest of the generated artwork follows.
+
+    python3 scripts/gen-clip.py --out build/clips --count 7
+
+It draws from tier 1 only and never asks for the same player twice in a clip.
+The dataset is the point: 1,900 transfers is a year of daily posts that nobody
+has to write.
+
 ## Brand rules these follow
 
 Everything is derived from `design/tokens.json`, `design/fonts/` and
