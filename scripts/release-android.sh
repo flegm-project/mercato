@@ -131,6 +131,7 @@ rm -f "$AAB"
 # only the same file as long as nothing between them moved.
 step "checking the artifact"
 python3 "$ROOT/scripts/check-16k.py" "$AAB" | tail -3
+python3 "$ROOT/scripts/check-native.py" "$AAB" | tail -5
 python3 - "$AAB" "$NEXT" <<'PY'
 import sys, zipfile
 aab, expected = sys.argv[1], sys.argv[2]
