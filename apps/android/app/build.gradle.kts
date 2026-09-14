@@ -247,6 +247,33 @@ android {
         buildConfig = true
     }
 
+    // AGP's default since 4.2 stores native libraries uncompressed and page
+    // aligned in the APK/bundle and has the app map them straight out of it
+    // at load time, skipping the old install-time copy to the app's native
+    // library directory. That is what "extractNativeLibs=false" in the
+    // manifest means, and it is what every 16 KB alignment check here already
+    // assumes. It is also where issue e1292a3613d1190bd1da69f1f592fb2f came
+    // from: on a Pixel 6 Pro running 1.0.7, System.loadLibrary("jnidispatch")
+    // failed to find the library this way -- despite it being present,
+    // correctly aligned, and stored uncompressed, all confirmed by auditing
+    // the actual uploaded bundle -- and JNA fell through to a classpath
+    // resource lookup that can never succeed on Android, throwing
+    // UnsatisfiedLinkError before the Rust core could start. Crashlytics
+    // marks the same issue first-seen in 1.0.6, closed, then regressed here:
+    // a device- or OS-level fault in the direct-mmap path, not a packaging
+    // defect this build produces or the artifact checks can see, since they
+    // read the same well-formed file the device failed to load.
+    //
+    // useLegacyPackaging reverts to extracting native libraries to disk at
+    // install time, the mechanism every Android version has supported since
+    // native libraries existed. It costs some install-time disk and a larger
+    // on-disk footprint; it does not depend on a device's APK-mmap path being
+    // implemented correctly.
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
 
     sourceSets.getByName("main") {
         kotlin.srcDir(repoRoot.resolve("build/bindings/kotlin"))
