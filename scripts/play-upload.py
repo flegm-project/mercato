@@ -36,7 +36,11 @@ def parse_notes(path):
     if not path:
         return []
     raw = open(path, encoding="utf-8").read()
-    parts = re.split(r"^##\s+([A-Za-z]{2}-[A-Za-z]{2})\s*$", raw, flags=re.M)
+    # Play locales are not all language-region: Indonesian is plain "id", and a
+    # few others are language-only too. A stricter pattern here does not fail,
+    # it silently drops that section, so a release ships one language short
+    # while the notes file in the repo looks complete.
+    parts = re.split(r"^##\s+([A-Za-z]{2}(?:-[A-Za-z]{2,3})?)\s*$", raw, flags=re.M)
     # re.split with one group yields [preamble, locale, body, locale, body...]
     notes = []
     for locale, body in zip(parts[1::2], parts[2::2]):
