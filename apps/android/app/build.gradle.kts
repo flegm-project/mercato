@@ -375,8 +375,32 @@ val verifyBundle16k =
 val verifyApk16k =
     register16kCheck("verify16kAlignmentApk", "outputs/apk/release/app-release.apk")
 
-tasks.matching { it.name == "bundleRelease" }.configureEach { finalizedBy(verifyBundle16k) }
-tasks.matching { it.name == "assembleRelease" }.configureEach { finalizedBy(verifyApk16k) }
+// The same reasoning, for what alignment does not cover. Two releases have
+// crashed on launch with UnsatisfiedLinkError for reasons the build reported as
+// success: a libmercato_ffi.so older than the bindings that call into it, and,
+// separately, an ABI that lost a library. Neither is a link error at build
+// time, because nothing links: UniFFI resolves entry points by name on the
+// first call, and a missing .so is only missing on the device that needed it.
+// check-native.py reads both out of the finished artifact.
+fun registerNativeCheck(name: String, artifact: String) =
+    tasks.register<Exec>(name) {
+        description = "Fails if the packaged native libraries cannot serve the bindings."
+        workingDir = repoRoot
+        commandLine(
+            "python3", "scripts/check-native.py",
+            layout.buildDirectory.file(artifact).get().asFile.path,
+        )
+    }
+
+val verifyBundleNative =
+    registerNativeCheck("verifyNativeBundle", "outputs/bundle/release/app-release.aab")
+val verifyApkNative =
+    registerNativeCheck("verifyNativeApk", "outputs/apk/release/app-release.apk")
+
+tasks.matching { it.name == "bundleRelease" }
+    .configureEach { finalizedBy(verifyBundle16k, verifyBundleNative) }
+tasks.matching { it.name == "assembleRelease" }
+    .configureEach { finalizedBy(verifyApk16k, verifyApkNative) }
 
 // Pin the JDK the build runs on. Gradle 8.9 rejects anything newer than 22,
 // and a machine whose only JDK is newer fails with a bare version number that
