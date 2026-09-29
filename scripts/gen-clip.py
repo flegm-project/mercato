@@ -162,7 +162,10 @@ def question_frame(bg, from_club, to_club, year, countdown=None, answer=None):
     fitted(d, 830, to_club.upper(), UNBOUNDED, 62, INK, -2, inner)
     centered(d, 1000, str(year), font(UNBOUNDED, 96), YELLOW, tracking=-3)
 
-    if answer is not None:
+    if answer == "__HIDDEN__":
+        solid_card(img, (90, 1290, W - 90, 1520), hex_rgb(YELLOW))
+        fitted(d, 1380, "COMMENTE TA REPONSE", UNBOUNDED, 46, INK, -2, W - 2 * 90 - 80)
+    elif answer is not None:
         solid_card(img, (90, 1290, W - 90, 1520), hex_rgb(YELLOW))
         fitted(d, 1380, answer.upper(), UNBOUNDED, 58, INK, -2, W - 2 * 90 - 80)
     elif countdown is not None:
@@ -214,8 +217,12 @@ def load_corpus():
     return players, clubs, transfers
 
 
-def render_clip(bg, picks, players, clubs, out_path):
-    """One clip: intro, five questions with a countdown and a reveal, outro."""
+def render_clip(bg, picks, players, clubs, out_path, hide_answer=False):
+    """One clip: intro, five questions with a countdown and a reveal, outro.
+
+    hide_answer swaps the reveal card for a comment prompt: the format that
+    drives replies is the one that never gives the name away on-screen.
+    """
     frames = []  # (PIL image, seconds on screen)
     frames.append((intro_frame(bg), 2.2))
     for t in picks:
@@ -225,7 +232,8 @@ def render_clip(bg, picks, players, clubs, out_path):
         year = t["year"]
         for n in (3, 2, 1):
             frames.append((question_frame(bg, a, b, year, countdown=n), 1.0))
-        frames.append((question_frame(bg, a, b, year, answer=player), 1.6))
+        reveal = "__HIDDEN__" if hide_answer else player
+        frames.append((question_frame(bg, a, b, year, answer=reveal), 1.6))
     frames.append((outro_frame(bg), 2.8))
 
     with tempfile.TemporaryDirectory() as tmp:
@@ -258,6 +266,7 @@ def main():
     ap.add_argument("--count", type=int, default=1, help="how many clips to render")
     ap.add_argument("--seed", type=int, default=None)
     ap.add_argument("--transfers", default="", help="explicit comma-separated transfer ids")
+    ap.add_argument("--hide-answer", action="store_true", help="prompt for a comment instead of revealing the player")
     args = ap.parse_args()
 
     players, clubs, transfers = load_corpus()
@@ -293,7 +302,7 @@ def main():
             print(f"skipping clip {i}: only {len(picks)} transfers", file=sys.stderr)
             continue
         out = os.path.join(args.out, f"clip-{i:02d}.mp4")
-        render_clip(bg, picks, players, clubs, out)
+        render_clip(bg, picks, players, clubs, out, hide_answer=args.hide_answer)
         names = ", ".join(players[t["player_id"]]["name_en"] for t in picks)
         print(f"{out}  ({names})")
 
